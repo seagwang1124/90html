@@ -90,5 +90,5 @@
 88. [통큰통독 - 88일차](https://seagwang1124.github.io/90html/88%EC%9D%BC%EC%B0%A8.html)
 89. [통큰통독 - 89일차](https://seagwang1124.github.io/90html/89%EC%9D%BC%EC%B0%A8.html)
 90. [통큰통독 - 90일차](https://seagwang1124.github.io/90html/90%EC%9D%BC%EC%B0%A8.html)
-91. [통큰통독 - 성경일독 순서표.xls](https://seagwang1124.github.io/90html/%EC%84%B1%EA%B2%BD%EC%9D%BC%EB%8F%85%20%EC%88%9C%EC%84%9C%ED%91%9C.xls)
-92. [통큰통독 - 성경일독 순서표.xlsx](https://seagwang1124.github.io/90html/%EC%84%B1%EA%B2%BD%EC%9D%BC%EB%8F%85%20%EC%88%9C%EC%84%9C%ED%91%9C.xlsx)
+91. [성경일독 순서표.xls](https://seagwang1124.github.io/90html/%EC%84%B1%EA%B2%BD%EC%9D%BC%EB%8F%85%20%EC%88%9C%EC%84%9C%ED%91%9C.xls)
+92. [성경일독 순서표.xlsx](https://seagwang1124.github.io/90html/%EC%84%B1%EA%B2%BD%EC%9D%BC%EB%8F%85%20%EC%88%9C%EC%84%9C%ED%91%9C.xlsx)
