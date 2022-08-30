@@ -90,3 +90,5 @@
 88. [통큰통독 - 88일차](https://seagwang1124.github.io/90html/88%EC%9D%BC%EC%B0%A8.html)
 89. [통큰통독 - 89일차](https://seagwang1124.github.io/90html/89%EC%9D%BC%EC%B0%A8.html)
 90. [통큰통독 - 90일차](https://seagwang1124.github.io/90html/90%EC%9D%BC%EC%B0%A8.html)
+91. [통큰통독 - 90일차](https://seagwang1124.github.io/90html/%ED%86%B5%ED%86%B5%EC%9D%BD%EA%B8%B0%ED%91%9C.xls
+92. [통큰통독 - 90일차](https://seagwang1124.github.io/90html/%ED%86%B5%ED%86%B5%EC%9D%BD%EA%B8%B0%ED%91%9C.xlsx
