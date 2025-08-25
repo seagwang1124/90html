@@ -696,7 +696,7 @@
         }
         getSize();
         
-        // ** 수정된 부분: 폰트 사이즈 조절 로직 개선 **
+        // 폰트 사이즈 조절 로직
         $("#up").on("click", function () {
             let currentSize = parseInt($("h2").css("font-size"));
             if (currentSize + 4 <= 80) {
@@ -789,7 +789,7 @@
         // AI를 사용하여 설명을 가져오는 비동기 함수
         async function fetchExplanation(promptText) {
             // 여기에 발급받은 API 키를 붙여넣으세요.
-            const apiKey = "AIzaSyDUlSQlSPgnrFBXpnUJMDoUO3s_KsaoFRU"; // <--- 이 부분을 수정해야 합니다.
+            const apiKey = ""; // <--- 이 부분을 수정해야 합니다.
             const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
             const payload = {
                 contents: [
@@ -879,12 +879,23 @@
                 modal.style.display = 'none';
             }
         });
+
+        // ---- 새롭게 추가된 부분: 모바일 드래그 메뉴바 숨기기 ----
+
+        // 문서 전체에서 컨텍스트 메뉴(오른쪽 클릭 또는 길게 누르기) 이벤트를 막습니다.
+        // 이것은 복사, 사전, 번역 등의 기본 메뉴가 뜨는 것을 방지합니다.
+        document.body.addEventListener('contextmenu', (e) => {
+            e.preventDefault();
+        });
+
+        // 텍스트 선택 시작 이벤트를 막아 드래그 동작이 기본 메뉴를 표시하지 않게 합니다.
+        document.body.addEventListener('selectstart', (e) => {
+             // 이 이벤트를 막으면 텍스트 드래그 자체가 불가능해지므로 주석 처리합니다.
+             // e.preventDefault();
+        });
+
+        // ---- 여기까지가 새롭게 추가된 부분입니다. ----
     </script>
 </body>
 </html>
-
-
-
-
-
 
