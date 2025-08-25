@@ -1,146 +1,322 @@
+<!DOCTYPE html>
 <html lang="ko">
 <head>
+    <meta charset="UTF-8">
+    <link rel="apple-touch-icon" type="image/png" href="https://i.postimg.cc/Qtnq0gFJ/Ezra-icon.png">
+    <meta name="apple-mobile-web-app-app-title" content="통큰통독">
+    <link rel="shortcut icon" type="image/png" href="https://i.postimg.cc/Qtnq0gFJ/Ezra-icon.png">
+    <link rel="mask-icon" type="image/png" href="https://i.postimg.cc/Qtnq0gFJ/Ezra-icon.png">
+    <title>통큰통독-05일차</title>
+    <style>
+        body {
+            margin: 0;
+            padding-top: 150px; /* 고정된 상단 UI가 콘텐츠를 가리지 않도록 여백 추가 */
+            font-family: Arial, sans-serif;
+            background-color: #FFFFFF;
+            color: #000000;
+        }
 
-  <meta charset="UTF-8">
-  
-<link rel="apple-touch-icon" type="image/png" href="https://i.postimg.cc/Qtnq0gFJ/Ezra-icon.png">
-<meta name="apple-mobile-web-app-title" content="통큰통독">
+        /* 상단 고정 테이블 스타일 */
+        .top-fixed-table {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            background-color: transparent;
+            border-bottom: none;
+            z-index: 100;
+            table-layout: fixed;
+            padding: 10px 0;
+            box-sizing: border-box;
+        }
+        
+        /* 구절 설명 버튼 컨테이너 스타일 */
+        .explanation-button-container {
+            position: fixed;
+            top: 100px; /* 상단 테이블 아래에 위치하도록 조정 */
+            left: 0;
+            width: 100%;
+            z-index: 100;
+            padding-bottom: 10px;
+            box-sizing: border-box;
+            display: flex; /* Flexbox를 사용하여 내부 요소를 정렬 */
+            justify-content: center; /* 가로 중앙 정렬 */
+            align-items: center; /* 세로 중앙 정렬 */
+        }
 
-<link rel="shortcut icon" type="image/png" href="https://i.postimg.cc/Qtnq0gFJ/Ezra-icon.png">
+        .container {
+            width: 100%;
+            text-align: center;
+        }
+        
+        h2 {
+            padding: 0;
+            text-align: left;
+            margin-left: 15px;
+            margin-right: 15px;
+        }
+        
+        p { display: inline-block; }
+        .font-size-label { margin-right: 20px; }
+        #font-size { margin: 0 5px; }
+        
+        /* 테이블 셀 내부 정렬 */
+        .search-cell {
+            text-align: left;
+            padding-left: 10px;
+            vertical-align: top;
+            width: 30%;
+        }
+        .audio-cell {
+            text-align: right;
+            padding-right: 10px;
+            vertical-align: top;
+            width: 30%;
+        }
 
-<link rel="mask-icon" type="image/png" href="https://i.postimg.cc/Qtnq0gFJ/Ezra-icon.png">
+        /* 커스텀 오디오 플레이어 스타일 */
+        #custom-audio-player {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .player-controls {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 5px;
+        }
+        .time-display {
+            font-size: 14px;
+            color: #555;
+            margin: 0 5px;
+        }
+        .control-btn {
+            width: 40px;
+            height: 40px;
+            font-size: 18px;
+            cursor: pointer;
+            border: 1px solid #ccc;
+            background-color: #fff;
+            border-radius: 5px;
+        }
+        .control-btn:hover {
+            background-color: #e0e0e0;
+        }
+        #play-btn {
+            background-color: #d1f3d4;
+        }
+        #pause-btn {
+            background-color: #fff6d6;
+        }
+        #stop-btn {
+            background-color: #fddddd;
+        }
+        .speed-controls {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+            margin-bottom: 5px;
+        }
+        .speed-btn {
+            width: 30px;
+            height: 30px;
+            font-size: 14px;
+            cursor: pointer;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+            background-color: #fff;
+        }
+        .speed-display {
+            font-weight: bold;
+            color: #007BFF;
+            width: 50px;
+            text-align: center;
+        }
+        .volume-control {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+        }
+        input[type="range"] {
+            -webkit-appearance: none;
+            width: 100px;
+            height: 5px;
+            background: #d3d3d3;
+            outline: none;
+            opacity: 0.7;
+            -webkit-transition: .2s;
+            transition: opacity .2s;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 15px;
+            height: 15px;
+            background: #007BFF;
+            cursor: pointer;
+            border-radius: 50%;
+        }
 
+        /* 구절 설명 버튼 스타일 */
+        .explanation-button {
+            position: relative;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background-color: #fff;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            border: none;
+            cursor: pointer;
+            font-size: 20px;
+            overflow: hidden;
+            transition: width 0.3s ease, border-radius 0.3s ease;
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .explanation-button .initial-icon,
+        .explanation-button .hover-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            transition: opacity 0.3s ease;
+        }
 
-  <title>통큰통독-05일차</title>
-  
+        .explanation-button .hover-text {
+            opacity: 0; /* 초기에는 숨김 */
+            font-size: 14px;
+        }
+        
+        .explanation-button:hover,
+        .explanation-button:focus {
+            width: 120px; /* 호버 시 버튼 가로 확장 */
+            border-radius: 5px; /* 호버 시 둥근 모서리 */
+        }
+        
+        .explanation-button:hover .initial-icon {
+            opacity: 0; /* 호버 시 아이콘 숨김 */
+        }
+        
+        .explanation-button:hover .hover-text {
+            opacity: 1; /* 호버 시 텍스트 나타남 */
+        }
 
-  
-  
-<style>
-body { margin: 0px; }
-.container { 
-  width: 100%;
+        /* 폰트 크기 조절 버튼 스타일 */
+        #down, #up {
+            width: 54px;
+            height: 54px;
+            font-size: 40px;
+            font-weight: normal;
+            color: red;
+            background-color: #fff;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            cursor: pointer;
+        }
 
-  text-align: center; 
-}
-
-h2 { 
-  height: 0px; 
-  padding: 0;
-   text-align: left;
-}
-
-  p { display: inline-block; }
-  .font-size-label { 
-  margin-right: 20px;
-   }
-  #font-size { margin: 0 5px; }
-  button { 
-    width: 54px;
-    height: 54px;
-  }
-  
-  audio {
-  position: fixed;
-  top: 5px;
-  right: 10px;
-  width: 90%; /* 화면 너비에 맞게 조정하여 충분한 공간 확보 */
-  max-width: 400px; /* 데스크톱에서 너무 커지는 것을 방지 */
-  height: auto; /* 높이를 자동으로 설정하여 컨트롤이 잘 보이게 함 */
-  
-}
-  form { 
- 
-  position: fixed;
-  top: 5px;
-  left: 10;
-  
-  margin:left;
-  
- 
-}
-  
-  
-</style>
-
-
+        /* 모달 (팝업) 스타일 */
+        .modal {
+            display: none; /* 초기에는 숨김 */
+            position: fixed;
+            z-index: 200;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.4); /* 반투명 검정 오버레이 */
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: 15% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            text-align: center;
+        }
+        .close-button {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+        .close-button:hover,
+        .close-button:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+    </style>
 </head>
+<body bgcolor="#FFFFFF" text="#000000" link="#0000FF" vlink="#660099">
 
+    <!-- 상단 고정 테이블 (검색창, 오디오) -->
+    <table class="top-fixed-table" cellpadding="0" cellspacing="0">
+        <tr>
+            <td class="search-cell">
+                <form name="f1" action="" onsubmit="if(this.t1.value!=null && this.t1.value!='')findString(this.t1.value);return false">
+                    <input type="reset" name="b2" value="X" style="font-size:15pt;">
+                    <input type="text" style="font-size:15pt;" placeholder="검색어를 입력하세요" name="t1" value="" size="17">
+                    <input type="submit" name="b1" value="검색" style="font-size:13pt;">
+                </form>
+            </td>
+            <td class="audio-cell">
+                <div id="custom-audio-player">
+                    <audio id="audio-file" preload="auto">
+                        <source src="http://vod47.anyline.co.kr/vod_ezra/%EC%9D%BD%EA%B8%B0%2005.mp3" type="audio/mp3">
+                    </audio>
 
-<h1>   
-<div> 
-    <audio controls> 
-    <source src="http://vod47.anyline.co.kr/vod_ezra//%EC%9D%BD%EA%B8%B0%2005.mp3"  type="audio/mp3"> 
-     </audio>
+                    <div class="player-controls">
+                        <span id="current-time" class="time-display">0:00</span>
+                        <button id="play-btn" class="control-btn">▶</button>
+                        <button id="pause-btn" class="control-btn">⏸</button>
+                        <button id="stop-btn" class="control-btn">■</button>
+                        <span id="remaining-time" class="time-display">0:00</span>
+                    </div>
 
-</div>
-</h1>
+                    <div class="speed-controls">
+                        <button id="speed-down-02" class="speed-btn">&lt;&lt;</button>
+                        <button id="speed-down-01" class="speed-btn">&lt;</button>
+                        <span id="speed-display" class="speed-display">1.0x</span>
+                        <button id="speed-up-01" class="speed-btn">&gt;</button>
+                        <button id="speed-up-02" class="speed-btn">&gt;&gt;</button>
+                    </div>
 
+                    <div class="volume-control">
+                        <span style="font-size:12px;">볼륨</span>
+                        <input type="range" id="volume-slider" min="0" max="1" step="0.01" value="1">
+                    </div>
+                </div>
+            </td>
+        </tr>
+    </table>
+    
+    <!-- 구절 설명 버튼을 위한 컨테이너 (테이블에서 div로 변경됨) -->
+    <div class="explanation-button-container">
+        <button class="explanation-button" id="explanation-button">
+            <span class="initial-icon">📖</span>
+            <span class="hover-text">구절설명</span>
+        </button>
+    </div>
 
-<h3>
-<div> 
-<body bgcolor="#FFFFFF" text="#000000" link="#0000FF" vlink="#660099"
-onLoad="if(top.changeAD)top.changeAD()">
-<a name="top"></a>
+    <div class="container">
+        <br>
+        <p class="font-size-label" style="font-style: normal; font-weight: bold;color: blue;font-size: 40px;">Font Size</p>
+        <button id="down" style="font-style: normal; font-weight: normal;color: red;font-size: 40px;">-</button>
+        <p id="font-size" style="font-style: normal; font-weight: bold; color: red;font-size: 40px;">20</p>
+        <button id="up" style="font-style: normal; font-weight: normal;color: red;font-size: 40px;">+</button>
+    </div>
 
-<form name="f1" action="" 
-onSubmit="if(this.t1.value!=null && this.t1.value!='')
-findString(this.t1.value);return false"
->
-<input type="reset"name="b2" value="X" style="font-size:15pt;">
-<input type="text" style="font-size:15pt;" placeholder="검색어를 입력하세요" name="t1" value="" size="17">
-<input type="submit" name="b1" value="검색" style="font-size:13pt;">
-</form>
-</body>
-</div> 
-</h3>
-
-
-
-
-
-<body translate="no">
-<div class="container">
- <br></br>
- 
-  <p class="font-size-label;"
-  style="
-font-style: normal; 
-font-weight: bold;
-color: blue;
-font-size: 40px;">Font Size</p>
-  <button id="down"style="
-font-style: normal; 
-font-weight: normal;
-color: red;
-font-size: 40px;">-</button>
-  <p id="font-size"style="
-font-style: normal; 
-font-weight: bold; 
-color: red;
-font-size: 40px;">20</p>
-  <button id="up"style="
-font-style: normal; 
-font-weight: normal;
-color: red;
-font-size: 40px;">+</button>
-</div>
-
-
-  
-  <h2 style="
-line-height: 1.2em;
-margin-left:15px;
-margin-right:15;
-font-style: normal; 
-font-weight: normal; 
-color: black;
-font-size: 20px;
-font-family: arial;
-word-break: break-all;
-">
-
-
+    <h2 style="line-height: 1.2em;margin-left:15px;margin-right:15;font-style: normal; font-weight: normal; color: black;font-size: 20px;word-break: break-all;">
 <strong>
 
 통독 5일차
@@ -480,8 +656,8 @@ word-break: break-all;
 <br><i><font color="#808080">*유월절*</font></i></br>
 <br>1 여호와께서 애굽 땅에서 모세와 아론에게 일러 말씀하시되</br>
 <br>2 이 달을 너희에게 달의 시작 곧 해의 첫 달이 되게 하고</br>
-<br>3 너희는 이스라엘 온 회중에게 말하여 이르라 이 달 열흘에 너희 각자가 어린 양을 잡을지니 각 가족대로 그 식구를 위하여 어린 양을 취하되</br>
-<br>4 그 어린 양에 대하여 식구가 너무 적으면 그 집의 이웃과 함께 사람 수를 따라서 하나를 잡고 각 사람이 먹을 수 있는 분량에 따라서 너희 어린 양을 계산할 것이며</br>
+<br>3 너희는 이스라엘 온 회중에게 말하여 이르라 이 달 열흘에 너희 각자가 어린 양을 취할지니 각 가족대로 그 식구를 위하여 어린 양을 취하되</br>
+<br>4 그 어린 양에 대하여 식구가 너무 적으면 그 집의 이웃과 함께 사람 수를 따라서 하나를 취하며 각 사람이 먹을 수 있는 분량에 따라서 너희 어린 양을 계산할 것이며</br>
 <br>5 너희 어린 양은 흠 없고 일 년 된 수컷으로 하되 양이나 염소 중에서 취하고</br>
 <br>6 이 달 열나흗날까지 간직하였다가 해 질 때에 이스라엘 회중이 그 양을 잡고</br>
 <br>7 그 피를 양을 먹을 집 좌우 문설주와 인방에 바르고</br>
@@ -535,107 +711,236 @@ word-break: break-all;
 <br>50 온 이스라엘 자손이 이와 같이 행하되 여호와께서 모세와 아론에게 명령하신 대로 행하였으며</br>
 <br>51 바로 그 날에 여호와께서 이스라엘 자손을 그 무리대로 애굽 땅에서 인도하여 내셨더라</br>
 <br>&nbsp;</br>
-<br>    5일차 끝</br>
+<br>    5일차 끝</br>
 <br>&nbsp;</br>
    
    
   </h2>
 
+    <!-- 구절 설명 모달 (Modal) -->
+    <div id="explanation-modal" class="modal">
+        <!-- 모달 내용 -->
+        <div class="modal-content">
+            <span class="close-button" id="close-modal">&times;</span>
+            <h3 id="modal-title">구절 설명</h3>
+            <p id="modal-text">구절을 드래그하여 선택하고 '구절설명' 버튼을 누르세요.</p>
+        </div>
+    </div>
 
-    <script src="https://cpwebassets.codepen.io/assets/common/stopExecutionOnTimeout-157cd5b220a5c80d4ff8e0e70ac069bffd87a61252088146915e8726e5d9f147.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+    <script>
+        // 현재 선택된 텍스트를 저장할 변수
+        let selectedVerse = "";
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
-      <script id="rendered-js">
-// When + or - buttons are clicked the font size of the h2 is increased/decreased by 2
-// The max is set to 50px for this demo, the min is set by min font in the user's style sheet
+        // 텍스트 선택 이벤트 리스너
+        document.addEventListener('mouseup', () => {
+            const selection = window.getSelection();
+            selectedVerse = selection.toString().trim();
+        });
 
-function getSize() {
-  size = $("h2").css("font-size");
-  size = parseInt(size, 10);
-  $("#font-size").text(size);
-}
+        // 폰트 사이즈 조절 스크립트
+        function getSize() {
+            let size = $("h2").css("font-size");
+            size = parseInt(size, 10);
+            $("#font-size").text(size);
+        }
+        getSize();
+        
+        // 폰트 사이즈 조절 로직
+        $("#up").on("click", function () {
+            let currentSize = parseInt($("h2").css("font-size"));
+            if (currentSize + 4 <= 80) {
+                $("h2").css("font-size", (currentSize + 4) + 'px');
+                $("#font-size").text(currentSize + 4);
+            }
+        });
 
-//get inital font size
-getSize();
+        $("#down").on("click", function () {
+            let currentSize = parseInt($("h2").css("font-size"));
+            if (currentSize - 4 >= 12) {
+                $("h2").css("font-size", (currentSize - 4) + 'px');
+                $("#font-size").text(currentSize - 4);
+            }
+        });
 
-$("#up").on("click", function () {
+        // 오디오 플레이어 커스텀 스크립트
+        const audio = document.getElementById('audio-file');
+        const playBtn = document.getElementById('play-btn');
+        const pauseBtn = document.getElementById('pause-btn');
+        const stopBtn = document.getElementById('stop-btn');
+        const speedDisplay = document.getElementById('speed-display');
+        const speedDown02Btn = document.getElementById('speed-down-02');
+        const speedDown01Btn = document.getElementById('speed-down-01');
+        const speedUp01Btn = document.getElementById('speed-up-01');
+        const speedUp02Btn = document.getElementById('speed-up-02');
+        const volumeSlider = document.getElementById('volume-slider');
+        const currentTimeEl = document.getElementById('current-time');
+        const remainingTimeEl = document.getElementById('remaining-time');
 
-  // parse font size, if less than 50 increase font size
-  if (size + 4 <= 80) {
-    $("h2").css("font-size", "+=4");
-    $("#font-size").text(size += 4);
-  }
-});
+        playBtn.addEventListener('click', () => { audio.play(); });
+        pauseBtn.addEventListener('click', () => { audio.pause(); });
+        stopBtn.addEventListener('click', () => {
+            audio.pause();
+            audio.currentTime = 0;
+        });
 
-$("#down").on("click", function () {
-  if (size - 4 >= 12) {
-    $("h2").css("font-size", "-=4");
-    $("#font-size").text(size -= 4);
-  }
-});
-//# sourceURL=pen.js
+        let currentSpeed = 1.0;
+        speedDown02Btn.addEventListener('click', () => {
+            currentSpeed = Math.max(0.5, currentSpeed - 0.2);
+            updateSpeed();
+        });
+        speedDown01Btn.addEventListener('click', () => {
+            currentSpeed = Math.max(0.5, currentSpeed - 0.1);
+            updateSpeed();
+        });
+        speedUp01Btn.addEventListener('click', () => {
+            currentSpeed = Math.min(2.0, currentSpeed + 0.1);
+            updateSpeed();
+        });
+        speedUp02Btn.addEventListener('click', () => {
+            currentSpeed = Math.min(2.0, currentSpeed + 0.2);
+            updateSpeed();
+        });
+
+        function updateSpeed() {
+            audio.playbackRate = currentSpeed;
+            speedDisplay.textContent = currentSpeed.toFixed(1) + 'x';
+        }
+
+        volumeSlider.addEventListener('input', () => {
+            audio.volume = volumeSlider.value;
+        });
+
+        function formatTime(seconds) {
+            const minutes = Math.floor(seconds / 60);
+            const remainingSeconds = Math.floor(seconds % 60);
+            return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+        }
+        
+        audio.addEventListener('timeupdate', () => {
+            const currentTime = audio.currentTime;
+            const duration = audio.duration;
+            currentTimeEl.textContent = formatTime(currentTime);
+            if (isFinite(duration)) {
+                const remainingTime = duration - currentTime;
+                remainingTimeEl.textContent = `-${formatTime(remainingTime)}`;
+            }
+        });
+
+        updateSpeed();
+
+        // 구절 설명 모달 기능 스크립트
+        const explanationButton = document.getElementById('explanation-button');
+        const modal = document.getElementById('explanation-modal');
+        const closeModalButton = document.getElementById('close-modal');
+        const modalTitle = document.getElementById('modal-title');
+        const modalText = document.getElementById('modal-text');
+
+        // AI를 사용하여 설명을 가져오는 비동기 함수
+        async function fetchExplanation(promptText) {
+            // 여기에 사용자께서 제공해주신 API 키를 직접 입력했습니다.
+            // Replace with your API key.
+            const apiKey = "AIzaSyDUlSQlSPgnrFBXpnUJMDoUO3s_KsaoFRU";
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
+            const payload = {
+                contents: [
+                    {
+                        parts: [
+                            { text: `다음 용어/구절에 대해 성경적 관점에서 아주 짧게 2-3문장으로 설명해 줘. 성경적 해석이 불가능한 경우 일반적인 해석을 해줘. 답변은 '용어: 설명' 형태로만 제공해. 용어: ${promptText}` }
+                        ]
+                    }
+                ],
+            };
+
+            let retryCount = 0;
+            const maxRetries = 3;
+            let response = null;
+
+            while (retryCount < maxRetries) {
+                try {
+                    response = await fetch(apiUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+
+                    if (response.ok) {
+                        break;
+                    } else if (response.status === 429) {
+                        const delay = Math.pow(2, retryCount) * 1000;
+                        console.log(`Rate limit exceeded. Retrying in ${delay / 1000} seconds...`);
+                        await new Promise(resolve => setTimeout(resolve, delay));
+                        retryCount++;
+                    } else {
+                        throw new Error(`API error: ${response.status} ${response.statusText}`);
+                    }
+                } catch (error) {
+                    console.error('Fetch error:', error);
+                    modalTitle.textContent = "오류 발생";
+                    modalText.textContent = `설명을 가져오는 중 오류가 발생했습니다: ${error.message}`;
+                    return;
+                }
+            }
+            
+            if (!response || !response.ok) {
+                modalTitle.textContent = "오류 발생";
+                modalText.textContent = `API 호출에 실패했습니다. (상태 코드: ${response?.status || '알 수 없음'}) 잠시 후 다시 시도해 주세요.`;
+                return;
+            }
+
+            try {
+                const result = await response.json();
+                const explanation = result?.candidates?.[0]?.content?.parts?.[0]?.text;
+
+                if (explanation) {
+                    modalText.textContent = explanation;
+                } else {
+                    modalTitle.textContent = "설명 없음";
+                    modalText.textContent = "요청하신 내용에 대한 설명을 찾을 수 없습니다.";
+                }
+            } catch (parseError) {
+                console.error('JSON parse error:', parseError);
+                modalTitle.textContent = "오류 발생";
+                modalText.textContent = "응답을 처리하는 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.";
+            }
+        }
+
+        // 버튼 클릭 시 모달 열기 및 설명 가져오기
+        explanationButton.addEventListener('click', () => {
+            const trimmedVerse = selectedVerse.trim();
+            if (trimmedVerse === "") {
+                modalTitle.textContent = "구절을 먼저 선택하세요";
+                modalText.textContent = "본문에서 구절이나 단어를 드래그하여 선택한 후 다시 버튼을 눌러주세요.";
+            } else {
+                modalTitle.textContent = "생성 중...";
+                modalText.textContent = "설명을 생성 중입니다. 잠시만 기다려 주세요...";
+                fetchExplanation(trimmedVerse);
+            }
+            modal.style.display = 'block';
+        });
+
+        // 닫기 버튼 클릭 시 모달 닫기
+        closeModalButton.addEventListener('click', () => {
+            modal.style.display = 'none';
+        });
+        
+        // 모달 밖 클릭 시 모달 닫기
+        window.addEventListener('click', (event) => {
+            if (event.target === modal) {
+                modal.style.display = 'none';
+            }
+        });
+
+        // 안드로이드 폰에서 드래그 시 나타나는 기본 메뉴를 막는 코드
+        // 이 코드는 안드로이드에서만 작동하며, 컴퓨터에서는 문제가 없습니다.
+        document.body.addEventListener('contextmenu', (e) => {
+            e.preventDefault();
+        });
+
     </script>
-
-  
-
-  <script src="https://cpwebassets.codepen.io/assets/editor/iframe/iframeRefreshCSS-bb9a2ba1f03f6147732cb3cd52ac86c6b24524aa87a05ed0b726f11e46d7e277.js"></script>
-
-<script language="JavaScript">
-<!--
-if (
-    parent.location==self.location
-    && (""+self.location).toLowerCase().indexOf(".chm")==-1
-    && (""+self.location).toLowerCase().indexOf("~hh")==-1
-  )
- 
-</script>
-
-
-
-<script language="JavaScript">
-<!--
-var TRange=null
-
-function findString (str) {
- if (parseInt(navigator.appVersion)<4) return;
- var strFound;
- if (navigator.appName=="Netscape") {
-
-  // NAVIGATOR-SPECIFIC CODE
-
-  strFound=self.find(str);
-  if (!strFound) {
-  strFound=self.find(str,0,1)
-  while (self.find(str,0,1)) continue
-  }
- }
- if (navigator.appName.indexOf("Microsoft")!=-1) {
-
-  // EXPLORER-SPECIFIC CODE
-
-  if (TRange!=null) {
-  TRange.collapse(false)
-  strFound=TRange.findText(str)
-  if (strFound) TRange.select()
-  }
-  if (TRange==null || strFound==0) {
-  TRange=self.document.body.createTextRange()
-  strFound=TRange.findText(str)
-  if (strFound) TRange.select()
-  }
- }
- if (!strFound) alert ("검색하신 단어 '"+str+"' 찾을수가 없습니다!")
-}
-
-//-->
-</script>
-
-
-
-
-
-
 </body>
-
-
 </html>
+
+
+
+
