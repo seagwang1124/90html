@@ -2,12 +2,15 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>통큰통독-01일차</title>
+    <!-- 아이콘과 메타 정보 -->
     <link rel="apple-touch-icon" type="image/png" href="https://i.postimg.cc/Qtnq0gFJ/Ezra-icon.png">
     <meta name="apple-mobile-web-app-app-title" content="통큰통독">
     <link rel="shortcut icon" type="image/png" href="https://i.postimg.cc/Qtnq0gFJ/Ezra-icon.png">
     <link rel="mask-icon" type="image/png" href="https://i.postimg.cc/Qtnq0gFJ/Ezra-icon.png">
-    <title>통큰통독-01일차</title>
     <style>
+        /* 페이지 기본 스타일 */
         body {
             margin: 0;
             padding-top: 150px;
@@ -122,6 +125,9 @@
             border: 1px solid #ccc;
             border-radius: 3px;
             background-color: #fff;
+        }
+        .speed-btn:hover {
+            background-color: #e0e0e0;
         }
         .speed-display {
             font-weight: bold;
@@ -314,7 +320,7 @@
 <body bgcolor="#FFFFFF" text="#000000" link="#0000FF" vlink="#660099">
 
     <!-- 상단 고정 테이블 (검색창, 오디오) -->
-    <table class="top-fixed-table" cellpadding="0" cellspacing="0">
+    <table class="top-fixed-table" id="main-table" cellpadding="0" cellspacing="0">
         <tr>
             <td class="search-cell">
                 <form name="f1" action="" onsubmit="findString(this.t1.value); return false">
@@ -374,7 +380,7 @@
         <button id="up" style="font-style: normal; font-weight: normal;color: red;font-size: 40px;">+</button>
     </div>
 
-    <h2 id="bible-text" style="line-height: 1.2em;margin-left:15px;margin-right:15;font-style: normal; font-weight: normal; color: black;font-size: 20px;word-break: break-all;">
+    <h2 id="bible-text" style="line-height: 1.2em;margin-left:15px;margin-right:15px;font-style: normal; font-weight: normal; color: black;font-size: 20px;word-break: break-all;">
         <!-- 본문 내용 -->
         <strong>
 
@@ -731,7 +737,6 @@
 
     <!-- 구절 설명 모달 (Modal) -->
     <div id="explanation-modal" class="modal">
-        <!-- 모달 내용 -->
         <div class="modal-content">
             <span class="close-button" id="close-modal">&times;</span>
             <h3 id="modal-title">구절 설명</h3>
@@ -742,155 +747,20 @@
     <!-- 스크롤 마커 컨테이너 -->
     <div id="scroll-marker-container" class="scroll-marker-container"></div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
     <script>
-        // 현재 선택된 텍스트를 저장할 변수
-        let selectedVerse = "";
-        let originalText = ""; // 원본 텍스트를 저장할 변수
-        let foundSentences = []; // 검색 결과를 저장할 배열
-        let currentSearchIndex = -1; // 현재 하이라이트된 검색 결과 인덱스
+        // API 키는 비워두어야 합니다.
+        const apiKey = ""; 
+
+        // DOM 요소들을 변수에 저장하여 효율적으로 사용
+        const bibleTextEl = document.getElementById('bible-text');
         const searchCountEl = document.getElementById('search-count');
         const nextLocationBtn = document.getElementById('next-location-btn');
         const scrollMarkerContainer = document.getElementById('scroll-marker-container');
-        const bibleTextEl = document.getElementById('bible-text');
-
-        // 텍스트 선택 이벤트 리스너
-        document.addEventListener('mouseup', () => {
-            const selection = window.getSelection();
-            selectedVerse = selection.toString().trim();
-        });
-
-        // 페이지 로드 시 원본 텍스트 저장 및 초기화
-        window.onload = function() {
-            originalText = bibleTextEl.innerHTML;
-            getSize();
-            updateSpeed();
-        };
-
-        // 검색어 위치를 찾아 하이라이트하고 스크롤하는 함수
-        function findString(searchText) {
-            // 이전에 하이라이트된 내용을 제거하고 마커도 제거
-            clearHighlight();
-
-            if (searchText === null || searchText.trim() === '') {
-                searchCountEl.textContent = '';
-                nextLocationBtn.style.display = 'none';
-                return; // 검색어가 없으면 함수 종료
-            }
-
-            // 정규식을 사용하여 검색어에 해당하는 모든 부분을 찾음
-            const regex = new RegExp(searchText, 'gi');
-            let newContent = originalText;
-
-            // 검색어 하이라이트
-            const highlightedText = `<span class="search-highlight">${searchText}</span>`;
-            newContent = newContent.replace(regex, highlightedText);
-            bibleTextEl.innerHTML = newContent;
-
-            // 하이라이트된 모든 요소(span)를 찾음
-            foundSentences = bibleTextEl.getElementsByClassName('search-highlight');
-            searchCountEl.textContent = `총 ${foundSentences.length}개 검색됨`;
-
-            if (foundSentences.length > 0) {
-                // 첫 번째 검색 결과를 화면 중앙으로 스크롤
-                currentSearchIndex = 0;
-                foundSentences[currentSearchIndex].scrollIntoView({
-                    behavior: 'smooth',
-                    block: 'center'
-                });
-                // "다음 위치" 버튼 표시
-                nextLocationBtn.style.display = 'inline-block';
-                // 검색 결과 위치에 스크롤 마커 추가
-                updateScrollMarkers();
-            } else {
-                // 검색 결과가 없을 경우 메시지 표시 및 버튼 숨김
-                modalTitle.textContent = "검색 결과 없음";
-                modalText.textContent = `"${searchText}"에 대한 검색 결과가 없습니다.`;
-                modal.style.display = 'block';
-                nextLocationBtn.style.display = 'none';
-            }
-        }
-
-        // 다음 검색 결과 위치로 이동하는 함수
-        function nextLocation() {
-            if (foundSentences.length > 0) {
-                // 다음 인덱스로 이동, 마지막이면 다시 처음으로
-                currentSearchIndex = (currentSearchIndex + 1) % foundSentences.length;
-                foundSentences[currentSearchIndex].scrollIntoView({
-                    behavior: 'smooth',
-                    block: 'center'
-                });
-            }
-        }
-
-        // 검색 결과 위치에 스크롤 마커를 추가하는 함수
-        function updateScrollMarkers() {
-            // 기존 스크롤 마커 제거
-            while (scrollMarkerContainer.firstChild) {
-                scrollMarkerContainer.removeChild(scrollMarkerContainer.firstChild);
-            }
-
-            // 전체 문서의 높이와 뷰포트 높이를 가져옴
-            const documentHeight = document.documentElement.scrollHeight;
-            const viewportHeight = window.innerHeight;
-
-            for (let i = 0; i < foundSentences.length; i++) {
-                const marker = document.createElement('div');
-                marker.className = 'scroll-marker';
-
-                // 검색 결과 요소의 상단 위치를 계산
-                const topPosition = foundSentences[i].offsetTop;
-
-                // 마커의 위치를 백분율로 계산하여 스크롤바에 맞춤
-                const markerPosition = (topPosition / documentHeight) * viewportHeight;
-                marker.style.top = `${markerPosition}px`;
-
-                // 클릭 시 해당 위치로 스크롤
-                marker.addEventListener('click', () => {
-                    foundSentences[i].scrollIntoView({ behavior: 'smooth', block: 'center' });
-                });
-
-                scrollMarkerContainer.appendChild(marker);
-            }
-        }
-
-        // 검색어 하이라이트 지우기
-        function clearHighlight() {
-            bibleTextEl.innerHTML = originalText;
-            searchCountEl.textContent = '';
-            nextLocationBtn.style.display = 'none';
-            // 스크롤 마커 제거
-            while (scrollMarkerContainer.firstChild) {
-                scrollMarkerContainer.removeChild(scrollMarkerContainer.firstChild);
-            }
-        }
-
-        // 폰트 사이즈 조절 스크립트
-        function getSize() {
-            let size = $("#bible-text").css("font-size");
-            size = parseInt(size, 10);
-            $("#font-size").text(size);
-        }
-        getSize();
-
-        // 폰트 사이즈 조절 로직
-        $("#up").on("click", function () {
-            let currentSize = parseInt($("#bible-text").css("font-size"));
-            if (currentSize + 4 <= 80) {
-                $("#bible-text").css("font-size", (currentSize + 4) + 'px');
-                $("#font-size").text(currentSize + 4);
-            }
-        });
-
-        $("#down").on("click", function () {
-            let currentSize = parseInt($("#bible-text").css("font-size"));
-            if (currentSize - 4 >= 12) {
-                $("#bible-text").css("font-size", (currentSize - 4) + 'px');
-                $("#font-size").text(currentSize - 4);
-            }
-        });
-
-        // 오디오 플레이어 커스텀 스크립트
+        const explanationButton = document.getElementById('explanation-button');
+        const modal = document.getElementById('explanation-modal');
+        const closeModalButton = document.getElementById('close-modal');
+        const modalTitle = document.getElementById('modal-title');
+        const modalText = document.getElementById('modal-text');
         const audio = document.getElementById('audio-file');
         const playBtn = document.getElementById('play-btn');
         const pauseBtn = document.getElementById('pause-btn');
@@ -903,67 +773,225 @@
         const volumeSlider = document.getElementById('volume-slider');
         const currentTimeEl = document.getElementById('current-time');
         const remainingTimeEl = document.getElementById('remaining-time');
+        const upBtn = document.getElementById('up');
+        const downBtn = document.getElementById('down');
+        const fontSizeEl = document.getElementById('font-size');
 
-        playBtn.addEventListener('click', () => { audio.play(); });
-        pauseBtn.addEventListener('click', () => { audio.pause(); });
-        stopBtn.addEventListener('click', () => {
-            audio.pause();
-            audio.currentTime = 0;
-        });
-
+        // 전역 변수 초기화
+        let selectedVerse = "";
+        let originalText = "";
+        let foundSentences = [];
+        let currentSearchIndex = -1;
         let currentSpeed = 1.0;
-        speedDown02Btn.addEventListener('click', () => {
-            currentSpeed = Math.max(0.5, currentSpeed - 0.2);
+
+        /**
+         * 페이지 로드 시 초기화 함수
+         * 모든 이벤트 리스너를 설정하고 초기 상태를 설정합니다.
+         */
+        window.addEventListener('DOMContentLoaded', () => {
+            // 원본 텍스트 저장
+            originalText = bibleTextEl.innerHTML;
+            // 폰트 크기 초기화
+            updateFontSizeDisplay();
+            // 오디오 재생 속도 초기화
             updateSpeed();
-        });
-        speedDown01Btn.addEventListener('click', () => {
-            currentSpeed = Math.max(0.5, currentSpeed - 0.1);
-            updateSpeed();
-        });
-        speedUp01Btn.addEventListener('click', () => {
-            currentSpeed = Math.min(2.0, currentSpeed + 0.1);
-            updateSpeed();
-        });
-        speedUp02Btn.addEventListener('click', () => {
-            currentSpeed = Math.min(2.0, currentSpeed + 0.2);
-            updateSpeed();
+
+            // 텍스트 선택 이벤트 리스너
+            document.addEventListener('mouseup', () => {
+                const selection = window.getSelection();
+                selectedVerse = selection.toString().trim();
+            });
+
+            // 검색 기능
+            document.querySelector('form[name="f1"]').addEventListener('submit', (event) => {
+                event.preventDefault();
+                const searchText = event.target.t1.value;
+                findString(searchText);
+            });
+            document.querySelector('input[name="b2"]').addEventListener('click', clearHighlight);
+            nextLocationBtn.addEventListener('click', nextLocation);
+
+            // 폰트 크기 조절 기능
+            upBtn.addEventListener('click', () => {
+                let currentSize = parseFloat(window.getComputedStyle(bibleTextEl).fontSize);
+                if (currentSize + 4 <= 80) {
+                    bibleTextEl.style.fontSize = (currentSize + 4) + 'px';
+                    updateFontSizeDisplay();
+                }
+            });
+
+            downBtn.addEventListener('click', () => {
+                let currentSize = parseFloat(window.getComputedStyle(bibleTextEl).fontSize);
+                if (currentSize - 4 >= 12) {
+                    bibleTextEl.style.fontSize = (currentSize - 4) + 'px';
+                    updateFontSizeDisplay();
+                }
+            });
+
+            // 오디오 플레이어 기능
+            playBtn.addEventListener('click', () => { audio.play(); });
+            pauseBtn.addEventListener('click', () => { audio.pause(); });
+            stopBtn.addEventListener('click', () => {
+                audio.pause();
+                audio.currentTime = 0;
+            });
+
+            speedDown02Btn.addEventListener('click', () => {
+                currentSpeed = Math.max(0.5, currentSpeed - 0.2);
+                updateSpeed();
+            });
+            speedDown01Btn.addEventListener('click', () => {
+                currentSpeed = Math.max(0.5, currentSpeed - 0.1);
+                updateSpeed();
+            });
+            speedUp01Btn.addEventListener('click', () => {
+                currentSpeed = Math.min(2.0, currentSpeed + 0.1);
+                updateSpeed();
+            });
+            speedUp02Btn.addEventListener('click', () => {
+                currentSpeed = Math.min(2.0, currentSpeed + 0.2);
+                updateSpeed();
+            });
+
+            volumeSlider.addEventListener('input', () => {
+                audio.volume = volumeSlider.value;
+            });
+
+            audio.addEventListener('timeupdate', () => {
+                const currentTime = audio.currentTime;
+                const duration = audio.duration;
+                currentTimeEl.textContent = formatTime(currentTime);
+                if (isFinite(duration)) {
+                    const remainingTime = duration - currentTime;
+                    remainingTimeEl.textContent = `-${formatTime(remainingTime)}`;
+                }
+            });
+
+            // 모달 기능
+            explanationButton.addEventListener('click', () => {
+                const trimmedVerse = selectedVerse.trim();
+                if (trimmedVerse === "") {
+                    modalTitle.textContent = "구절을 먼저 선택하세요";
+                    modalText.textContent = "본문에서 구절이나 단어를 드래그하여 선택한 후 다시 버튼을 눌러주세요.";
+                } else {
+                    modalTitle.textContent = "생성 중...";
+                    modalText.textContent = "설명을 생성 중입니다. 잠시만 기다려 주세요...";
+                    fetchExplanation(trimmedVerse);
+                }
+                modal.style.display = 'block';
+            });
+
+            closeModalButton.addEventListener('click', () => {
+                modal.style.display = 'none';
+            });
+
+            window.addEventListener('click', (event) => {
+                if (event.target === modal) {
+                    modal.style.display = 'none';
+                }
+            });
         });
 
+        // 폰트 크기 표시 업데이트 함수
+        function updateFontSizeDisplay() {
+            let currentSize = parseFloat(window.getComputedStyle(bibleTextEl).fontSize);
+            fontSizeEl.textContent = Math.round(currentSize);
+        }
+
+        // 재생 속도 업데이트 함수
         function updateSpeed() {
             audio.playbackRate = currentSpeed;
             speedDisplay.textContent = currentSpeed.toFixed(1) + 'x';
         }
 
-        volumeSlider.addEventListener('input', () => {
-            audio.volume = volumeSlider.value;
-        });
-
+        // 시간 포맷팅 함수
         function formatTime(seconds) {
             const minutes = Math.floor(seconds / 60);
             const remainingSeconds = Math.floor(seconds % 60);
             return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
         }
 
-        audio.addEventListener('timeupdate', () => {
-            const currentTime = audio.currentTime;
-            const duration = audio.duration;
-            currentTimeEl.textContent = formatTime(currentTime);
-            if (isFinite(duration)) {
-                const remainingTime = duration - currentTime;
-                remainingTimeEl.textContent = `-${formatTime(remainingTime)}`;
-            }
-        });
+        // 검색어 위치를 찾아 하이라이트하고 스크롤하는 함수
+        function findString(searchText) {
+            clearHighlight();
 
-        // 구절 설명 모달 기능 스크립트
-        const explanationButton = document.getElementById('explanation-button');
-        const modal = document.getElementById('explanation-modal');
-        const closeModalButton = document.getElementById('close-modal');
-        const modalTitle = document.getElementById('modal-title');
-        const modalText = document.getElementById('modal-text');
+            if (searchText === null || searchText.trim() === '') {
+                searchCountEl.textContent = '';
+                nextLocationBtn.style.display = 'none';
+                return;
+            }
+
+            const regex = new RegExp(searchText, 'gi');
+            let newContent = originalText;
+            const highlightedText = `<span class="search-highlight">${searchText}</span>`;
+            newContent = newContent.replace(regex, highlightedText);
+            bibleTextEl.innerHTML = newContent;
+
+            foundSentences = bibleTextEl.getElementsByClassName('search-highlight');
+            searchCountEl.textContent = `총 ${foundSentences.length}개 검색됨`;
+
+            if (foundSentences.length > 0) {
+                currentSearchIndex = 0;
+                foundSentences[currentSearchIndex].scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'center'
+                });
+                nextLocationBtn.style.display = 'inline-block';
+                updateScrollMarkers();
+            } else {
+                modalTitle.textContent = "검색 결과 없음";
+                modalText.textContent = `"${searchText}"에 대한 검색 결과가 없습니다.`;
+                modal.style.display = 'block';
+                nextLocationBtn.style.display = 'none';
+            }
+        }
+
+        // 다음 검색 결과 위치로 이동하는 함수
+        function nextLocation() {
+            if (foundSentences.length > 0) {
+                currentSearchIndex = (currentSearchIndex + 1) % foundSentences.length;
+                foundSentences[currentSearchIndex].scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'center'
+                });
+            }
+        }
+
+        // 검색어 하이라이트 지우기
+        function clearHighlight() {
+            bibleTextEl.innerHTML = originalText;
+            searchCountEl.textContent = '';
+            nextLocationBtn.style.display = 'none';
+            while (scrollMarkerContainer.firstChild) {
+                scrollMarkerContainer.removeChild(scrollMarkerContainer.firstChild);
+            }
+        }
+
+        // 검색 결과 위치에 스크롤 마커를 추가하는 함수
+        function updateScrollMarkers() {
+            while (scrollMarkerContainer.firstChild) {
+                scrollMarkerContainer.removeChild(scrollMarkerContainer.firstChild);
+            }
+
+            const documentHeight = document.documentElement.scrollHeight;
+            const viewportHeight = window.innerHeight;
+
+            for (let i = 0; i < foundSentences.length; i++) {
+                const marker = document.createElement('div');
+                marker.className = 'scroll-marker';
+                const topPosition = foundSentences[i].offsetTop;
+                const markerPosition = (topPosition / documentHeight) * viewportHeight;
+                marker.style.top = `${markerPosition}px`;
+
+                marker.addEventListener('click', () => {
+                    foundSentences[i].scrollIntoView({ behavior: 'smooth', block: 'center' });
+                });
+                scrollMarkerContainer.appendChild(marker);
+            }
+        }
 
         // AI를 사용하여 설명을 가져오는 비동기 함수
         async function fetchExplanation(promptText) {
-            const apiKey = "AIzaSyDUlSQlSPgnrFBXpnUJMDoUO3s_KsaoFRU";
             const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
             const payload = {
                 contents: [
@@ -1024,37 +1052,6 @@
                 modalText.textContent = "응답을 처리하는 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.";
             }
         }
-
-        // 버튼 클릭 시 모달 열기 및 설명 가져오기
-        explanationButton.addEventListener('click', () => {
-            const trimmedVerse = selectedVerse.trim();
-            if (trimmedVerse === "") {
-                modalTitle.textContent = "구절을 먼저 선택하세요";
-                modalText.textContent = "본문에서 구절이나 단어를 드래그하여 선택한 후 다시 버튼을 눌러주세요.";
-            } else {
-                modalTitle.textContent = "생성 중...";
-                modalText.textContent = "설명을 생성 중입니다. 잠시만 기다려 주세요...";
-                fetchExplanation(trimmedVerse);
-            }
-            modal.style.display = 'block';
-        });
-
-        // 닫기 버튼 클릭 시 모달 닫기
-        closeModalButton.addEventListener('click', () => {
-            modal.style.display = 'none';
-        });
-
-        // 모달 밖 클릭 시 모달 닫기
-        window.addEventListener('click', (event) => {
-            if (event.target === modal) {
-                modal.style.display = 'none';
-            }
-        });
-
-        // 안드로이드 폰에서 드래그 시 나타나는 기본 메뉴를 막는 코드
-        document.body.addEventListener('contextmenu', (e) => {
-            e.preventDefault();
-        });
     </script>
 </body>
 </html>
