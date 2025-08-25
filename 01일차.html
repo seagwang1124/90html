@@ -2,325 +2,147 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="apple-touch-icon" type="image/png" href="https://i.postimg.cc/Qtnq0gFJ/Ezra-icon.png">
     <meta name="apple-mobile-web-app-app-title" content="통큰통독">
     <link rel="shortcut icon" type="image/png" href="https://i.postimg.cc/Qtnq0gFJ/Ezra-icon.png">
     <link rel="mask-icon" type="image/png" href="https://i.postimg.cc/Qtnq0gFJ/Ezra-icon.png">
     <title>통큰통독-01일차</title>
+    <!-- Tailwind CSS를 사용하여 레이아웃과 디자인을 개선합니다. -->
+    <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body {
-            margin: 0;
-            padding-top: 150px; /* 고정된 상단 UI가 콘텐츠를 가리지 않도록 여백 추가 */
-            font-family: Arial, sans-serif;
-            background-color: #FFFFFF;
-            color: #000000;
-        }
-
-        /* 상단 고정 테이블 스타일 */
-        .top-fixed-table {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            background-color: transparent;
-            border-bottom: none;
-            z-index: 100;
-            table-layout: fixed;
-            padding: 10px 0;
-            box-sizing: border-box;
-        }
-        
-        /* 구절 설명 버튼 컨테이너 스타일 */
-        .explanation-button-container {
-            position: fixed;
-            top: 100px; /* 상단 테이블 아래에 위치하도록 조정 */
-            left: 0;
-            width: 100%;
-            z-index: 100;
-            padding-bottom: 10px;
-            box-sizing: border-box;
-            display: flex; /* Flexbox를 사용하여 내부 요소를 정렬 */
-            justify-content: center; /* 가로 중앙 정렬 */
-            align-items: center; /* 세로 중앙 정렬 */
-        }
-
-        .container {
-            width: 100%;
-            text-align: center;
-        }
-        
-        h2 {
-            padding: 0;
-            text-align: left;
-            margin-left: 15px;
-            margin-right: 15px;
-        }
-        
-        p { display: inline-block; }
-        .font-size-label { margin-right: 20px; }
-        #font-size { margin: 0 5px; }
-        
-        /* 테이블 셀 내부 정렬 */
-        .search-cell {
-            text-align: left;
-            padding-left: 10px;
-            vertical-align: top;
-            width: 30%;
-        }
-        .audio-cell {
-            text-align: right;
-            padding-right: 10px;
-            vertical-align: top;
-            width: 30%;
-        }
-
-        /* 커스텀 오디오 플레이어 스타일 */
-        #custom-audio-player {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-        .player-controls {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            margin-bottom: 5px;
-        }
-        .time-display {
-            font-size: 14px;
-            color: #555;
-            margin: 0 5px;
-        }
-        .control-btn {
-            width: 40px;
-            height: 40px;
-            font-size: 18px;
-            cursor: pointer;
-            border: 1px solid #ccc;
-            background-color: #fff;
-            border-radius: 5px;
-        }
-        .control-btn:hover {
-            background-color: #e0e0e0;
-        }
-        #play-btn {
-            background-color: #d1f3d4;
-        }
-        #pause-btn {
-            background-color: #fff6d6;
-        }
-        #stop-btn {
-            background-color: #fddddd;
-        }
-        .speed-controls {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 5px;
-            margin-bottom: 5px;
-        }
-        .speed-btn {
-            width: 30px;
-            height: 30px;
-            font-size: 14px;
-            cursor: pointer;
-            border: 1px solid #ccc;
-            border-radius: 3px;
-            background-color: #fff;
-        }
-        .speed-display {
-            font-weight: bold;
-            color: #007BFF;
-            width: 50px;
-            text-align: center;
-        }
-        .volume-control {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 5px;
-        }
-        input[type="range"] {
-            -webkit-appearance: none;
-            width: 100px;
-            height: 5px;
-            background: #d3d3d3;
-            outline: none;
-            opacity: 0.7;
-            -webkit-transition: .2s;
-            transition: opacity .2s;
-        }
-        input[type="range"]::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            appearance: none;
-            width: 15px;
-            height: 15px;
-            background: #007BFF;
-            cursor: pointer;
-            border-radius: 50%;
-        }
-
-        /* 구절 설명 버튼 스타일 */
-        .explanation-button {
-            position: relative;
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            background-color: #fff;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-            border: none;
-            cursor: pointer;
-            font-size: 20px;
-            overflow: hidden;
-            transition: width 0.3s ease, border-radius 0.3s ease;
-            white-space: nowrap;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        .explanation-button .initial-icon,
-        .explanation-button .hover-text {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            transition: opacity 0.3s ease;
-        }
-
-        .explanation-button .hover-text {
-            opacity: 0; /* 초기에는 숨김 */
-            font-size: 14px;
-        }
-        
-        .explanation-button:hover,
-        .explanation-button:focus {
-            width: 120px; /* 호버 시 버튼 가로 확장 */
-            border-radius: 5px; /* 호버 시 둥근 모서리 */
-        }
-        
-        .explanation-button:hover .initial-icon {
-            opacity: 0; /* 호버 시 아이콘 숨김 */
-        }
-        
-        .explanation-button:hover .hover-text {
-            opacity: 1; /* 호버 시 텍스트 나타남 */
+            font-family: 'Inter', Arial, sans-serif;
         }
 
         /* 폰트 크기 조절 버튼 스타일 */
         #down, #up {
-            width: 54px;
-            height: 54px;
-            font-size: 40px;
+            font-size: 2.5rem; /* 40px */
             font-weight: normal;
-            color: red;
+            color: #ef4444; /* red-500 */
             background-color: #fff;
             border: 1px solid #ccc;
-            border-radius: 5px;
+            border-radius: 0.375rem; /* rounded-md */
             cursor: pointer;
+            width: 3.375rem; /* 54px */
+            height: 3.375rem; /* 54px */
         }
 
-        /* 모달 (팝업) 스타일 */
-        .modal {
-            display: none; /* 초기에는 숨김 */
-            position: fixed;
-            z-index: 200;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            overflow: auto;
-            background-color: rgba(0,0,0,0.4); /* 반투명 검정 오버레이 */
+        /* 오디오 플레이어 버튼 스타일 */
+        .control-btn {
+            @apply w-10 h-10 text-lg cursor-pointer border rounded-md transition-colors;
         }
-        .modal-content {
-            background-color: #fefefe;
-            margin: 15% auto;
-            padding: 20px;
-            border: 1px solid #888;
-            width: 80%;
-            border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-            text-align: center;
+        #play-btn {
+            @apply bg-green-200 border-green-300 hover:bg-green-300;
         }
-        .close-button {
-            color: #aaa;
-            float: right;
-            font-size: 28px;
-            font-weight: bold;
+        #pause-btn {
+            @apply bg-yellow-100 border-yellow-200 hover:bg-yellow-200;
         }
-        .close-button:hover,
-        .close-button:focus {
-            color: black;
-            text-decoration: none;
+        #stop-btn {
+            @apply bg-red-200 border-red-300 hover:bg-red-300;
+        }
+
+        /* 스크롤 마커 스타일 */
+        .scroll-marker {
+            width: 8px;
+            height: 8px;
+            background-color: #ef4444; /* red-500 */
+            border-radius: 50%;
+            position: absolute;
+            right: 2px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+            z-index: 100;
             cursor: pointer;
+            pointer-events: auto; /* 마커 클릭을 위해 이벤트 허용 */
+            transition: transform 0.2s;
+        }
+        .scroll-marker:hover {
+            transform: scale(1.5);
         }
     </style>
 </head>
-<body bgcolor="#FFFFFF" text="#000000" link="#0000FF" vlink="#660099">
+<body class="bg-white text-gray-900 leading-relaxed antialiased">
 
-    <!-- 상단 고정 테이블 (검색창, 오디오) -->
-    <table class="top-fixed-table" cellpadding="0" cellspacing="0">
-        <tr>
-            <td class="search-cell">
-                <form name="f1" action="" onsubmit="if(this.t1.value!=null && this.t1.value!='')findString(this.t1.value);return false">
-                    <input type="reset" name="b2" value="X" style="font-size:15pt;">
-                    <input type="text" style="font-size:15pt;" placeholder="검색어를 입력하세요" name="t1" value="" size="17">
-                    <input type="submit" name="b1" value="검색" style="font-size:13pt;">
-                </form>
-            </td>
-            <td class="audio-cell">
-                <div id="custom-audio-player">
-                    <audio id="audio-file" preload="auto">
-                        <source src="http://vod47.anyline.co.kr/vod_ezra/%EC%9D%BD%EA%B8%B0%2001.mp3" type="audio/mp3">
-                    </audio>
-
-                    <div class="player-controls">
-                        <span id="current-time" class="time-display">0:00</span>
-                        <button id="play-btn" class="control-btn">▶</button>
-                        <button id="pause-btn" class="control-btn">⏸</button>
-                        <button id="stop-btn" class="control-btn">■</button>
-                        <span id="remaining-time" class="time-display">0:00</span>
-                    </div>
-
-                    <div class="speed-controls">
-                        <button id="speed-down-02" class="speed-btn">&lt;&lt;</button>
-                        <button id="speed-down-01" class="speed-btn">&lt;</button>
-                        <span id="speed-display" class="speed-display">1.0x</span>
-                        <button id="speed-up-01" class="speed-btn">&gt;</button>
-                        <button id="speed-up-02" class="speed-btn">&gt;&gt;</button>
-                    </div>
-
-                    <div class="volume-control">
-                        <span style="font-size:12px;">볼륨</span>
-                        <input type="range" id="volume-slider" min="0" max="1" step="0.01" value="1">
+    <!-- 상단 고정 헤더 -->
+    <header class="fixed top-0 left-0 w-full bg-white shadow-md z-50 p-4">
+        <div class="container mx-auto px-2">
+            <!-- 검색, 오디오, 폰트 조절 영역을 Flexbox로 정렬 -->
+            <div class="flex flex-col md:flex-row items-center justify-between gap-4">
+                <!-- 검색창 영역 -->
+                <div class="w-full md:w-1/2 lg:w-1/3 order-1 md:order-none">
+                    <form name="f1" action="" onsubmit="findString(this.t1.value); return false" class="flex items-center space-x-2">
+                        <input type="reset" name="b2" value="X" class="text-xl font-bold bg-gray-200 hover:bg-gray-300 px-3 py-1 rounded-md transition-colors" onclick="clearHighlight()">
+                        <input type="text" placeholder="검색어를 입력하세요 (다중 단어 가능)" name="t1" size="17" class="flex-grow text-lg p-2 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <input type="submit" name="b1" value="검색" class="text-lg bg-blue-500 text-white px-4 py-2 rounded-md cursor-pointer hover:bg-blue-600 transition-colors">
+                    </form>
+                    <div class="flex items-center mt-2">
+                        <span id="search-count" class="text-base text-blue-500 font-bold ml-2"></span>
+                        <button type="button" id="next-location-btn" class="ml-2 py-1 px-3 text-sm rounded-md border border-gray-300 bg-gray-100 hover:bg-gray-200 transition-colors hidden" onclick="nextLocation()">다음 위치</button>
                     </div>
                 </div>
-            </td>
-        </tr>
-    </table>
-    
-    <!-- 구절 설명 버튼을 위한 컨테이너 (테이블에서 div로 변경됨) -->
-    <div class="explanation-button-container">
-        <button class="explanation-button" id="explanation-button">
-            <span class="initial-icon">📖</span>
-            <span class="hover-text">구절설명</span>
+
+                <!-- 오디오 플레이어 영역 -->
+                <div class="w-full md:w-1/2 lg:w-1/3 order-3 md:order-none mt-4 md:mt-0">
+                    <div id="custom-audio-player" class="flex flex-col items-center">
+                        <audio id="audio-file" preload="auto">
+                            <source src="http://vod47.anyline.co.kr/vod_ezra/%EC%9D%BD%EA%B8%B0%2001.mp3" type="audio/mp3">
+                        </audio>
+
+                        <div class="player-controls flex items-center justify-center gap-2 mb-1">
+                            <span id="current-time" class="text-sm text-gray-500">0:00</span>
+                            <button id="play-btn" class="control-btn">▶</button>
+                            <button id="pause-btn" class="control-btn">⏸</button>
+                            <button id="stop-btn" class="control-btn">■</button>
+                            <span id="remaining-time" class="text-sm text-gray-500">0:00</span>
+                        </div>
+
+                        <div class="speed-controls flex items-center justify-center gap-1 mb-1">
+                            <button id="speed-down-02" class="speed-btn w-8 h-8 text-xs">&lt;&lt;</button>
+                            <button id="speed-down-01" class="speed-btn w-8 h-8 text-xs">&lt;</button>
+                            <span id="speed-display" class="font-bold text-blue-500 w-12 text-center text-sm">1.0x</span>
+                            <button id="speed-up-01" class="speed-btn w-8 h-8 text-xs">&gt;</button>
+                            <button id="speed-up-02" class="speed-btn w-8 h-8 text-xs">&gt;&gt;</button>
+                        </div>
+
+                        <div class="volume-control flex items-center justify-center gap-1">
+                            <span class="text-xs">볼륨</span>
+                            <input type="range" id="volume-slider" min="0" max="1" step="0.01" value="1" class="w-24 h-1 bg-gray-300 rounded-lg appearance-none cursor-pointer">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 폰트 크기 조절 영역 -->
+                <div class="w-full md:w-auto order-2 md:order-none flex items-center justify-center md:justify-end gap-2">
+                    <p class="font-bold text-blue-600 text-2xl md:text-3xl">Font Size</p>
+                    <button id="down" class="text-red-500 font-normal">-</button>
+                    <p id="font-size" class="font-bold text-red-500 text-2xl md:text-3xl">20</p>
+                    <button id="up" class="text-red-500 font-normal">+</button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- 구절 설명 버튼 컨테이너 -->
+    <div class="fixed top-[200px] md:top-[120px] left-1/2 transform -translate-x-1/2 z-40">
+        <button class="relative w-12 h-12 rounded-full bg-white shadow-md border-none cursor-pointer text-xl overflow-hidden transition-all duration-300 ease-in-out hover:w-32 hover:rounded-md group" id="explanation-button">
+            <span class="absolute inset-0 flex items-center justify-center transition-opacity duration-300 group-hover:opacity-0 initial-icon">📖</span>
+            <span class="absolute inset-0 flex items-center justify-center text-sm transition-opacity duration-300 opacity-0 group-hover:opacity-100 hover-text">구절설명</span>
         </button>
     </div>
 
-    <div class="container">
-        <br>
-        <p class="font-size-label" style="font-style: normal; font-weight: bold;color: blue;font-size: 40px;">Font Size</p>
-        <button id="down" style="font-style: normal; font-weight: normal;color: red;font-size: 40px;">-</button>
-        <p id="font-size" style="font-style: normal; font-weight: bold; color: red;font-size: 40px;">20</p>
-        <button id="up" style="font-style: normal; font-weight: normal;color: red;font-size: 40px;">+</button>
-    </div>
+    <!-- 본문 내용 -->
+    <main class="w-full px-2 mt-64 md:mt-48">
+        <h2 id="bible-text" class="text-black leading-relaxed font-normal text-xl">
+            <!-- 본문 내용 -->
+            <strong>
 
-    <h2 style="line-height: 1.2em;margin-left:15px;margin-right:15;font-style: normal; font-weight: normal; color: black;font-size: 20px;word-break: break-all;">
-        <strong>
-      <br><font color="#4682b4">창세기 1 장</font></br>
-    </strong>
-    <br><i><font color="#808080">*천지 창조*</font></i></br>
+통독 1일차
+<br>범위: 창세기 1장- 11장</br>
+<br>&nbsp;</br>
+
+</strong>
+<strong><br><font color="#4682b4">창세기 1 장</font></br></strong>
+<br><i><font color="#808080">*천지 창조*</font></i></br>
 <br>1 태초에 하나님이 천지를 창조하시니라</br>
 <br>2 땅이 혼돈하고 공허하며 흑암이 깊음 위에 있고 하나님의 영은 수면 위에 운행하시니라</br>
 <br>3 하나님이 이르시되 빛이 있으라 하시니 빛이 있었고</br>
@@ -659,25 +481,39 @@
 <br>31 데라가 그 아들 아브람과 하란의 아들인 그의 손자 롯과 그의 며느리 아브람의 아내 사래를 데리고 갈대아인의 우르를 떠나 가나안 땅으로 가고자 하더니 하란에 이르러 거기 거류하였으며</br>
 <br>32 데라는 나이가 이백오 세가 되어 하란에서 죽었더라</br>
 <br>&nbsp;</br>
-<br>    1일차 끝</br>
+<br>    1일차 끝</br>
 <br>&nbsp;</br>
    
+   
   </h2>
+    </main>
 
     <!-- 구절 설명 모달 (Modal) -->
-    <div id="explanation-modal" class="modal">
+    <div id="explanation-modal" class="hidden fixed inset-0 bg-black bg-opacity-40 z-[200] overflow-y-auto flex items-center justify-center">
         <!-- 모달 내용 -->
-        <div class="modal-content">
-            <span class="close-button" id="close-modal">&times;</span>
-            <h3 id="modal-title">구절 설명</h3>
-            <p id="modal-text">구절을 드래그하여 선택하고 '구절설명' 버튼을 누르세요.</p>
+        <div class="bg-white p-6 rounded-xl shadow-2xl w-11/12 md:w-3/4 max-w-lg">
+            <div class="flex justify-end">
+                <span class="close-button text-gray-400 hover:text-gray-800 text-3xl font-bold cursor-pointer" id="close-modal">&times;</span>
+            </div>
+            <h3 id="modal-title" class="text-xl md:text-2xl font-bold mb-4 text-center">구절 설명</h3>
+            <p id="modal-text" class="text-base text-gray-700 text-center">구절을 드래그하여 선택하고 '구절설명' 버튼을 누르세요.</p>
         </div>
     </div>
+
+    <!-- 스크롤 마커 컨테이너 -->
+    <div id="scroll-marker-container" class="fixed top-0 right-0 w-2 h-screen z-[99] pointer-events-none"></div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
     <script>
         // 현재 선택된 텍스트를 저장할 변수
         let selectedVerse = "";
+        let originalText = ""; // 원본 텍스트를 저장할 변수
+        let foundSentences = []; // 검색 결과를 저장할 배열
+        let currentSearchIndex = -1; // 현재 하이라이트된 검색 결과 인덱스
+        const searchCountEl = document.getElementById('search-count');
+        const nextLocationBtn = document.getElementById('next-location-btn');
+        const scrollMarkerContainer = document.getElementById('scroll-marker-container');
+        const bibleTextEl = document.getElementById('bible-text');
 
         // 텍스트 선택 이벤트 리스너
         document.addEventListener('mouseup', () => {
@@ -685,27 +521,144 @@
             selectedVerse = selection.toString().trim();
         });
 
+        // 페이지 로드 시 원본 텍스트 저장 및 초기화
+        window.onload = function() {
+            originalText = bibleTextEl.innerHTML;
+            getSize();
+            updateSpeed();
+        };
+
+        /**
+         * 검색어 위치를 찾아 하이라이트하고 스크롤하는 함수
+         * 다중 단어 검색을 지원하도록 수정되었습니다.
+         * @param {string} searchText - 사용자가 입력한 검색어
+         */
+        function findString(searchText) {
+            // 이전에 하이라이트된 내용을 제거하고 마커도 제거
+            clearHighlight();
+
+            const words = searchText.trim().split(/\s+/).filter(word => word.length > 0);
+
+            if (words.length === 0) {
+                searchCountEl.textContent = '';
+                nextLocationBtn.style.display = 'none';
+                return; // 검색어가 없으면 함수 종료
+            }
+
+            // 원본 텍스트를 초기화하고, 각 단어를 순차적으로 하이라이트
+            let newContent = originalText;
+            for (const word of words) {
+                const regex = new RegExp(word, 'gi');
+                const highlightedText = `<span class="search-highlight bg-yellow-300 text-black px-1 rounded-sm">${word}</span>`;
+                newContent = newContent.replace(regex, highlightedText);
+            }
+            bibleTextEl.innerHTML = newContent;
+
+            // 하이라이트된 모든 요소(span)를 찾음
+            foundSentences = bibleTextEl.getElementsByClassName('search-highlight');
+            searchCountEl.textContent = `총 ${foundSentences.length}개 검색됨`;
+
+            if (foundSentences.length > 0) {
+                // 첫 번째 검색 결과를 화면 중앙으로 스크롤
+                currentSearchIndex = 0;
+                foundSentences[currentSearchIndex].scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'center'
+                });
+                // "다음 위치" 버튼 표시
+                nextLocationBtn.style.display = 'inline-block';
+                // 검색 결과 위치에 스크롤 마커 추가
+                updateScrollMarkers();
+            } else {
+                // 검색 결과가 없을 경우 메시지 표시 및 버튼 숨김
+                const modal = document.getElementById('explanation-modal');
+                const modalTitle = document.getElementById('modal-title');
+                const modalText = document.getElementById('modal-text');
+                modalTitle.textContent = "검색 결과 없음";
+                modalText.textContent = `"${searchText}"에 대한 검색 결과가 없습니다.`;
+                modal.classList.remove('hidden');
+                nextLocationBtn.style.display = 'none';
+            }
+        }
+
+        // 다음 검색 결과 위치로 이동하는 함수
+        function nextLocation() {
+            if (foundSentences.length > 0) {
+                // 다음 인덱스로 이동, 마지막이면 다시 처음으로
+                currentSearchIndex = (currentSearchIndex + 1) % foundSentences.length;
+                foundSentences[currentSearchIndex].scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'center'
+                });
+            }
+        }
+
+        // 검색 결과 위치에 스크롤 마커를 추가하는 함수
+        function updateScrollMarkers() {
+            // 기존 스크롤 마커 제거
+            while (scrollMarkerContainer.firstChild) {
+                scrollMarkerContainer.removeChild(scrollMarkerContainer.firstChild);
+            }
+
+            // 전체 문서의 높이와 뷰포트 높이를 가져옴
+            const documentHeight = document.documentElement.scrollHeight;
+            const viewportHeight = window.innerHeight;
+
+            for (let i = 0; i < foundSentences.length; i++) {
+                const marker = document.createElement('div');
+                marker.className = 'scroll-marker';
+
+                // 검색 결과 요소의 상단 위치를 계산
+                const topPosition = foundSentences[i].offsetTop;
+
+                // 마커의 위치를 백분율로 계산하여 스크롤바에 맞춤
+                const markerPosition = (topPosition / documentHeight) * viewportHeight;
+                marker.style.top = `${markerPosition}px`;
+                
+                // 마커의 포인터 이벤트를 활성화하여 클릭 가능하게 함
+                marker.style.pointerEvents = 'auto';
+
+                // 클릭 시 해당 위치로 스크롤
+                marker.addEventListener('click', () => {
+                    foundSentences[i].scrollIntoView({ behavior: 'smooth', block: 'center' });
+                });
+
+                scrollMarkerContainer.appendChild(marker);
+            }
+        }
+
+        // 검색어 하이라이트 지우기
+        function clearHighlight() {
+            bibleTextEl.innerHTML = originalText;
+            searchCountEl.textContent = '';
+            nextLocationBtn.style.display = 'none';
+            // 스크롤 마커 제거
+            while (scrollMarkerContainer.firstChild) {
+                scrollMarkerContainer.removeChild(scrollMarkerContainer.firstChild);
+            }
+        }
+
         // 폰트 사이즈 조절 스크립트
         function getSize() {
-            let size = $("h2").css("font-size");
+            let size = $("#bible-text").css("font-size");
             size = parseInt(size, 10);
             $("#font-size").text(size);
         }
         getSize();
-        
+
         // 폰트 사이즈 조절 로직
         $("#up").on("click", function () {
-            let currentSize = parseInt($("h2").css("font-size"));
+            let currentSize = parseInt($("#bible-text").css("font-size"));
             if (currentSize + 4 <= 80) {
-                $("h2").css("font-size", (currentSize + 4) + 'px');
+                $("#bible-text").css("font-size", (currentSize + 4) + 'px');
                 $("#font-size").text(currentSize + 4);
             }
         });
 
         $("#down").on("click", function () {
-            let currentSize = parseInt($("h2").css("font-size"));
+            let currentSize = parseInt($("#bible-text").css("font-size"));
             if (currentSize - 4 >= 12) {
-                $("h2").css("font-size", (currentSize - 4) + 'px');
+                $("#bible-text").css("font-size", (currentSize - 4) + 'px');
                 $("#font-size").text(currentSize - 4);
             }
         });
@@ -733,19 +686,19 @@
 
         let currentSpeed = 1.0;
         speedDown02Btn.addEventListener('click', () => {
-            currentSpeed = Math.max(0.5, currentSpeed - 0.2);
+            currentSpeed = Math.max(0.5, parseFloat((currentSpeed - 0.2).toFixed(1)));
             updateSpeed();
         });
         speedDown01Btn.addEventListener('click', () => {
-            currentSpeed = Math.max(0.5, currentSpeed - 0.1);
+            currentSpeed = Math.max(0.5, parseFloat((currentSpeed - 0.1).toFixed(1)));
             updateSpeed();
         });
         speedUp01Btn.addEventListener('click', () => {
-            currentSpeed = Math.min(2.0, currentSpeed + 0.1);
+            currentSpeed = Math.min(2.0, parseFloat((currentSpeed + 0.1).toFixed(1)));
             updateSpeed();
         });
         speedUp02Btn.addEventListener('click', () => {
-            currentSpeed = Math.min(2.0, currentSpeed + 0.2);
+            currentSpeed = Math.min(2.0, parseFloat((currentSpeed + 0.2).toFixed(1)));
             updateSpeed();
         });
 
@@ -763,7 +716,7 @@
             const remainingSeconds = Math.floor(seconds % 60);
             return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
         }
-        
+
         audio.addEventListener('timeupdate', () => {
             const currentTime = audio.currentTime;
             const duration = audio.duration;
@@ -774,8 +727,6 @@
             }
         });
 
-        updateSpeed();
-
         // 구절 설명 모달 기능 스크립트
         const explanationButton = document.getElementById('explanation-button');
         const modal = document.getElementById('explanation-modal');
@@ -785,9 +736,7 @@
 
         // AI를 사용하여 설명을 가져오는 비동기 함수
         async function fetchExplanation(promptText) {
-            // 여기에 사용자께서 제공해주신 API 키를 직접 입력했습니다.
-            // Replace with your API key.
-            const apiKey = "AIzaSyDUlSQlSPgnrFBXpnUJMDoUO3s_KsaoFRU";
+            const apiKey = "";
             const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
             const payload = {
                 contents: [
@@ -815,20 +764,18 @@
                         break;
                     } else if (response.status === 429) {
                         const delay = Math.pow(2, retryCount) * 1000;
-                        console.log(`Rate limit exceeded. Retrying in ${delay / 1000} seconds...`);
                         await new Promise(resolve => setTimeout(resolve, delay));
                         retryCount++;
                     } else {
                         throw new Error(`API error: ${response.status} ${response.statusText}`);
                     }
                 } catch (error) {
-                    console.error('Fetch error:', error);
                     modalTitle.textContent = "오류 발생";
                     modalText.textContent = `설명을 가져오는 중 오류가 발생했습니다: ${error.message}`;
                     return;
                 }
             }
-            
+
             if (!response || !response.ok) {
                 modalTitle.textContent = "오류 발생";
                 modalText.textContent = `API 호출에 실패했습니다. (상태 코드: ${response?.status || '알 수 없음'}) 잠시 후 다시 시도해 주세요.`;
@@ -846,7 +793,6 @@
                     modalText.textContent = "요청하신 내용에 대한 설명을 찾을 수 없습니다.";
                 }
             } catch (parseError) {
-                console.error('JSON parse error:', parseError);
                 modalTitle.textContent = "오류 발생";
                 modalText.textContent = "응답을 처리하는 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.";
             }
@@ -863,27 +809,20 @@
                 modalText.textContent = "설명을 생성 중입니다. 잠시만 기다려 주세요...";
                 fetchExplanation(trimmedVerse);
             }
-            modal.style.display = 'block';
+            modal.classList.remove('hidden');
         });
 
         // 닫기 버튼 클릭 시 모달 닫기
         closeModalButton.addEventListener('click', () => {
-            modal.style.display = 'none';
+            modal.classList.add('hidden');
         });
-        
+
         // 모달 밖 클릭 시 모달 닫기
         window.addEventListener('click', (event) => {
             if (event.target === modal) {
-                modal.style.display = 'none';
+                modal.classList.add('hidden');
             }
         });
-
-        // 안드로이드 폰에서 드래그 시 나타나는 기본 메뉴를 막는 코드
-        // 이 코드는 안드로이드에서만 작동하며, 컴퓨터에서는 문제가 없습니다.
-        document.body.addEventListener('contextmenu', (e) => {
-            e.preventDefault();
-        });
-
     </script>
 </body>
 </html>
