@@ -789,7 +789,7 @@
         // AI를 사용하여 설명을 가져오는 비동기 함수
         async function fetchExplanation(promptText) {
             // 여기에 발급받은 API 키를 붙여넣으세요.
-            const apiKey = ""; // <--- 이 부분을 수정해야 합니다.
+            const apiKey = "AIzaSyDUlSQlSPgnrFBXpnUJMDoUO3s_KsaoFRU"; // <--- 이 부분을 수정해야 합니다.
             const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
             const payload = {
                 contents: [
@@ -898,5 +898,6 @@
     </script>
 </body>
 </html>
+
 
 
