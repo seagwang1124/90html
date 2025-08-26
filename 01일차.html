@@ -1,4 +1,4 @@
- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
@@ -17,7 +17,6 @@
             background-color: #FFFFFF;
             color: #000000;
         }
-
         /* 상단 고정 테이블 스타일 */
         .top-fixed-table {
             position: fixed;
@@ -31,7 +30,6 @@
             padding: 10px 0;
             box-sizing: border-box;
         }
-
         /* 구절 설명 버튼 컨테이너 스타일 */
         .explanation-button-container {
             position: fixed;
@@ -44,32 +42,27 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            /* 마우스 오버 시 하위 버튼이 나타나는 영역을 확장 */
             padding: 0 10px;
         }
-        
+        /* 버튼 래퍼 스타일 (상태에 따라 하위 버튼을 표시) */
         .explanation-button-wrapper {
             position: relative;
             display: inline-block;
             cursor: pointer;
         }
-
         .container {
             width: 100%;
             text-align: center;
         }
-
         h2 {
             padding: 0;
             text-align: left;
             margin-left: 15px;
             margin-right: 15px;
         }
-
         p { display: inline-block; }
         .font-size-label { margin-right: 20px; }
         #font-size { margin: 0 5px; }
-
         /* 테이블 셀 내부 정렬 */
         .search-cell {
             text-align: left;
@@ -83,7 +76,6 @@
             vertical-align: top;
             width: 30%;
         }
-
         /* 커스텀 오디오 플레이어 스타일 */
         #custom-audio-player {
             display: flex;
@@ -167,12 +159,8 @@
             cursor: pointer;
             border-radius: 50%;
         }
-
         /* 변경된 구절 설명 버튼 스타일 */
         .explanation-icon-button {
-            position: absolute;
-            left: 50%;
-            transform: translateX(-50%);
             width: 50px;
             height: 50px;
             border-radius: 50%;
@@ -186,35 +174,35 @@
             font-size: 40px;
             transition: opacity 0.3s ease;
             z-index: 2; /* 상세/간단 버튼 위에 위치 */
+            position: relative; /* 위치 지정 */
         }
-        
+        /* 초기 상태: 하위 버튼들을 숨김 */
         .explanation-sub-buttons {
             display: flex;
             gap: 10px; /* 버튼 사이 간격 */
             opacity: 0;
             visibility: hidden;
             transition: opacity 0.3s ease, visibility 0.3s ease;
-            transform: translateY(0); /* 초기 위치 */
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%) translateY(25px); /* 버튼 위치 조정 */
             z-index: 1;
-            /* 버튼 컨테이너를 약간 위로 이동시켜 아이콘과 겹치지 않게 함 */
-            position: relative;
-            top: -25px;
         }
-
-        .explanation-button-wrapper:hover .explanation-icon-button {
+        /* .active 클래스가 있을 때: 아이콘을 숨기고 하위 버튼을 보이게 함 */
+        .explanation-button-wrapper.active .explanation-icon-button {
             opacity: 0;
             visibility: hidden;
+            pointer-events: none; /* 클릭 이벤트 방지 */
         }
-        
-        .explanation-button-wrapper:hover .explanation-sub-buttons {
+        .explanation-button-wrapper.active .explanation-sub-buttons {
             opacity: 1;
             visibility: visible;
+            transform: translateX(-50%) translateY(0); /* 제자리로 이동 */
         }
-
         .explanation-sub-button {
             padding: 5px 10px;
             font-size: 24px;
-            height: auto; /* 폰트 사이즈에 맞춰 높이 자동 조절 */
+            height: auto;
             background-color: #ff99cc;
             border: none;
             border-radius: 5px;
@@ -222,11 +210,9 @@
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
             transition: transform 0.2s;
         }
-
         .explanation-sub-button:hover {
             transform: scale(1.05);
         }
-
         /* 폰트 크기 조절 버튼 스타일 */
         #down, #up {
             width: 54px;
@@ -239,7 +225,6 @@
             border-radius: 5px;
             cursor: pointer;
         }
-
         /* 모달 (팝업) 스타일 */
         .modal {
             display: none;
@@ -274,7 +259,6 @@
             text-decoration: none;
             cursor: pointer;
         }
-        
         /* 로딩 스피너 */
         .loader {
             border: 4px solid #f3f3f3;
@@ -287,18 +271,15 @@
             vertical-align: middle;
             margin-right: 5px;
         }
-        
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
-
         /* 검색어 하이라이트 스타일 */
         .search-highlight {
             background-color: yellow;
             color: black;
         }
-
         /* 스크롤바 마커 컨테이너 - 스크롤바 위치에 시각적 표시 */
         .scroll-marker-container {
             position: fixed;
@@ -309,7 +290,6 @@
             z-index: 99;
             pointer-events: none;
         }
-
         /* 스크롤바 마커 스타일 */
         .scroll-marker {
             position: absolute;
@@ -322,19 +302,16 @@
             cursor: pointer;
             pointer-events: auto;
         }
-
         /* 마우스 오버 시 마커 효과 */
         .scroll-marker:hover {
             transform: scale(1.5);
             transition: transform 0.2s ease;
         }
-
         #search-count-container {
             display: flex;
             align-items: center;
             gap: 10px;
         }
-
         #search-count {
             font-size: 15pt;
             color: #007BFF;
@@ -342,7 +319,6 @@
             margin-left: 10px;
             white-space: nowrap;
         }
-
         #next-location-btn {
             padding: 5px 10px;
             font-size: 12pt;
@@ -355,7 +331,6 @@
     </style>
 </head>
 <body bgcolor="#FFFFFF" text="#000000" link="#0000FF" vlink="#660099">
-
     <table class="top-fixed-table" id="main-table" cellpadding="0" cellspacing="0">
         <tr>
             <td class="search-cell">
@@ -374,7 +349,6 @@
                     <audio id="audio-file" preload="auto">
                         <source src="http://vod47.anyline.co.kr/vod_ezra/%EC%9D%BD%EA%B8%B0%2001.mp3" type="audio/mp3">
                     </audio>
-
                     <div class="player-controls">
                         <span id="current-time" class="time-display">0:00</span>
                         <button id="play-btn" class="control-btn">▶</button>
@@ -382,7 +356,6 @@
                         <button id="stop-btn" class="control-btn">■</button>
                         <span id="remaining-time" class="time-display">0:00</span>
                     </div>
-
                     <div class="speed-controls">
                         <button id="speed-down-02" class="speed-btn">&lt;&lt;</button>
                         <button id="speed-down-01" class="speed-btn">&lt;</button>
@@ -390,7 +363,6 @@
                         <button id="speed-up-01" class="speed-btn">&gt;</button>
                         <button id="speed-up-02" class="speed-btn">&gt;&gt;</button>
                     </div>
-
                     <div class="volume-control">
                         <span style="font-size:12px;">볼륨</span>
                         <input type="range" id="volume-slider" min="0" max="1" step="0.01" value="1">
@@ -399,23 +371,21 @@
             </td>
         </tr>
     </table>
-
     <!-- 구절 설명 버튼 컨테이너 -->
     <div class="explanation-button-container">
-        <!-- 마우스 오버 시 버튼이 나타나게 하는 래퍼 -->
+        <!-- 터치 및 클릭 시 버튼이 나타나게 하는 래퍼 -->
         <div class="explanation-button-wrapper">
             <!-- 초기 아이콘 버튼 -->
             <button class="explanation-icon-button" id="explanation-icon-button">
                 <span>📖</span>
             </button>
-            <!-- 마우스 오버 시 나타나는 2개의 버튼 -->
+            <!-- 클릭/터치 시 나타나는 2개의 버튼 -->
             <div class="explanation-sub-buttons">
                 <button class="explanation-sub-button" id="detailed-explanation-button">상세 구절설명</button>
                 <button class="explanation-sub-button" id="simple-explanation-button">간단 구절설명</button>
             </div>
         </div>
     </div>
-
     <div class="container">
         <br>
         <p class="font-size-label" style="font-style: normal; font-weight: bold;color: blue;font-size: 40px;">Font Size</p>
@@ -423,10 +393,8 @@
         <p id="font-size" style="font-style: normal; font-weight: bold; color: red;font-size: 40px;">20</p>
         <button id="up" style="font-style: normal; font-weight: normal;color: red;font-size: 40px;">+</button>
     </div>
-
     <h2 id="bible-text" style="line-height: 1.2em;margin-left:15px;margin-right:15px;font-style: normal; font-weight: normal; color: black;font-size: 20px;word-break: break-all;">
-        
-<strong>
+        <strong>
 
 통독 1일차
 <br>범위: 창세기 1장- 11장</br>
@@ -776,9 +744,7 @@
 <br>    1일차 끝</br>
 <br>&nbsp;</br>
    
-   
   </h2>
-
     <div id="explanation-modal" class="modal">
         <div class="modal-content">
             <span class="close-button" id="close-modal">&times;</span>
@@ -786,14 +752,12 @@
             <p id="modal-text">구절을 드래그하여 선택하고 '구절설명' 버튼을 누르세요.</p>
         </div>
     </div>
-
     <div id="scroll-marker-container" class="scroll-marker-container"></div>
+    <script>
+        // API 키 입력
+        const apiKey = "AIzaSyDUlSQlSPgnrFBXpnUJMDoUO3s_KsaoFRU";
 
-       <script>
-    // API 키 입력
-    const apiKey = "AIzaSyDUlSQlSPgnrFBXpnUJMDoUO3s_KsaoFRU"; 
-
-    // DOM 요소들을 변수에 저장하여 효율적으로 사용
+        // DOM 요소들을 변수에 저장하여 효율적으로 사용
         const bibleTextEl = document.getElementById('bible-text');
         const searchCountEl = document.getElementById('search-count');
         const nextLocationBtn = document.getElementById('next-location-btn');
@@ -911,38 +875,42 @@
                     remainingTimeEl.textContent = `-${formatTime(remainingTime)}`;
                 }
             });
-            
-            // 모달 및 구절 설명 기능
+
+            // --- 변경된 구절 설명 기능 ---
+            // 아이콘 버튼 클릭 시 하위 버튼 표시/숨김
+            explanationIconButton.addEventListener('click', (event) => {
+                event.stopPropagation(); // 클릭 이벤트가 body로 전파되는 것을 막음
+                explanationButtonWrapper.classList.toggle('active');
+            });
+
             // 상세 구절 설명 버튼 클릭 이벤트
             detailedExplanationButton.addEventListener('click', () => {
                 const trimmedVerse = selectedVerse.trim();
                 if (trimmedVerse === "") {
-                    showModal("검색창을 닫고 구절을 먼저 선택하세요", "본문에서 구절이나 단어를 드래그하여 선택한 후 다시 버튼을 눌러주세요.");
+                    showModal("구절을 먼저 선택하세요", "본문에서 구절이나 단어를 드래그하여 선택한 후 다시 버튼을 눌러주세요.");
                 } else {
                     showLoadingModal();
                     fetchExplanation(trimmedVerse, 'detailed');
                 }
+                explanationButtonWrapper.classList.remove('active'); // 버튼을 누른 후 숨김
             });
 
             // 간단 구절 설명 버튼 클릭 이벤트
             simpleExplanationButton.addEventListener('click', () => {
                 const trimmedVerse = selectedVerse.trim();
                 if (trimmedVerse === "") {
-                    showModal("검색창을 닫고 구절을 먼저 선택하세요", "본문에서 구절이나 단어를 드래그하여 선택한 후 다시 버튼을 눌러주세요.");
+                    showModal("구절을 먼저 선택하세요", "본문에서 구절이나 단어를 드래그하여 선택한 후 다시 버튼을 눌러주세요.");
                 } else {
                     showLoadingModal();
                     fetchExplanation(trimmedVerse, 'simple');
                 }
+                explanationButtonWrapper.classList.remove('active'); // 버튼을 누른 후 숨김
             });
 
-            // 초기 구절 아이콘 버튼 클릭 시 상세 설명 모달 표시
-            explanationIconButton.addEventListener('click', () => {
-                const trimmedVerse = selectedVerse.trim();
-                if (trimmedVerse === "") {
-                    showModal("검색창을 닫고 구절을 먼저 선택하세요", "본문에서 구절이나 단어를 드래그하여 선택한 후 다시 버튼을 눌러주세요.");
-                } else {
-                    showLoadingModal();
-                    fetchExplanation(trimmedVerse, 'detailed');
+            // 문서 본문 클릭 시 하위 버튼 숨김 (아이콘 클릭 시 제외)
+            document.body.addEventListener('click', (event) => {
+                if (!explanationButtonWrapper.contains(event.target)) {
+                    explanationButtonWrapper.classList.remove('active');
                 }
             });
 
@@ -1079,7 +1047,6 @@
                 prompt = `
                     **명령:**
                     다음 성경 용어/구절에 대해 300자에서 500자 사이의 짧고 간결한 설명을 작성해 주세요. 핵심 내용을 중심으로 요약해 주세요.
-                    
                     **요청 용어/구절:** "${promptText}"
                 `;
             } else {
@@ -1105,7 +1072,7 @@
                     **요청 용어/구절:** "${promptText}"
                 `;
             }
-            
+
             const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
             const payload = {
                 contents: [
@@ -1152,7 +1119,7 @@
             try {
                 const result = await response.json();
                 const explanation = result?.candidates?.[0]?.content?.parts?.[0]?.text;
-                
+
                 if (explanation) {
                     showModal(promptText, explanation);
                 } else {
@@ -1165,5 +1132,7 @@
     </script>
 </body>
 </html>
+
+
 
 
