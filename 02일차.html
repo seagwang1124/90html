@@ -1,10 +1,9 @@
-<!DOCTYPE html>
+ <!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>통큰통독-02일차</title>
-    <!-- 아이콘과 메타 정보 -->
     <link rel="apple-touch-icon" type="image/png" href="https://i.postimg.cc/Qtnq0gFJ/Ezra-icon.png">
     <meta name="apple-mobile-web-app-app-title" content="통큰통독">
     <link rel="shortcut icon" type="image/png" href="https://i.postimg.cc/Qtnq0gFJ/Ezra-icon.png">
@@ -45,6 +44,14 @@
             display: flex;
             justify-content: center;
             align-items: center;
+            /* 마우스 오버 시 하위 버튼이 나타나는 영역을 확장 */
+            padding: 0 10px;
+        }
+        
+        .explanation-button-wrapper {
+            position: relative;
+            display: inline-block;
+            cursor: pointer;
         }
 
         .container {
@@ -161,51 +168,63 @@
             border-radius: 50%;
         }
 
-        /* 구절 설명 버튼 스타일 */
-        .explanation-button {
-            position: relative;
+        /* 변경된 구절 설명 버튼 스타일 */
+        .explanation-icon-button {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
             width: 50px;
             height: 50px;
             border-radius: 50%;
-            background-color: #fff;
+            background-color: #ff99cc; /* 파스텔톤의 강한 핑크색으로 변경 */
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
             border: none;
             cursor: pointer;
-            font-size: 20px;
-            overflow: hidden;
-            transition: width 0.3s ease, border-radius 0.3s ease;
-            white-space: nowrap;
             display: flex;
             align-items: center;
             justify-content: center;
-        }
-
-        .explanation-button .initial-icon,
-        .explanation-button .hover-text {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
+            font-size: 40px;
             transition: opacity 0.3s ease;
+            z-index: 2; /* 상세/간단 버튼 위에 위치 */
         }
-
-        .explanation-button .hover-text {
+        
+        .explanation-sub-buttons {
+            display: flex;
+            gap: 10px; /* 버튼 사이 간격 */
             opacity: 0;
-            font-size: 14px;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+            transform: translateY(0); /* 초기 위치 */
+            z-index: 1;
+            /* 버튼 컨테이너를 약간 위로 이동시켜 아이콘과 겹치지 않게 함 */
+            position: relative;
+            top: -25px;
         }
 
-        .explanation-button:hover,
-        .explanation-button:focus {
-            width: 120px;
-            border-radius: 5px;
-        }
-
-        .explanation-button:hover .initial-icon {
+        .explanation-button-wrapper:hover .explanation-icon-button {
             opacity: 0;
+            visibility: hidden;
         }
-
-        .explanation-button:hover .hover-text {
+        
+        .explanation-button-wrapper:hover .explanation-sub-buttons {
             opacity: 1;
+            visibility: visible;
+        }
+
+        .explanation-sub-button {
+            padding: 5px 10px;
+            font-size: 24px;
+            height: auto; /* 폰트 사이즈에 맞춰 높이 자동 조절 */
+            background-color: #ff99cc;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            transition: transform 0.2s;
+        }
+
+        .explanation-sub-button:hover {
+            transform: scale(1.05);
         }
 
         /* 폰트 크기 조절 버튼 스타일 */
@@ -241,7 +260,7 @@
             width: 80%;
             border-radius: 10px;
             box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-            text-align: center;
+            text-align: left;
         }
         .close-button {
             color: #aaa;
@@ -255,6 +274,24 @@
             text-decoration: none;
             cursor: pointer;
         }
+        
+        /* 로딩 스피너 */
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 2s linear infinite;
+            display: inline-block;
+            vertical-align: middle;
+            margin-right: 5px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
 
         /* 검색어 하이라이트 스타일 */
         .search-highlight {
@@ -267,10 +304,10 @@
             position: fixed;
             top: 0;
             right: 0;
-            width: 8px; /* 스크롤바 폭과 유사하게 설정 */
+            width: 8px;
             height: 100vh;
             z-index: 99;
-            pointer-events: none; /* 컨테이너는 클릭 이벤트를 통과시킵니다. */
+            pointer-events: none;
         }
 
         /* 스크롤바 마커 스타일 */
@@ -278,12 +315,12 @@
             position: absolute;
             right: 0;
             width: 8px;
-            height: 8px; /* 작은 점으로 표시 */
-            background-color: red; /* 눈에 띄는 색상 */
+            height: 8px;
+            background-color: red;
             border-radius: 50%;
             box-shadow: 0 0 5px rgba(255, 0, 0, 0.7);
-            cursor: pointer; /* 마우스 오버 시 포인터 변경 */
-            pointer-events: auto; /* 마커 자체는 클릭 가능하게 설정 */
+            cursor: pointer;
+            pointer-events: auto;
         }
 
         /* 마우스 오버 시 마커 효과 */
@@ -303,7 +340,7 @@
             color: #007BFF;
             font-weight: bold;
             margin-left: 10px;
-            white-space: nowrap; /* 텍스트 줄바꿈 방지 */
+            white-space: nowrap;
         }
 
         #next-location-btn {
@@ -313,13 +350,12 @@
             border: 1px solid #ccc;
             background-color: #f0f0f0;
             border-radius: 5px;
-            display: none; /* 초기에는 숨김 */
+            display: none;
         }
     </style>
 </head>
 <body bgcolor="#FFFFFF" text="#000000" link="#0000FF" vlink="#660099">
 
-    <!-- 상단 고정 테이블 (검색창, 오디오) -->
     <table class="top-fixed-table" id="main-table" cellpadding="0" cellspacing="0">
         <tr>
             <td class="search-cell">
@@ -364,12 +400,20 @@
         </tr>
     </table>
 
-    <!-- 구절 설명 버튼을 위한 컨테이너 -->
+    <!-- 구절 설명 버튼 컨테이너 -->
     <div class="explanation-button-container">
-        <button class="explanation-button" id="explanation-button">
-            <span class="initial-icon">📖</span>
-            <span class="hover-text">구절설명</span>
-        </button>
+        <!-- 마우스 오버 시 버튼이 나타나게 하는 래퍼 -->
+        <div class="explanation-button-wrapper">
+            <!-- 초기 아이콘 버튼 -->
+            <button class="explanation-icon-button" id="explanation-icon-button">
+                <span>📖</span>
+            </button>
+            <!-- 마우스 오버 시 나타나는 2개의 버튼 -->
+            <div class="explanation-sub-buttons">
+                <button class="explanation-sub-button" id="detailed-explanation-button">상세 구절설명</button>
+                <button class="explanation-sub-button" id="simple-explanation-button">간단 구절설명</button>
+            </div>
+        </div>
     </div>
 
     <div class="container">
@@ -381,8 +425,8 @@
     </div>
 
     <h2 id="bible-text" style="line-height: 1.2em;margin-left:15px;margin-right:15px;font-style: normal; font-weight: normal; color: black;font-size: 20px;word-break: break-all;">
-        <!-- 본문 내용 -->
-       <strong>
+        
+<strong>
 
 통독 2일차
 <br>범위: 창세기 12장- 23장</br>
@@ -734,7 +778,6 @@
    
   </h2>
 
-    <!-- 구절 설명 모달 (Modal) -->
     <div id="explanation-modal" class="modal">
         <div class="modal-content">
             <span class="close-button" id="close-modal">&times;</span>
@@ -743,19 +786,20 @@
         </div>
     </div>
 
-    <!-- 스크롤 마커 컨테이너 -->
     <div id="scroll-marker-container" class="scroll-marker-container"></div>
 
-    <script>
-        // API 키는 비워두어야 합니다.
-        const apiKey = ""; 
+       <script>
+    // API 키 입력
+    const apiKey = "AIzaSyDUlSQlSPgnrFBXpnUJMDoUO3s_KsaoFRU"; 
 
-        // DOM 요소들을 변수에 저장하여 효율적으로 사용
+    // DOM 요소들을 변수에 저장하여 효율적으로 사용
         const bibleTextEl = document.getElementById('bible-text');
         const searchCountEl = document.getElementById('search-count');
         const nextLocationBtn = document.getElementById('next-location-btn');
         const scrollMarkerContainer = document.getElementById('scroll-marker-container');
-        const explanationButton = document.getElementById('explanation-button');
+        const explanationIconButton = document.getElementById('explanation-icon-button');
+        const detailedExplanationButton = document.getElementById('detailed-explanation-button');
+        const simpleExplanationButton = document.getElementById('simple-explanation-button');
         const modal = document.getElementById('explanation-modal');
         const closeModalButton = document.getElementById('close-modal');
         const modalTitle = document.getElementById('modal-title');
@@ -775,6 +819,7 @@
         const upBtn = document.getElementById('up');
         const downBtn = document.getElementById('down');
         const fontSizeEl = document.getElementById('font-size');
+        const explanationButtonWrapper = document.querySelector('.explanation-button-wrapper');
 
         // 전역 변수 초기화
         let selectedVerse = "";
@@ -865,19 +910,39 @@
                     remainingTimeEl.textContent = `-${formatTime(remainingTime)}`;
                 }
             });
-
-            // 모달 기능
-            explanationButton.addEventListener('click', () => {
+            
+            // 모달 및 구절 설명 기능
+            // 상세 구절 설명 버튼 클릭 이벤트
+            detailedExplanationButton.addEventListener('click', () => {
                 const trimmedVerse = selectedVerse.trim();
                 if (trimmedVerse === "") {
-                    modalTitle.textContent = "구절을 먼저 선택하세요";
-                    modalText.textContent = "본문에서 구절이나 단어를 드래그하여 선택한 후 다시 버튼을 눌러주세요.";
+                    showModal("검색창을 닫고 구절을 먼저 선택하세요", "본문에서 구절이나 단어를 드래그하여 선택한 후 다시 버튼을 눌러주세요.");
                 } else {
-                    modalTitle.textContent = "생성 중...";
-                    modalText.textContent = "설명을 생성 중입니다. 잠시만 기다려 주세요...";
-                    fetchExplanation(trimmedVerse);
+                    showLoadingModal();
+                    fetchExplanation(trimmedVerse, 'detailed');
                 }
-                modal.style.display = 'block';
+            });
+
+            // 간단 구절 설명 버튼 클릭 이벤트
+            simpleExplanationButton.addEventListener('click', () => {
+                const trimmedVerse = selectedVerse.trim();
+                if (trimmedVerse === "") {
+                    showModal("검색창을 닫고 구절을 먼저 선택하세요", "본문에서 구절이나 단어를 드래그하여 선택한 후 다시 버튼을 눌러주세요.");
+                } else {
+                    showLoadingModal();
+                    fetchExplanation(trimmedVerse, 'simple');
+                }
+            });
+
+            // 초기 구절 아이콘 버튼 클릭 시 상세 설명 모달 표시
+            explanationIconButton.addEventListener('click', () => {
+                const trimmedVerse = selectedVerse.trim();
+                if (trimmedVerse === "") {
+                    showModal("검색창을 닫고 구절을 먼저 선택하세요", "본문에서 구절이나 단어를 드래그하여 선택한 후 다시 버튼을 눌러주세요.");
+                } else {
+                    showLoadingModal();
+                    fetchExplanation(trimmedVerse, 'detailed');
+                }
             });
 
             closeModalButton.addEventListener('click', () => {
@@ -938,9 +1003,7 @@
                 nextLocationBtn.style.display = 'inline-block';
                 updateScrollMarkers();
             } else {
-                modalTitle.textContent = "검색 결과 없음";
-                modalText.textContent = `"${searchText}"에 대한 검색 결과가 없습니다.`;
-                modal.style.display = 'block';
+                showModal("검색 결과 없음", `"${searchText}"에 대한 검색 결과가 없습니다.`);
                 nextLocationBtn.style.display = 'none';
             }
         }
@@ -989,17 +1052,65 @@
             }
         }
 
-        // AI를 사용하여 설명을 가져오는 비동기 함수
-         async function fetchExplanation(promptText) {
-            // 여기에 사용자께서 제공해주신 API 키를 직접 입력했습니다.
-            // Replace with your API key.
-            const apiKey = "AIzaSyDUlSQlSPgnrFBXpnUJMDoUO3s_KsaoFRU";
+        // 모달을 보여주는 공통 함수
+        function showModal(title, text) {
+            modalTitle.textContent = title;
+            modalText.innerHTML = text.replace(/\n/g, '<br>');
+            modal.style.display = 'block';
+        }
+
+        // 로딩 스피너를 보여주는 함수
+        function showLoadingModal() {
+            modalTitle.innerHTML = '<span class="loader"></span> 생성 중...';
+            modalText.textContent = "설명을 생성 중입니다. 잠시만 기다려 주세요...";
+            modal.style.display = 'block';
+        }
+
+        /**
+         * AI를 사용하여 설명을 가져오는 비동기 함수
+         * @param {string} promptText 사용자로부터 선택된 구절
+         * @param {string} type 'detailed' 또는 'simple' 설명 유형
+         */
+        async function fetchExplanation(promptText, type) {
+            // 설명 유형에 따라 다른 프롬프트 사용
+            let prompt;
+            if (type === 'simple') {
+                prompt = `
+                    **명령:**
+                    다음 성경 용어/구절에 대해 300자에서 500자 사이의 짧고 간결한 설명을 작성해 주세요. 핵심 내용을 중심으로 요약해 주세요.
+                    
+                    **요청 용어/구절:** "${promptText}"
+                `;
+            } else {
+                // 기존 상세 프롬프트
+                prompt = `
+                    **명령:**
+                    다음 성경 용어/구절에 대해 성경적 관점에서 자세히 설명해 주세요. 답변은 다음 지침에 따라 상세하게 작성해 주세요. 최소 100자 이상이어야 하며, 필요한 경우 표, 그림, 지도를 포함하여 설명해 주세요.
+
+                    **지침:**
+                    1. **지명, 족속, 민족, 나라:**
+                        - 지명: 자세한 설명과 함께 성경 지도를 찾아서 함께 보여 주거나 간략한 지도에 위치를 나타내 주세요.
+                        - 족속, 민족, 나라: 그들이 거주했던 지명과 위치에 대한 자세한 설명과 성경 지도를 찾아서 함께 보여 주거나 간략한 지도에 위치를 나타내 주세요.
+                    2. **이름 (인물):**
+                        - 이름의 뜻, 의미, 생몰 시기, 주로 거주하거나 이동한 경로, 인물에 관한 자세한 설명을 제공하고, 인물 성화가 존재하면 그림으로도 보여주세요.
+                    3. **제사 도구, 제사 기구, 성물:**
+                        - 자세한 설명과 함께 성화 또는 그림을 찾아서 보여 주세요.
+                    4. **동물, 생물, 식물, 광물 또는 기타 물질:**
+                        - 성경적인 의미와 자세한 설명과 함께 성화나 그림으로 함께 보여 주세요.
+                        - 다른 것과 비교할 수 있는 상징적인 것은 도표나 표로 나타내서 보여 주세요 (예: 12지파의 상징 보석의 뜻).
+                    5. **비교 가능한 개념:**
+                        - 성경에 있는 비슷한 개념들과 쉽게 비교가 되도록 표를 나타낼 수 있다면 설명과 함께 표로도 나타내어 주세요. (예: 제사법, 여러 제사의 의미, 절기, 이집트 10가지 재앙, 우상 신의 의미, 비슷한 상징의 의미, 12지파의 뜻과 축복, 예언자의 사역, 신약의 교회, 바울의 서신 내용 비교).
+
+                    **요청 용어/구절:** "${promptText}"
+                `;
+            }
+            
             const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
             const payload = {
                 contents: [
                     {
                         parts: [
-                            { text: `다음 용어/구절에 대해 성경적 관점에서 아주 짧게 2-3문장으로 설명해 줘. 성경적 해석이 불가능한 경우 일반적인 해석을 해줘. 답변은 '용어: 설명' 형태로만 제공해. 용어: ${promptText}` }
+                            { text: prompt }
                         ]
                     }
                 ],
@@ -1027,39 +1138,31 @@
                         throw new Error(`API error: ${response.status} ${response.statusText}`);
                     }
                 } catch (error) {
-                    modalTitle.textContent = "오류 발생";
-                    modalText.textContent = `설명을 가져오는 중 오류가 발생했습니다: ${error.message}`;
+                    showModal("오류 발생", `설명을 가져오는 중 오류가 발생했습니다: ${error.message}`);
                     return;
                 }
             }
 
             if (!response || !response.ok) {
-                modalTitle.textContent = "오류 발생";
-                modalText.textContent = `API 호출에 실패했습니다. (상태 코드: ${response?.status || '알 수 없음'}) 잠시 후 다시 시도해 주세요.`;
+                showModal("오류 발생", `API 호출에 실패했습니다. (상태 코드: ${response?.status || '알 수 없음'}) 잠시 후 다시 시도해 주세요.`);
                 return;
             }
 
             try {
                 const result = await response.json();
                 const explanation = result?.candidates?.[0]?.content?.parts?.[0]?.text;
-
+                
                 if (explanation) {
-                    modalText.textContent = explanation;
+                    showModal(promptText, explanation);
                 } else {
-                    modalTitle.textContent = "설명 없음";
-                    modalText.textContent = "요청하신 내용에 대한 설명을 찾을 수 없습니다.";
+                    showModal("설명 없음", "요청하신 내용에 대한 설명을 찾을 수 없습니다.");
                 }
             } catch (parseError) {
-                modalTitle.textContent = "오류 발생";
-                modalText.textContent = "응답을 처리하는 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.";
+                showModal("오류 발생", "응답을 처리하는 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.");
             }
         }
     </script>
 </body>
 </html>
-
-
-
-
 
 
