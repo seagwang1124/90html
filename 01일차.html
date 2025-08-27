@@ -900,7 +900,7 @@
             // 로딩 상태에 따라 이미지와 텍스트를 제어
             if (isLoading) {
                 modalImageContainer.classList.add('hidden');
-                modalText.innerHTML = `<span class="text-xl font-semibold flex items-center justify-center text-blue-500">${imageUrl ? '<span class="loader"></span> 그림 생성 중...' : '<span class="loader"></span> 설명 생성 중...'}</span>`;
+                modalText.innerHTML = `<span class="text-xl font-semibold flex items-center justify-center text-blue-500">${imageUrl ? '<span class="loader"></span> 그림 검색 중...' : '<span class="loader"></span> 설명 생성 중...'}</span>`;
             } else {
                 if (imageUrl) {
                     modalImage.src = imageUrl;
@@ -975,7 +975,7 @@
         }
         
         /**
-         * fetchImageAndExplanation: 이미지 생성 및 텍스트 설명 동시 처리
+         * fetchImageAndExplanation: 이미지 검색 및 텍스트 설명 동시 처리
          */
         async function fetchImageAndExplanation(promptText) {
             showModal(promptText, '', true, true); // 그림 로딩 메시지 표시
@@ -1043,7 +1043,7 @@
             const imageApiUrl = `https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-002:predict?key=${geminiApiKey}`;
             const imagePayload = { 
                 instances: { 
-                    prompt: `"${promptText}"에 대한 성경적 배경이 드러나는 사실적인 사진 또는 시각 자료를 검색해 주세요. 성경 용어의 인물, 건축물, 역사적 유물, 또는 성막과 같은 상징적인 성물에 초점을 맞춰 검색해 주세요. 특피 API로 그림을 직접 생성하지 말고 웹사이트에서 선경용어롣힌 딘어를 검색을 해서 보여 주세요. "성경용어"+"${promptText}"의 그림이나 사진을 검색해서 리뷰가 많은것을 검색해 주세요.`
+                    prompt: `"${promptText}"에 대한 성경적 배경이 드러나는 사실적인 사진 또는 시각 자료를 검색해 주세요. 성경 용어의 인물, 건축물, 역사적 유물, 또는 성막과 같은 상징적인 성물에 초점을 맞춰 검색해 주세요. 특히 API로 그림을 직접 생성하지 말고 웹사이트에서 성경용어로 된 딘어를 검색을 해서 보여 주세요. "성경용어"+"${promptText}"의 그림이나 사진을 검색해서 리뷰가 많은것을 검색해 주세요.`
                 }, 
                 parameters: { "sampleCount": 1 } 
             };
@@ -1058,7 +1058,7 @@
             };
 
             try {
-                // 이미지 생성
+                // 이미지 검색
                 const imageResponse = await fetch(imageApiUrl, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -1097,4 +1097,5 @@
     </script>
 </body>
 </html>
+
 
