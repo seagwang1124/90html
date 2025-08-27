@@ -610,9 +610,10 @@
     <div id="scroll-marker-container" class="scroll-marker-container"></div>
     
     <script>
-        // API 키는 이 환경에서 자동으로 제공됩니다.
-        const geminiApiKey = typeof __gemini_api_key !== 'undefined' ? __gemini_api_key : '';
-
+        // ------------------------------
+        // 설정: API 키를 여기에 넣으세요 (빈 문자열이면 호출은 실패합니다)
+        const apiKey = "AIzaSyDUlSQlSPgnrFBXpnUJMDoUO3s_KsaoFRU"; // <-- 여기에 Google API Key를 넣으세요
+        // ------------------------------
         // DOM 요소
         const bibleTextEl = document.getElementById('bible-text');
         const searchInput = document.getElementById('search-input');
@@ -1036,4 +1037,5 @@
     </script>
 </body>
 </html>
+
 
