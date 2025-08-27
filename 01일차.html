@@ -5,245 +5,238 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>통큰통독-01일차</title>
     <link rel="apple-touch-icon" type="image/png" href="https://i.postimg.cc/Qtnq0gFJ/Ezra-icon.png">
-    <!-- 수정: 올바른 메타 이름 -->
     <meta name="apple-mobile-web-app-title" content="통큰통독">
     <link rel="shortcut icon" type="image/png" href="https://i.postimg.cc/Qtnq0gFJ/Ezra-icon.png">
     <link rel="mask-icon" type="image/png" href="https://i.postimg.cc/Qtnq0gFJ/Ezra-icon.png">
+    <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        /* 페이지 기본 스타일 (body 속성은 CSS로 처리) */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap');
+
         body {
-            margin: 0;
-            padding-top: 150px;
-            font-family: Arial, sans-serif;
-            background-color: #FFFFFF;
-            color: #000000;
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
         }
 
-        a:link { color: #0000FF; }
-        a:visited { color: #660099; }
+        /* 검색 하이라이트 스타일 */
+        .search-highlight {
+            background-color: #fde047;
+            color: #1f2937;
+            border-radius: 4px;
+            padding: 2px 4px;
+        }
 
-        /* 상단 고정 테이블 스타일 */
-        .top-fixed-table {
+        /* 스크롤 마커 컨테이너 */
+        .scroll-marker-container {
             position: fixed;
             top: 0;
-            left: 0;
-            width: 100%;
-            background-color: transparent;
-            border-bottom: none;
-            z-index: 100;
-            table-layout: fixed;
-            padding: 10px 0;
-            box-sizing: border-box;
+            right: 0;
+            width: 8px;
+            height: 100vh;
+            z-index: 99;
+            pointer-events: none;
         }
 
-        /* 구절 설명 버튼 컨테이너 스타일 */
-        .explanation-button-container {
-            position: fixed;
-            top: 100px;
-            left: 0;
-            width: 100%;
-            z-index: 100;
-            padding-bottom: 10px;
-            box-sizing: border-box;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 0 10px;
-        }
-
-        .explanation-button-wrapper {
-            position: relative;
-            display: inline-block;
-            cursor: pointer;
-        }
-
-        .container {
-            width: 100%;
-            text-align: center;
-        }
-
-        h2 {
-            padding: 0;
-            text-align: left;
-            margin-left: 15px;
-            margin-right: 15px;
-        }
-
-        p { display: inline-block; }
-        .font-size-label { margin-right: 20px; }
-        #font-size { margin: 0 5px; }
-
-        .search-cell { text-align: left; padding-left: 10px; vertical-align: top; width: 30%; }
-        .audio-cell { text-align: right; padding-right: 10px; vertical-align: top; width: 30%; }
-
-        #custom-audio-player { display: flex; flex-direction: column; align-items: center; }
-        .player-controls { display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 5px; }
-        .time-display { font-size: 14px; color: #555; margin: 0 5px; }
-        .control-btn { width: 40px; height: 40px; font-size: 18px; cursor: pointer; border: 1px solid #ccc; background-color: #fff; border-radius: 5px; }
-        .control-btn:hover { background-color: #e0e0e0; }
-        #play-btn { background-color: #d1f3d4; }
-        #pause-btn { background-color: #fff6d6; }
-        #stop-btn { background-color: #fddddd; }
-
-        .speed-controls { display: flex; align-items: center; justify-content: center; gap: 5px; margin-bottom: 5px; }
-        .speed-btn { width: 30px; height: 30px; font-size: 14px; cursor: pointer; border: 1px solid #ccc; border-radius: 3px; background-color: #fff; }
-        .speed-btn:hover { background-color: #e0e0e0; }
-        .speed-display { font-weight: bold; color: #007BFF; width: 50px; text-align: center; }
-
-        .volume-control { display: flex; align-items: center; justify-content: center; gap: 5px; }
-        input[type="range"] { -webkit-appearance: none; width: 100px; height: 5px; background: #d3d3d3; outline: none; opacity: 0.7; transition: opacity .2s; }
-        input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 15px; height: 15px; background: #007BFF; cursor: pointer; border-radius: 50%; }
-
-        /* 구절 설명 버튼 스타일 */
-        .explanation-icon-button {
-            width: 50px;
-            height: 50px;
+        /* 스크롤 마커 */
+        .scroll-marker {
+            position: absolute;
+            right: 0;
+            width: 8px;
+            height: 8px;
+            background-color: #ef4444;
             border-radius: 50%;
-            background-color: #ff99cc;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-            border: none;
+            box-shadow: 0 0 5px rgba(255, 0, 0, 0.7);
             cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 40px;
-            transition: opacity 0.3s ease;
-            z-index: 2;
-            position: relative;
+            pointer-events: auto;
+            transition: transform 0.2s ease;
+        }
+
+        .scroll-marker:hover {
+            transform: scale(1.5);
+        }
+
+        /* 로딩 스피너 */
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3b82f6;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+            vertical-align: middle;
+            margin-right: 8px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* 구절 설명 버튼 애니메이션 */
+        .explanation-button-wrapper {
+            transition: all 0.3s ease-in-out;
         }
 
         .explanation-sub-buttons {
             display: flex;
-            gap: 10px;
+            align-items: center;
+            gap: 8px;
             opacity: 0;
             visibility: hidden;
-            transition: opacity 0.3s ease, visibility 0.3s ease;
-            position: absolute;
-            left: 50%;
-            transform: translateX(-50%) translateY(25px);
-            z-index: 1;
+            transform: translateY(10px) scale(0.8);
+            transition: all 0.3s ease-in-out;
         }
 
-        .explanation-button-wrapper.active .explanation-icon-button {
-            opacity: 0;
-            visibility: hidden;
-            pointer-events: none;
-        }
-
-        .explanation-button-wrapper.active .explanation-sub-buttons {
+        .explanation-icon-button {
             opacity: 1;
             visibility: visible;
-            transform: translateX(-50%) translateY(0);
+            transition: all 0.3s ease-in-out;
         }
 
-        .explanation-sub-button {
-            padding: 5px 10px;
-            font-size: 24px;
-            height: auto;
-            background-color: #ff99cc;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-            transition: transform 0.2s;
+        /* 'show' 클래스가 있을 때의 스타일 */
+        .explanation-button-wrapper.show .explanation-sub-buttons {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0) scale(1);
+        }
+        
+        .explanation-button-wrapper.show .explanation-icon-button {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none; /* 하위 버튼 클릭을 방해하지 않도록 함 */
         }
 
-        .explanation-sub-button:hover { transform: scale(1.05); }
-
-        #down, #up {
-            width: 54px; height: 54px; font-size: 40px; font-weight: normal; color: red; background-color: #fff; border: 1px solid #ccc; border-radius: 5px; cursor: pointer;
+        /* 모달 애니메이션 */
+        .modal-enter {
+            opacity: 0;
+            transform: scale(0.95);
+        }
+        .modal-enter-active {
+            opacity: 1;
+            transform: scale(1);
+            transition: all 0.3s ease;
+        }
+        .modal-leave-active {
+            transition: all 0.3s ease;
+        }
+        .modal-leave-to {
+            opacity: 0;
+            transform: scale(0.95);
+        }
+        
+        /* 모달 이미지 스타일 */
+        .modal-image-container {
+            position: relative;
+            width: 100%;
+            padding-bottom: 75%; /* 4:3 비율 유지 */
+            overflow: hidden;
+            border-radius: 0.5rem; /* rounded-lg */
+            margin-bottom: 1rem; /* mb-4 */
         }
 
-        /* 모달 */
-        .modal { display: none; position: fixed; z-index: 200; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.4); }
-        .modal-content { background-color: #fefefe; margin: 15% auto; padding: 20px; border: 1px solid #888; width: 80%; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.2); text-align: left; }
-        #modal-image { max-width: 100%; height: auto; margin-bottom: 20px; border-radius: 8px; display: none; }
-        .close-button { color: #aaa; float: right; font-size: 28px; font-weight: bold; }
-        .close-button:hover, .close-button:focus { color: black; text-decoration: none; cursor: pointer; }
+        .modal-image {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: contain; /* 이미지가 잘리지 않고 전체 보이도록 수정 */
+            object-position: center;
+        }
 
-        /* 로딩 스피너 */
-        .loader { border: 4px solid #f3f3f3; border-top: 4px solid #3498db; border-radius: 50%; width: 20px; height: 20px; animation: spin 2s linear infinite; display: inline-block; vertical-align: middle; margin-right: 5px; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        /* 모달 텍스트 스타일 */
+        .modal-text-container {
+            max-height: 80vh;
+            overflow-y: auto;
+            padding-bottom: 1rem;
+        }
 
-        .search-highlight { background-color: yellow; color: black; }
-
-        .scroll-marker-container { position: fixed; top: 0; right: 0; width: 8px; height: 100vh; z-index: 99; pointer-events: none; }
-        .scroll-marker { position: absolute; right: 0; width: 8px; height: 8px; background-color: red; border-radius: 50%; box-shadow: 0 0 5px rgba(255, 0, 0, 0.7); cursor: pointer; pointer-events: auto; }
-        .scroll-marker:hover { transform: scale(1.5); transition: transform 0.2s ease; }
-
-        #search-count-container { display: flex; align-items: center; gap: 10px; }
-        #search-count { font-size: 15pt; color: #007BFF; font-weight: bold; margin-left: 10px; white-space: nowrap; }
-        #next-location-btn { padding: 5px 10px; font-size: 12pt; cursor: pointer; border: 1px solid #ccc; background-color: #f0f0f0; border-radius: 5px; display: none; }
+        .modal-title {
+            font-weight: bold;
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            position: sticky;
+            top: 0;
+            background-color: white;
+            padding-bottom: 0.5rem;
+            z-index: 10;
+        }
     </style>
 </head>
-<!-- body 속성 제거하고 CSS로 처리했습니다 -->
-<body>
-    <table class="top-fixed-table" id="main-table" cellpadding="0" cellspacing="0">
-        <tr>
-            <td class="search-cell">
-                <form name="f1" action="" onsubmit="findString(this.t1.value); return false">
-                    <input type="reset" name="b2" value="X" style="font-size:15pt;" onclick="clearHighlight()">
-                    <input type="text" style="font-size:15pt;" placeholder="검색어를 입력하세요" name="t1" value="" size="17">
-                    <input type="submit" name="b1" value="검색" style="font-size:13pt;">
-                    <div id="search-count-container">
-                        <span id="search-count"></span>
-                        <button type="button" id="next-location-btn" onclick="nextLocation()">다음 위치</button>
-                    </div>
+<body class="bg-gray-50 text-gray-900">
+    <!-- 상단 고정 헤더 -->
+    <div class="fixed top-0 left-0 w-full bg-white bg-opacity-95 backdrop-blur-sm shadow-md p-4 z-50">
+        <div class="flex flex-col md:flex-row items-center justify-between space-y-4 md:space-y-0">
+            <!-- 검색 폼 -->
+            <div class="w-full md:w-1/3">
+                <form id="search-form" class="flex items-center space-x-2 w-full">
+                    <button type="button" id="reset-btn" class="p-2 bg-gray-200 rounded-full text-sm font-bold w-8 h-8 flex items-center justify-center">X</button>
+                    <input type="text" id="search-input" placeholder="검색어를 입력하세요" class="flex-grow p-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <button type="submit" class="p-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors">검색</button>
                 </form>
-            </td>
-            <td class="audio-cell">
-                <div id="custom-audio-player">
-                    <audio id="audio-file" preload="auto">
-                        <!-- 수정: https 사용 -->
-                        <source src="https://vod47.anyline.co.kr/vod_ezra/%EC%9D%BD%EA%B8%B0%2001.mp3" type="audio/mp3">
-                    </audio>
-                    <div class="player-controls">
-                        <span id="current-time" class="time-display">0:00</span>
-                        <button id="play-btn" class="control-btn">▶</button>
-                        <button id="pause-btn" class="control-btn">⏸</button>
-                        <button id="stop-btn" class="control-btn">■</button>
-                        <span id="remaining-time" class="time-display">0:00</span>
+                <div id="search-count-container" class="flex items-center mt-2 pl-12 text-sm text-gray-600">
+                    <span id="search-count" class="font-semibold"></span>
+                    <button type="button" id="next-location-btn" class="ml-2 px-3 py-1 bg-gray-200 text-gray-800 rounded-md text-xs font-medium hover:bg-gray-300 transition-colors hidden">다음 위치</button>
+                </div>
+            </div>
+
+            <!-- 오디오 플레이어 -->
+            <div class="w-full md:w-2/3 flex flex-col items-center justify-center">
+                <audio id="audio-file" preload="auto">
+                    <source src="https://vod47.anyline.co.kr/vod_ezra/%EC%9D%BD%EA%B8%B0%2001.mp3" type="audio/mp3">
+                </audio>
+                <div class="player-controls flex items-center justify-center gap-2 mb-2">
+                    <span id="current-time" class="text-sm font-mono text-gray-500">0:00</span>
+                    <button id="play-btn" class="p-2 bg-green-200 rounded-full hover:bg-green-300 transition-colors shadow-md">▶</button>
+                    <button id="pause-btn" class="p-2 bg-yellow-200 rounded-full hover:bg-yellow-300 transition-colors shadow-md">⏸</button>
+                    <button id="stop-btn" class="p-2 bg-red-200 rounded-full hover:bg-red-300 transition-colors shadow-md">■</button>
+                    <span id="remaining-time" class="text-sm font-mono text-gray-500">0:00</span>
+                </div>
+                <div class="speed-volume-controls flex items-center justify-center gap-4">
+                    <div class="speed-controls flex items-center gap-1">
+                        <button id="speed-down-02" class="px-2 py-1 text-sm bg-gray-200 rounded-md hover:bg-gray-300 transition-colors">&lt;&lt;</button>
+                        <button id="speed-down-01" class="px-2 py-1 text-sm bg-gray-200 rounded-md hover:bg-gray-300 transition-colors">&lt;</button>
+                        <span id="speed-display" class="text-blue-600 font-bold text-sm w-12 text-center">1.0x</span>
+                        <button id="speed-up-01" class="px-2 py-1 text-sm bg-gray-200 rounded-md hover:bg-gray-300 transition-colors">&gt;</button>
+                        <button id="speed-up-02" class="px-2 py-1 text-sm bg-gray-200 rounded-md hover:bg-gray-300 transition-colors">&gt;&gt;</button>
                     </div>
-                    <div class="speed-controls">
-                        <button id="speed-down-02" class="speed-btn">&lt;&lt;</button>
-                        <button id="speed-down-01" class="speed-btn">&lt;</button>
-                        <span id="speed-display" class="speed-display">1.0x</span>
-                        <button id="speed-up-01" class="speed-btn">&gt;</button>
-                        <button id="speed-up-02" class="speed-btn">&gt;&gt;</button>
-                    </div>
-                    <div class="volume-control">
-                        <span style="font-size:12px;">볼륨</span>
-                        <input type="range" id="volume-slider" min="0" max="1" step="0.01" value="1">
+                    <div class="volume-control flex items-center gap-1">
+                        <span class="text-xs text-gray-500">볼륨</span>
+                        <input type="range" id="volume-slider" min="0" max="1" step="0.01" value="1" class="w-24">
                     </div>
                 </div>
-            </td>
-        </tr>
-    </table>
-
-    <!-- 구절 설명 버튼 컨테이너 -->
-    <div class="explanation-button-container">
-        <div class="explanation-button-wrapper">
-            <button class="explanation-icon-button" id="explanation-icon-button">
-                <span>📖</span>
-            </button>
-            <div class="explanation-sub-buttons">
-                <button class="explanation-sub-button" id="detailed-explanation-button">상세 구절설명</button>
-                <button class="explanation-sub-button" id="simple-explanation-button">간단 구절설명</button>
-                <button class="explanation-sub-button" id="image-explanation-button">구절 그림 설명</button>
             </div>
         </div>
     </div>
+    
+    <!-- 본문 내용 컨테이너 -->
+    <div class="relative max-w-3xl mx-auto px-4 mt-[250px] pb-32">
+        <!-- 구절 설명 버튼 컨테이너 -->
+        <div class="explanation-button-container fixed top-[120px] md:top-[140px] left-1/2 -translate-x-1/2 z-40 w-full flex justify-center p-2 box-border">
+            <div class="explanation-button-wrapper relative flex items-center justify-center">
+                <!-- 책 모양 아이콘 버튼 -->
+                <button class="explanation-icon-button absolute w-12 h-12 md:w-14 md:h-14 bg-pink-300 rounded-full shadow-md flex items-center justify-center text-4xl cursor-pointer" id="explanation-icon-button">
+                    <span>📖</span>
+                </button>
+                <!-- 하위 버튼들 -->
+                <div class="explanation-sub-buttons absolute top-0 left-1/2 -translate-x-1/2">
+                    <button class="explanation-sub-button bg-pink-300 text-gray-800 text-xs md:text-sm px-3 py-2 rounded-md shadow-md hover:scale-105 transition-transform" id="detailed-explanation-button">상세 설명</button>
+                    <button class="explanation-sub-button bg-pink-300 text-gray-800 text-xs md:text-sm px-3 py-2 rounded-md shadow-md hover:scale-105 transition-transform" id="simple-explanation-button">간단 설명</button>
+                    <button class="explanation-sub-button bg-pink-300 text-gray-800 text-xs md:text-sm px-3 py-2 rounded-md shadow-md hover:scale-105 transition-transform" id="image-explanation-button">그림 설명</button>
+                </div>
+            </div>
+        </div>
 
-    <div class="container">
-        <br>
-        <p class="font-size-label" style="font-style: normal; font-weight: bold;color: blue;font-size: 40px;">Font Size</p>
-        <button id="down" style="font-style: normal; font-weight: normal;color: red;font-size: 40px;">-</button>
-        <p id="font-size" style="font-style: normal; font-weight: bold; color: red;font-size: 40px;">20</p>
-        <button id="up" style="font-style: normal; font-weight: normal;color: red;font-size: 40px;">+</button>
-    </div>
+        <!-- 폰트 크기 조절 -->
+        <div class="flex items-center justify-center mb-6">
+            <span class="text-lg font-bold text-blue-600 mr-4">글꼴 크기</span>
+            <button id="down" class="w-10 h-10 text-2xl font-normal text-red-500 bg-white border border-gray-300 rounded-lg shadow-sm hover:bg-gray-100">-</button>
+            <span id="font-size" class="text-2xl font-bold text-red-500 mx-4 w-10 text-center">20</span>
+            <button id="up" class="w-10 h-10 text-2xl font-normal text-red-500 bg-white border border-gray-300 rounded-lg shadow-sm hover:bg-gray-100">+</button>
+        </div>
 
-    <h2 id="bible-text" style="line-height: 1.2em;margin-left:15px;margin-right:15px;font-style: normal; font-weight: normal; color: black;font-size: 20px;word-break: break-all;">
-         <strong>
+        <!-- 성경 본문 -->
+        <div id="bible-text" class="text-xl leading-relaxed text-left text-gray-800 word-break-keep-all whitespace-pre-line">
+           <strong>
 
 통독 1일차
 <br>범위: 창세기 1장- 11장</br>
@@ -592,38 +585,51 @@
 <br>&nbsp;</br>
 <br>    1일차 끝</br>
 <br>&nbsp;</br>
-   
-  </h2>
-
-    <div id="explanation-modal" class="modal">
-        <div class="modal-content">
-            <span class="close-button" id="close-modal">&times;</span>
-            <h3 id="modal-title">구절 설명</h3>
-            <img id="modal-image" src="" alt="설명 관련 이미지">
-            <p id="modal-text">구절을 드래그하여 선택하고 '구절설명' 버튼을 누르세요.</p>
+ 
         </div>
     </div>
 
-    <div id="scroll-marker-container" class="scroll-marker-container"></div>
+    <!-- 모달 -->
+    <div id="explanation-modal" class="fixed inset-0 z-[100] bg-gray-900 bg-opacity-50 hidden flex items-center justify-center">
+        <!-- 모달 컨텐츠: 높이 제한 및 스크롤 가능하게 수정 -->
+        <div class="modal-content relative w-11/12 max-w-lg bg-white p-6 rounded-lg shadow-2xl text-left transition-all duration-300 modal-enter">
+            <button class="absolute top-2 right-2 text-gray-700 hover:text-gray-900 text-3xl font-bold" id="close-modal">&times;</button>
+            
+            <!-- 모달 내용을 담을 스크롤 가능 컨테이너 -->
+            <div class="modal-text-container">
+                <h3 id="modal-title" class="modal-title"></h3>
+                <div id="modal-image-container" class="modal-image-container hidden">
+                    <img id="modal-image" src="" alt="설명 관련 이미지" class="modal-image">
+                </div>
+                <p id="modal-text" class="text-gray-700 leading-relaxed">구절을 드래그하여 선택하고 '구절설명' 버튼을 누르세요.</p>
+            </div>
+        </div>
+    </div>
 
+    <!-- 스크롤 마커 컨테이너 -->
+    <div id="scroll-marker-container" class="scroll-marker-container"></div>
+    
     <script>
-        // ------------------------------
-        // 설정: API 키를 여기에 넣으세요 (빈 문자열이면 호출은 실패합니다)
-        const apiKey = "AIzaSyDUlSQlSPgnrFBXpnUJMDoUO3s_KsaoFRU"; // <-- 여기에 Google API Key를 넣으세요
-        // ------------------------------
+        // API 키는 이 환경에서 자동으로 제공됩니다.
+        const geminiApiKey = typeof __gemini_api_key !== 'undefined' ? __gemini_api_key : '';
 
         // DOM 요소
         const bibleTextEl = document.getElementById('bible-text');
+        const searchInput = document.getElementById('search-input');
+        const searchForm = document.getElementById('search-form');
         const searchCountEl = document.getElementById('search-count');
         const nextLocationBtn = document.getElementById('next-location-btn');
+        const resetBtn = document.getElementById('reset-btn');
         const scrollMarkerContainer = document.getElementById('scroll-marker-container');
         const explanationIconButton = document.getElementById('explanation-icon-button');
         const detailedExplanationButton = document.getElementById('detailed-explanation-button');
         const simpleExplanationButton = document.getElementById('simple-explanation-button');
         const imageExplanationButton = document.getElementById('image-explanation-button');
         const modal = document.getElementById('explanation-modal');
+        const modalContent = document.querySelector('.modal-content');
         const closeModalButton = document.getElementById('close-modal');
         const modalTitle = document.getElementById('modal-title');
+        const modalImageContainer = document.getElementById('modal-image-container');
         const modalImage = document.getElementById('modal-image');
         const modalText = document.getElementById('modal-text');
         const audio = document.getElementById('audio-file');
@@ -657,57 +663,54 @@
 
         // 페이지 초기화
         window.addEventListener('DOMContentLoaded', () => {
-            originalText = bibleTextEl.innerHTML; // 원본 저장 (요청대로 <br></br> 등은 그대로 유지)
+            originalText = bibleTextEl.innerHTML;
             updateFontSizeDisplay();
             updateSpeed();
-
-            // 텍스트 드래그/선택取得
+        
+            // 텍스트 드래그/선택 이벤트
             document.addEventListener('mouseup', () => {
                 const selection = window.getSelection();
                 selectedVerse = selection ? selection.toString().trim() : '';
             });
 
             // 검색 폼
-            const searchForm = document.querySelector('form[name="f1"]');
             if (searchForm) {
                 searchForm.addEventListener('submit', (event) => {
                     event.preventDefault();
-                    const searchText = event.target.t1.value;
-                    findString(searchText);
+                    findString(searchInput.value);
                 });
             }
-            const resetBtn = document.querySelector('input[name="b2"]');
             if (resetBtn) resetBtn.addEventListener('click', clearHighlight);
-            nextLocationBtn.addEventListener('click', nextLocation);
-
-            // 폰트 크기
+            if (nextLocationBtn) nextLocationBtn.addEventListener('click', nextLocation);
+        
+            // 폰트 크기 조절
             if (upBtn) upBtn.addEventListener('click', () => {
                 let currentSize = parseFloat(window.getComputedStyle(bibleTextEl).fontSize);
-                if (currentSize + 4 <= 80) {
-                    bibleTextEl.style.fontSize = (currentSize + 4) + 'px';
+                if (currentSize + 2 <= 40) { 
+                    bibleTextEl.style.fontSize = (currentSize + 2) + 'px';
                     updateFontSizeDisplay();
                 }
             });
             if (downBtn) downBtn.addEventListener('click', () => {
                 let currentSize = parseFloat(window.getComputedStyle(bibleTextEl).fontSize);
-                if (currentSize - 4 >= 12) {
-                    bibleTextEl.style.fontSize = (currentSize - 4) + 'px';
+                if (currentSize - 2 >= 12) {
+                    bibleTextEl.style.fontSize = (currentSize - 2) + 'px';
                     updateFontSizeDisplay();
                 }
             });
-
+        
             // 오디오 컨트롤
             playBtn.addEventListener('click', () => { audio.play(); });
             pauseBtn.addEventListener('click', () => { audio.pause(); });
             stopBtn.addEventListener('click', () => { audio.pause(); audio.currentTime = 0; });
-
+        
             speedDown02Btn.addEventListener('click', () => { currentSpeed = Math.max(0.5, currentSpeed - 0.2); updateSpeed(); });
             speedDown01Btn.addEventListener('click', () => { currentSpeed = Math.max(0.5, currentSpeed - 0.1); updateSpeed(); });
             speedUp01Btn.addEventListener('click', () => { currentSpeed = Math.min(2.0, currentSpeed + 0.1); updateSpeed(); });
             speedUp02Btn.addEventListener('click', () => { currentSpeed = Math.min(2.0, currentSpeed + 0.2); updateSpeed(); });
-
+        
             volumeSlider.addEventListener('input', () => { audio.volume = volumeSlider.value; });
-
+        
             audio.addEventListener('timeupdate', () => {
                 const currentTime = audio.currentTime;
                 const duration = audio.duration;
@@ -717,69 +720,61 @@
                     remainingTimeEl.textContent = '-' + formatTime(remainingTime);
                 }
             });
-
-            // 아이콘 클릭 -> 서브버튼 표시
+        
+            // 아이콘 클릭 -> 서브버튼 표시/숨기기
             explanationIconButton.addEventListener('click', (event) => {
-                event.stopPropagation();
-                explanationButtonWrapper.classList.toggle('active');
+                event.stopPropagation(); // 버튼 클릭 시 body 클릭 이벤트 전파 방지
+                explanationButtonWrapper.classList.add('show');
             });
-
-            // 상세 설명
-            detailedExplanationButton.addEventListener('click', () => {
+            
+            // 상세/간단/그림 설명 버튼 클릭 시 모달 열기
+            detailedExplanationButton.addEventListener('click', (event) => {
+                event.stopPropagation();
                 const trimmedVerse = selectedVerse.trim();
                 if (!trimmedVerse) {
                     showModal("구절을 먼저 선택하세요", "본문에서 구절이나 단어를 드래그하여 선택한 후 다시 버튼을 눌러주세요.");
                 } else {
-                    showLoadingModal(false);
                     fetchExplanation(trimmedVerse, 'detailed');
                 }
-                explanationButtonWrapper.classList.remove('active');
+                explanationButtonWrapper.classList.remove('show');
             });
-
-            // 간단 설명
-            simpleExplanationButton.addEventListener('click', () => {
+            
+            simpleExplanationButton.addEventListener('click', (event) => {
+                event.stopPropagation();
                 const trimmedVerse = selectedVerse.trim();
                 if (!trimmedVerse) {
                     showModal("구절을 먼저 선택하세요", "본문에서 구절이나 단어를 드래그하여 선택한 후 다시 버튼을 눌러주세요.");
                 } else {
-                    showLoadingModal(false);
                     fetchExplanation(trimmedVerse, 'simple');
                 }
-                explanationButtonWrapper.classList.remove('active');
+                explanationButtonWrapper.classList.remove('show');
+            });
+            
+            imageExplanationButton.addEventListener('click', async (event) => {
+                event.stopPropagation();
+                const trimmedVerse = selectedVerse.trim();
+                if (!trimmedVerse) {
+                    showModal("구절을 먼저 선택하세요", "본문에서 구절이나 단어를 드래그하여 선택한 후 다시 버튼을 눌러주세요.");
+                } else {
+                    await fetchImageAndExplanation(trimmedVerse);
+                }
+                explanationButtonWrapper.classList.remove('show');
             });
 
-            // 이미지 + 설명
-async function fetchImageAndExplanation(promptText) {
-  // Google Custom Search API URL
-  const cx = "942212bff9c484591"; // <-- 반드시 본인 CSE ID 입력
-  const apiUrl = `https://www.googleapis.com/customsearch/v1?q=${encodeURIComponent(promptText)}&searchType=image&key=${apiKey}&cx=${cx}`;
-
-  try {
-    const response = await fetch(apiUrl);
-    const data = await response.json();
-
-    if (data.items && data.items.length > 0) {
-      const imageUrl = data.items[0].link; // 첫 번째 이미지
-      const explanation = `${promptText} 관련 그림입니다.`; // 짧은 설명 (100자 미만)
-      showModal(promptText, explanation, imageUrl);
-    } else {
-      showModal(promptText, "이미지를 찾을 수 없습니다.");
-    }
-  } catch (err) {
-    showModal("오류 발생", "이미지를 가져오는 중 오류가 발생했습니다: " + err.message);
-  }
-}
-
-            // body 외부 클릭 시 서브 버튼 닫기
+            // body 외부 클릭 시 하위 버튼 닫기
             document.body.addEventListener('click', (event) => {
                 if (!explanationButtonWrapper.contains(event.target)) {
-                    explanationButtonWrapper.classList.remove('active');
+                    explanationButtonWrapper.classList.remove('show');
                 }
             });
-
+        
             // 모달 닫기
-            closeModalButton.addEventListener('click', () => { modal.style.display = 'none'; });
-            window.addEventListener('click', (event) => { if (event.target === modal) modal.style.display = 'none'; });
+            closeModalButton.addEventListener('click', hideModal);
+            modal.addEventListener('click', (event) => {
+                if (event.target === modal) {
+                    hideModal();
+                }
+            });
         });
 
         // 폰트 크기 표시 업데이트
@@ -787,46 +782,70 @@ async function fetchImageAndExplanation(promptText) {
             const currentSize = parseFloat(window.getComputedStyle(bibleTextEl).fontSize);
             fontSizeEl.textContent = Math.round(currentSize);
         }
-
+        
         // 재생 속도 업데이트
         function updateSpeed() {
             audio.playbackRate = currentSpeed;
             speedDisplay.textContent = currentSpeed.toFixed(1) + 'x';
         }
-
+        
         // 시간 포맷
         function formatTime(seconds) {
             const minutes = Math.floor(seconds / 60);
             const remainingSeconds = Math.floor(seconds % 60);
             return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
         }
-
+        
         // 검색 및 하이라이트
         function findString(searchText) {
             clearHighlight();
-            if (searchText === null || searchText.trim() === '') {
+            if (!searchText || searchText.trim() === '') {
                 searchCountEl.textContent = '';
-                nextLocationBtn.style.display = 'none';
+                nextLocationBtn.classList.add('hidden');
                 return;
             }
             const escaped = escapeRegExp(searchText);
             const regex = new RegExp(escaped, 'gi');
-            // replace safely by match callback to preserve original matched casing
-            const newContent = originalText.replace(regex, (match) => `<span class="search-highlight">${match}</span>`);
-            bibleTextEl.innerHTML = newContent;
+            
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = originalText;
+            
+            const walker = document.createTreeWalker(tempDiv, NodeFilter.SHOW_TEXT, null, false);
+            let node;
+            const textNodesToReplace = [];
+            while ((node = walker.nextNode())) {
+                textNodesToReplace.push(node);
+            }
+
+            for (const textNode of textNodesToReplace) {
+                const text = textNode.nodeValue;
+                if (text.match(regex)) {
+                    const parent = textNode.parentNode;
+                    const newContent = text.replace(regex, (match) => `<span class="search-highlight">${match}</span>`);
+                    const tempSpan = document.createElement('span');
+                    tempSpan.innerHTML = newContent;
+                    while (tempSpan.firstChild) {
+                        parent.insertBefore(tempSpan.firstChild, textNode);
+                    }
+                    parent.removeChild(textNode);
+                }
+            }
+            
+            bibleTextEl.innerHTML = tempDiv.innerHTML;
             foundSentences = Array.from(bibleTextEl.getElementsByClassName('search-highlight'));
+            
             searchCountEl.textContent = `총 ${foundSentences.length}개 검색됨`;
             if (foundSentences.length > 0) {
                 currentSearchIndex = 0;
                 foundSentences[currentSearchIndex].scrollIntoView({ behavior: 'smooth', block: 'center' });
-                nextLocationBtn.style.display = 'inline-block';
+                nextLocationBtn.classList.remove('hidden');
                 updateScrollMarkers();
             } else {
                 showModal("검색 결과 없음", `"${searchText}"에 대한 검색 결과가 없습니다.`);
-                nextLocationBtn.style.display = 'none';
+                nextLocationBtn.classList.add('hidden');
             }
         }
-
+        
         // 다음 검색 위치
         function nextLocation() {
             if (foundSentences.length > 0) {
@@ -834,21 +853,22 @@ async function fetchImageAndExplanation(promptText) {
                 foundSentences[currentSearchIndex].scrollIntoView({ behavior: 'smooth', block: 'center' });
             }
         }
-
+        
         // 하이라이트 초기화
         function clearHighlight() {
             bibleTextEl.innerHTML = originalText;
+            searchInput.value = '';
             searchCountEl.textContent = '';
-            nextLocationBtn.style.display = 'none';
+            nextLocationBtn.classList.add('hidden');
             while (scrollMarkerContainer.firstChild) scrollMarkerContainer.removeChild(scrollMarkerContainer.firstChild);
             foundSentences = [];
             currentSearchIndex = -1;
         }
-
+        
         // 스크롤 마커 업데이트
         function updateScrollMarkers() {
             while (scrollMarkerContainer.firstChild) scrollMarkerContainer.removeChild(scrollMarkerContainer.firstChild);
-            const documentHeight = document.documentElement.scrollHeight;
+            const documentHeight = bibleTextEl.scrollHeight;
             const viewportHeight = window.innerHeight;
             for (let i = 0; i < foundSentences.length; i++) {
                 const el = foundSentences[i];
@@ -863,216 +883,157 @@ async function fetchImageAndExplanation(promptText) {
                 scrollMarkerContainer.appendChild(marker);
             }
         }
-
-        // 모달 공통
-        function showModal(title, text, imageUrl = null) {
+        
+        /**
+         * showModal: 모달을 열고 내용을 표시
+         * @param {string} title 모달 제목
+         * @param {string} text 모달 텍스트 내용
+         * @param {string} [imageUrl=null] 모달 이미지 URL
+         * @param {boolean} [isLoading=false] 로딩 상태 여부
+         */
+        function showModal(title, text, imageUrl = null, isLoading = false) {
             modalTitle.textContent = title;
             modalText.innerHTML = (text || '').toString().replace(/\n/g, '<br>');
-            if (imageUrl) {
-                modalImage.src = imageUrl;
-                modalImage.style.display = 'block';
+            
+            // 로딩 상태에 따라 이미지와 텍스트를 제어
+            if (isLoading) {
+                modalImageContainer.classList.add('hidden');
+                modalText.innerHTML = `<span class="text-xl font-semibold flex items-center justify-center text-blue-500">${imageUrl ? '<span class="loader"></span> 그림 생성 중...' : '<span class="loader"></span> 설명 생성 중...'}</span>`;
             } else {
-                modalImage.src = '';
-                modalImage.style.display = 'none';
+                if (imageUrl) {
+                    modalImage.src = imageUrl;
+                    modalImageContainer.classList.remove('hidden');
+                } else {
+                    modalImage.src = '';
+                    modalImageContainer.classList.add('hidden');
+                }
             }
-            modal.style.display = 'block';
+
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            modalContent.classList.remove('modal-enter');
+            modalContent.classList.add('modal-enter-active');
         }
 
-        // 로딩 모달
-        function showLoadingModal(isImage = false) {
-            modalTitle.innerHTML = `<span class="loader"></span> ${isImage ? '그림 생성 중...' : '설명 생성 중...'}`;
-            modalText.textContent = `설명을 생성 중입니다. 잠시만 기다려 주세요...`;
-            modalImage.style.display = 'none';
-            modal.style.display = 'block';
+        // 모달 닫기
+        function hideModal() {
+            modalContent.classList.add('modal-leave-to');
+            modalContent.classList.remove('modal-enter-active');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+                modalContent.classList.remove('modal-leave-to');
+                modalContent.classList.add('modal-enter');
+            }, 300); // CSS transition time과 맞춤
         }
-
+        
         /**
          * fetchExplanation: 상세/간단 설명 생성
          * type: 'detailed' 또는 'simple'
          */
         async function fetchExplanation(promptText, type) {
-            // build prompt according to user's specification
+            showModal(promptText, '', null, true); // 로딩 메시지 표시
+
             let prompt;
+            const model = "gemini-2.5-flash-preview-05-20";
+            const systemPrompt = "당신은 성경 지식에 해박한 전문가입니다. 성경에 나오는 단어나 구절에 대해 질문을 받으면, 해당 용어의 배경과 의미를 깊이 있게 설명해주세요. 한국어로 답변해 주세요.";
+
             if (type === 'simple') {
-                prompt = `
-**명령:**
-다음 성경 용어/구절에 대해 300자에서 500자 사이의 짧고 간결한 설명을 작성해 주세요. 핵심 내용을 중심으로 요약해 주세요.
-
-**요청 용어/구절:** "${promptText}"
-
-**지침(요약):**
-- 지명/족속/민족: 거주지와 위치 간단 설명(필요하면 지도 언급)
-- 이름(인물): 이름의 뜻/주요활동/간단한 배경
-- 제사 도구/성물 등: 간단한 설명
-- 동물/식물/광물: 성경적 의미 간단 설명
-- 비교 가능한 개념(선택적): 핵심 비교 항목 간단 나열
-                `;
+                prompt = `다음 성경 용어/구절에 대해 300자에서 500자 사이의 짧고 간결한 설명을 한국어로 작성해 주세요. 핵심 내용을 중심으로 요약해 주세요. 요청 용어/구절: "${promptText}"`;
             } else { // detailed
-                prompt = `
-**명령:**
-다음 성경 용어/구절에 대해 성경적 관점에서 자세히 설명해 주세요. 답변은 최소 100자 이상으로 작성해 주세요. 필요한 경우 표 또는 간단한 지도를 포함하거나 참조해 주세요.
-
-**요청 용어/구절:** "${promptText}"
-
-**지침:**
-A. 지명, 족속, 민족, 나라:
- - 지명: 지리적 위치, 역사적 배경, 성경 관련 사건, (간단한 지도 설명 권장)
- - 족속/민족/나라: 거주 지역, 주요 이주/이동, 성경 내 역할
-
-B. 인물:
- - 이름의 뜻, 생몰 시기(가능하면), 주 활동 지역 및 이동 경로, 주요 사건, (성화/그림이 있으면 언급)
-
-C. 제사 도구/성물:
- - 사용 목적, 방식, 역사적·신학적 의미, (성화/그림이 있으면 언급)
-
-D. 동물/생물/식물/광물:
- - 성경적 상징성, 관련 구절, 비교 가능한 항목(표 권장)
-
-E. 비교 가능한 개념:
- - 필요 시 표로 비교(예: 창조의 날별 순서, 제사의 종류, 12지파 상징 등)
-
-출력은 한국어로 명확하고 읽기 쉬운 문장으로 작성하세요.
-                `;
+                prompt = `다음 성경 용어/구절에 대해 성경적 관점에서 자세히 설명해 주세요. 답변은 최소 100자 이상으로 한국어로 작성해 주세요. 필요한 경우 표 또는 간단한 지도를 포함하거나 참조해 주세요. 요청 용어/구절: "${promptText}"`;
             }
 
-            // API 호출 설정 (Google Generative Language 예시)
-            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${geminiApiKey}`;
             const payload = {
-                contents: [
-                    { parts: [ { text: prompt } ] }
-                ]
+                contents: [{ parts: [{ text: prompt }] }],
+                systemInstruction: { parts: [{ text: systemPrompt }] }
             };
 
-            // retry 로직
-            let retryCount = 0;
-            const maxRetries = 3;
-            let response = null;
-            while (retryCount < maxRetries) {
-                try {
-                    response = await fetch(apiUrl, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(payload)
-                    });
-                    if (response.ok) break;
-                    if (response.status === 429) {
-                        const delay = Math.pow(2, retryCount) * 1000;
-                        await new Promise(res => setTimeout(res, delay));
-                        retryCount++;
-                    } else {
-                        throw new Error(`API error: ${response.status} ${response.statusText}`);
-                    }
-                } catch (err) {
-                    showModal("오류 발생", `설명을 가져오는 중 오류가 발생했습니다: ${err.message}`);
-                    return;
-                }
-            }
-
-            if (!response || !response.ok) {
-                showModal("오류 발생", `API 호출에 실패했습니다. (상태 코드: ${response ? response.status : '알 수 없음'})`);
-                return;
-            }
-
             try {
-                const result = await response.json();
-                // 여러 API 응답 형태에 대비하여 안전하게 파싱
-                const explanation =
-                    result?.candidates?.[0]?.content?.parts?.[0]?.text ||
-                    result?.candidates?.[0]?.content?.[0]?.text ||
-                    result?.results?.[0]?.output_text ||
-                    result?.output?.[0]?.content?.[0]?.text ||
-                    null;
-
-                if (explanation) {
-                    showModal(promptText, explanation);
-                } else {
-                    showModal(promptText, "요청하신 내용에 대한 설명을 찾을 수 없습니다.");
-                }
-            } catch (parseError) {
-                showModal("오류 발생", "응답을 처리하는 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.");
-            }
-        }
-
-        /**
-         * fetchImageAndExplanation: 텍스트 설명(100자 미만) + 이미지 생성 (가능하면)
-         */
-        async function fetchImageAndExplanation(promptText) {
-            // 1) 텍스트 (간단) 프롬프트
-            const textPrompt = `
-**명령:**
-다음 성경 용어/구절에 대해 성경적 관점에서 간략히 작성해 주세요. 100자 내외로 간결하게 작성하세요.
-
-**요청 용어/구절:** "${promptText}"
-            `;
-
-            // 텍스트 가져오기
-            let textExplanation = "설명을 불러오는 중입니다...";
-            try {
-                const textApiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
-                const textPayload = { contents: [ { parts: [ { text: textPrompt } ] } ] };
-                const textRes = await fetch(textApiUrl, {
+                const response = await fetch(apiUrl, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(textPayload)
+                    body: JSON.stringify(payload)
                 });
-                if (textRes.ok) {
-                    const textResult = await textRes.json();
-                    textExplanation = textResult?.candidates?.[0]?.content?.parts?.[0]?.text || textResult?.results?.[0]?.output_text || "설명을 찾을 수 없습니다.";
-                } else {
-                    textExplanation = "텍스트 설명을 가져오지 못했습니다.";
+
+                if (!response.ok) {
+                    throw new Error(`API 호출에 실패했습니다. (상태 코드: ${response.status})`);
                 }
-            } catch (e) {
-                textExplanation = "설명을 가져오는 중 오류가 발생했습니다.";
+
+                const result = await response.json();
+                const explanation =
+                    result?.candidates?.[0]?.content?.parts?.[0]?.text ||
+                    "요청하신 내용에 대한 설명을 찾을 수 없습니다.";
+                
+                showModal(promptText, explanation);
+            } catch (err) {
+                showModal("오류 발생", `설명을 가져오는 중 오류가 발생했습니다: ${err.message}`);
             }
+        }
+        
+        /**
+         * fetchImageAndExplanation: 이미지 생성 및 텍스트 설명 동시 처리
+         */
+        async function fetchImageAndExplanation(promptText) {
+            showModal(promptText, '', true, true); // 그림 로딩 메시지 표시
 
-            // 2) 이미지 생성 (이미지 엔드포인트 사용 예시)
-            let imageUrl = '';
+            // 이미지 생성 API 호출
+            const imageApiUrl = `https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-002:predict?key=${geminiApiKey}`;
+            const imagePayload = { 
+                instances: { 
+                    prompt: `"${promptText}"에 대한 성경적 배경이 드러나는 사실적인 사진 또는 시각 자료를 생성해 주세요. 인물, 건축물, 역사적 유물, 또는 성막과 같은 상징적인 성물에 초점을 맞춰주세요. 자연 경관은 피해주세요. 사진처럼 보이게 해주세요.`
+                }, 
+                parameters: { "sampleCount": 1 } 
+            };
+
+            // 텍스트 설명 API 호출
+            const textApiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${geminiApiKey}`;
+            const textPayload = {
+                contents: [{
+                    parts: [{ text: `다음 성경 용어/구절에 대해 50자 이내의 간결한 설명을 한국어로 작성해 주세요. 요청 용어/구절: "${promptText}"` }]
+                }],
+                tools: [{ google_search: {} }]
+            };
+
             try {
-                const imagePrompt = `
-**명령:**
-다음 성경 용어/구절에 대해 지도 또는 그림(도표) 형태로 시각화해 주세요. 가능한 경우 고전적 성화 스타일의 디지털 페인팅으로 표현하세요.
-**요청 용어/구절:** "${promptText}"
-                `;
-                const imageApiUrl = `https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-002:predict?key=${apiKey}`;
-                const imagePayload = { instances: { prompt: imagePrompt }, parameters: { sampleCount: 1 } };
-
-                const imageRes = await fetch(imageApiUrl, {
+                // 이미지 생성
+                const imageResponse = await fetch(imageApiUrl, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(imagePayload)
                 });
+                const imageResult = await imageResponse.json();
+                const base64Data = imageResult?.predictions?.[0]?.bytesBase64Encoded;
 
-                if (imageRes.ok) {
-                    const imageResult = await imageRes.json();
-                    // 여러 응답 포맷 대비
-                    const base64Data =
-                        imageResult?.predictions?.[0]?.bytesBase64Encoded ||
-                        imageResult?.predictions?.[0]?.content?.[0]?.image?.imageBase64 ||
-                        null;
-                    if (base64Data) {
-                        imageUrl = `data:image/png;base64,${base64Data}`;
-                    }
-                } else {
-                    console.warn('Image API returned non-ok status', imageRes.status);
+                let imageUrl = '';
+                if (base64Data) {
+                    imageUrl = `data:image/png;base64,${base64Data}`;
                 }
-            } catch (e) {
-                console.error('Image generation failed:', e);
-            }
 
-            // 3) 결과 표시
-            showModal(promptText, textExplanation, imageUrl || null);
+                // 텍스트 설명 생성
+                const textResponse = await fetch(textApiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(textPayload)
+                });
+                const textResult = await textResponse.json();
+                const explanationText = textResult?.candidates?.[0]?.content?.parts?.[0]?.text || "설명을 찾을 수 없습니다.";
+
+                const googleSearchUrl = `https://www.google.com/search?q=${encodeURIComponent(`성경 용어 ${promptText}`)}&tbm=isch`;
+                const fullText = `
+                    ${explanationText}
+                    <br><br>
+                    <a href="${googleSearchUrl}" target="_blank" class="text-blue-500 hover:underline font-bold">더 많은 그림을 보려면 여기를 클릭하세요.</a>
+                `;
+
+                showModal(promptText, fullText, imageUrl);
+
+            } catch (err) {
+                showModal("오류 발생", `그림 및 설명을 가져오는 중 오류가 발생했습니다: ${err.message}`);
+            }
         }
     </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
 
