@@ -236,7 +236,7 @@
 
         <!-- 성경 본문 -->
         <div id="bible-text" class="text-xl leading-relaxed text-left text-gray-800 word-break-keep-all whitespace-pre-line">
-           <strong>
+            <strong>
 
 통독 1일차
 <br>범위: 창세기 1장- 11장</br>
@@ -612,10 +612,7 @@
     <script>
         // ------------------------------
         // 설정: API 키를 여기에 넣으세요 (빈 문자열이면 호출은 실패합니다)
-        const apiKey = "AIzaSyDUlSQlSPgnrFBXpnUJMDoUO3s_KsaoFRU"; // <-- 여기에 Google API Key를 넣으세요
-        // API 키는 이 환경에서 자동으로 제공됩니다.
-        const geminiApiKey = typeof __gemini_api_key !== 'undefined' ? __gemini_api_key : '';
-
+        const geminiApiKey = "AIzaSyDUlSQlSPgnrFBXpnUJMDoUO3s_KsaoFRU";
         // ------------------------------
         // DOM 요소
         const bibleTextEl = document.getElementById('bible-text');
@@ -690,7 +687,7 @@
             // 폰트 크기 조절
             if (upBtn) upBtn.addEventListener('click', () => {
                 let currentSize = parseFloat(window.getComputedStyle(bibleTextEl).fontSize);
-                if (currentSize + 2 <= 40) { 
+                if (currentSize + 2 <= 40) {
                     bibleTextEl.style.fontSize = (currentSize + 2) + 'px';
                     updateFontSizeDisplay();
                 }
@@ -730,7 +727,7 @@
                 event.stopPropagation(); // 버튼 클릭 시 body 클릭 이벤트 전파 방지
                 explanationButtonWrapper.classList.add('show');
             });
-            
+        
             // 상세/간단/그림 설명 버튼 클릭 시 모달 열기
             detailedExplanationButton.addEventListener('click', (event) => {
                 event.stopPropagation();
@@ -742,7 +739,7 @@
                 }
                 explanationButtonWrapper.classList.remove('show');
             });
-            
+        
             simpleExplanationButton.addEventListener('click', (event) => {
                 event.stopPropagation();
                 const trimmedVerse = selectedVerse.trim();
@@ -753,7 +750,7 @@
                 }
                 explanationButtonWrapper.classList.remove('show');
             });
-            
+        
             imageExplanationButton.addEventListener('click', async (event) => {
                 event.stopPropagation();
                 const trimmedVerse = selectedVerse.trim();
@@ -947,7 +944,7 @@
             } else { // detailed
                 prompt = `다음 성경 용어/구절에 대해 성경적 관점에서 자세히 설명해 주세요. 답변은 최소 100자 이상으로 한국어로 작성해 주세요. 필요한 경우 표 또는 간단한 지도를 포함하거나 참조해 주세요. 요청 용어/구절: "${promptText}"`;
             }
-
+            
             const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${geminiApiKey}`;
             const payload = {
                 contents: [{ parts: [{ text: prompt }] }],
@@ -1040,6 +1037,3 @@
     </script>
 </body>
 </html>
-
-
-
