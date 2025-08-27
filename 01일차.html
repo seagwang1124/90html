@@ -749,16 +749,26 @@
             });
 
             // 이미지 + 설명
-            imageExplanationButton.addEventListener('click', () => {
-                const trimmedVerse = selectedVerse.trim();
-                if (!trimmedVerse) {
-                    showModal("구절을 먼저 선택하세요", "본문에서 구절이나 단어를 드래그하여 선택한 후 다시 버튼을 눌러주세요.");
-                } else {
-                    showLoadingModal(true);
-                    fetchImageAndExplanation(trimmedVerse);
-                }
-                explanationButtonWrapper.classList.remove('active');
-            });
+async function fetchImageAndExplanation(promptText) {
+  // Google Custom Search API URL
+  const cx = "942212bff9c484591"; // <-- 반드시 본인 CSE ID 입력
+  const apiUrl = `https://www.googleapis.com/customsearch/v1?q=${encodeURIComponent(promptText)}&searchType=image&key=${apiKey}&cx=${cx}`;
+
+  try {
+    const response = await fetch(apiUrl);
+    const data = await response.json();
+
+    if (data.items && data.items.length > 0) {
+      const imageUrl = data.items[0].link; // 첫 번째 이미지
+      const explanation = `${promptText} 관련 그림입니다.`; // 짧은 설명 (100자 미만)
+      showModal(promptText, explanation, imageUrl);
+    } else {
+      showModal(promptText, "이미지를 찾을 수 없습니다.");
+    }
+  } catch (err) {
+    showModal("오류 발생", "이미지를 가져오는 중 오류가 발생했습니다: " + err.message);
+  }
+}
 
             // body 외부 클릭 시 서브 버튼 닫기
             document.body.addEventListener('click', (event) => {
@@ -1055,6 +1065,7 @@ E. 비교 가능한 개념:
     </script>
 </body>
 </html>
+
 
 
 
