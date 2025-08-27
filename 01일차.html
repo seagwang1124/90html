@@ -222,6 +222,7 @@
                     <button class="explanation-sub-button bg-pink-300 text-gray-800 text-xs md:text-sm px-3 py-2 rounded-md shadow-md hover:scale-105 transition-transform" id="detailed-explanation-button">상세 설명</button>
                     <button class="explanation-sub-button bg-pink-300 text-gray-800 text-xs md:text-sm px-3 py-2 rounded-md shadow-md hover:scale-105 transition-transform" id="simple-explanation-button">간단 설명</button>
                     <button class="explanation-sub-button bg-pink-300 text-gray-800 text-xs md:text-sm px-3 py-2 rounded-md shadow-md hover:scale-105 transition-transform" id="image-explanation-button">그림 설명</button>
+                    <button class="explanation-sub-button bg-pink-300 text-gray-800 text-xs md:text-sm px-3 py-2 rounded-md shadow-md hover:scale-105 transition-transform" id="image-explanation-button">본문 요약</button>
                 </div>
             </div>
         </div>
@@ -979,11 +980,70 @@
         async function fetchImageAndExplanation(promptText) {
             showModal(promptText, '', true, true); // 그림 로딩 메시지 표시
 
-            // 이미지 생성 API 호출
+            // 이미지 검색 API 호출
             const imageApiUrl = `https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-002:predict?key=${geminiApiKey}`;
             const imagePayload = { 
                 instances: { 
-                    prompt: `"${promptText}"에 대한 성경적 배경이 드러나는 사실적인 사진 또는 시각 자료를 생성해 주세요. 인물, 건축물, 역사적 유물, 또는 성막과 같은 상징적인 성물에 초점을 맞춰주세요. 자연 경관은 피해주세요. 사진처럼 보이게 해주세요.`
+                    prompt: `"${promptText}"에 대한 성경적 배경이 드러나는 사실적인 사진 또는 시각 자료를 검색해 주세요. 인물, 건축물, 역사적 유물, 또는 성막과 같은 상징적인 성물에 초점을 맞춰주세요. 자연 경관은 피해주세요. 그림이나 사진을               modalContent.classList.add('modal-enter');
+            }, 300); // CSS transition time과 맞춤
+        }
+        
+        /**
+         * fetchExplanation: 상세/간단 설명 생성
+         * type: 'detailed' 또는 'simple'
+         */
+        async function fetchExplanation(promptText, type) {
+            showModal(promptText, '', null, true); // 로딩 메시지 표시
+
+            let prompt;
+            const model = "gemini-2.5-flash-preview-05-20";
+            const systemPrompt = "당신은 성경 지식에 해박한 전문가입니다. 성경에 나오는 단어나 구절에 대해 질문을 받으면, 해당 용어의 배경과 의미를 깊이 있게 설명해주세요. 한국어로 답변해 주세요.";
+
+            if (type === 'simple') {
+                prompt = `다음 성경 용어/구절에 대해 300자에서 500자 사이의 짧고 간결한 설명을 한국어로 작성해 주세요. 핵심 내용을 중심으로 요약해 주세요. 요청 용어/구절: "${promptText}"`;
+            } else { // detailed
+                prompt = `다음 성경 용어/구절에 대해 성경적 관점에서 자세히 설명해 주세요. 답변은 최소 100자 이상으로 한국어로 작성해 주세요. 필요한 경우 표 또는 간단한 지도를 포함하거나 참조해 주세요. 요청 용어/구절: "${promptText}"`;
+            }
+            
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${geminiApiKey}`;
+            const payload = {
+                contents: [{ parts: [{ text: prompt }] }],
+                systemInstruction: { parts: [{ text: systemPrompt }] }
+            };
+
+            try {
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    throw new Error(`API 호출에 실패했습니다. (상태 코드: ${response.status})`);
+                }
+
+                const result = await response.json();
+                const explanation =
+                    result?.candidates?.[0]?.content?.parts?.[0]?.text ||
+                    "요청하신 내용에 대한 설명을 찾을 수 없습니다.";
+                
+                showModal(promptText, explanation);
+            } catch (err) {
+                showModal("오류 발생", `설명을 가져오는 중 오류가 발생했습니다: ${err.message}`);
+            }
+        }
+        
+        /**
+         * fetchImageAndExplanation: 이미지 검색 및 텍스트 설명 동시 처리
+         */
+        async function fetchImageAndExplanation(promptText) {
+            showModal(promptText, '', true, true); // 그림 로딩 메시지 표시
+
+            // 이미지 검색 API 호출
+            const imageApiUrl = `https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-002:predict?key=${geminiApiKey}`;
+            const imagePayload = { 
+                instances: { 
+                    prompt: `"${promptText}"에 대한 성경적 배경이 드러나는 사실적인 사진 또는 시각 자료를 검색해 주세요. 성경 용어의 인물, 건축물, 역사적 유물, 또는 성막과 같은 상징적인 성물에 초점을 맞춰 검색해 주세요. 특피 API로 그림을 직접 생성하지 말고 웹사이트에서 선경용어롣힌 딘어를 검색을 해서 보여 주세요. "성경용어"+"${promptText}"의 그림이나 사진을 검색해서 리뷰가 많은것을 검색해 주세요.`
                 }, 
                 parameters: { "sampleCount": 1 } 
             };
@@ -1037,3 +1097,4 @@
     </script>
 </body>
 </html>
+
