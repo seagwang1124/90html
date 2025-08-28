@@ -3,14 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>통큰통독-01일차</title>
+    <title>통큰통독-02일차</title>
     <link rel="apple-touch-icon" type="image/png" href="https://i.postimg.cc/Qtnq0gFJ/Ezra-icon.png">
-    <!-- 수정: 올바른 메타 이름 -->
     <meta name="apple-mobile-web-app-title" content="통큰통독">
     <link rel="shortcut icon" type="image/png" href="https://i.postimg.cc/Qtnq0gFJ/Ezra-icon.png">
     <link rel="mask-icon" type="image/png" href="https://i.postimg.cc/Qtnq0gFJ/Ezra-icon.png">
     <style>
-        /* 페이지 기본 스타일 (body 속성은 CSS로 처리) */
+        /* 페이지 기본 스타일 */
         body {
             margin: 0;
             padding-top: 150px;
@@ -40,8 +39,9 @@
         .explanation-button-container {
             position: fixed;
             top: 100px;
-            left: 0;
-            width: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: auto;
             z-index: 100;
             padding-bottom: 10px;
             box-sizing: border-box;
@@ -70,23 +70,43 @@
         }
 
         p { display: inline-block; }
-        .font-size-label { margin-right: 20px; }
-        #font-size { margin: 0 5px; }
+        .font-size-label { margin-right: 10px; font-size: 20px !important; }
+        #font-size { margin: 0 5px; font-size: 20px !important; }
 
         .search-cell { text-align: left; padding-left: 10px; vertical-align: top; width: 30%; }
         .audio-cell { text-align: right; padding-right: 10px; vertical-align: top; width: 30%; }
 
         #custom-audio-player { display: flex; flex-direction: column; align-items: center; }
-        .player-controls { display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 5px; }
+        .player-controls { display: flex; align-items: center; justify-content: center; gap: 5px; margin-bottom: 5px; }
         .time-display { font-size: 14px; color: #555; margin: 0 5px; }
-        .control-btn { width: 40px; height: 40px; font-size: 18px; cursor: pointer; border: 1px solid #ccc; background-color: #fff; border-radius: 5px; }
+
+        /* 오디오 컨트롤 버튼 크기 65%로 줄임 */
+        .control-btn { 
+            width: 26px; 
+            height: 26px; 
+            font-size: 11.7px; 
+            cursor: pointer; 
+            border: 1px solid #ccc; 
+            background-color: #fff; 
+            border-radius: 5px; 
+        }
         .control-btn:hover { background-color: #e0e0e0; }
         #play-btn { background-color: #d1f3d4; }
         #pause-btn { background-color: #fff6d6; }
         #stop-btn { background-color: #fddddd; }
 
         .speed-controls { display: flex; align-items: center; justify-content: center; gap: 5px; margin-bottom: 5px; }
-        .speed-btn { width: 30px; height: 30px; font-size: 14px; cursor: pointer; border: 1px solid #ccc; border-radius: 3px; background-color: #fff; }
+
+        /* 재생 속도 조절 버튼 크기 70%로 줄임 */
+        .speed-btn { 
+            width: 21px; 
+            height: 21px; 
+            font-size: 9.8px; 
+            cursor: pointer; 
+            border: 1px solid #ccc; 
+            border-radius: 3px; 
+            background-color: #fff; 
+        }
         .speed-btn:hover { background-color: #e0e0e0; }
         .speed-display { font-weight: bold; color: #007BFF; width: 50px; text-align: center; }
 
@@ -94,7 +114,7 @@
         input[type="range"] { -webkit-appearance: none; width: 100px; height: 5px; background: #d3d3d3; outline: none; opacity: 0.7; transition: opacity .2s; }
         input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 15px; height: 15px; background: #007BFF; cursor: pointer; border-radius: 50%; }
 
-        /* 구절 설명 버튼 스타일 */
+        /* 구절 설명 아이콘 버튼 스타일 (크기 및 위치 유지) */
         .explanation-icon-button {
             width: 50px;
             height: 50px;
@@ -112,17 +132,18 @@
             position: relative;
         }
 
+        /* 구절 설명 서브 버튼 세로 배열로 변경 */
         .explanation-sub-buttons {
             display: flex;
-            flex-wrap: wrap; /* 추가: 버튼이 많아질 경우 줄바꿈 */
-            justify-content: center;
+            flex-direction: column; /* 세로 배열로 변경 */
             gap: 10px;
             opacity: 0;
             visibility: hidden;
             transition: opacity 0.3s ease, visibility 0.3s ease;
             position: absolute;
             left: 50%;
-            transform: translateX(-50%) translateY(25px);
+            transform: translateX(-50%);
+            top: 60px; /* 아이콘 버튼 아래로 위치 조정 */
             z-index: 1;
         }
 
@@ -135,7 +156,7 @@
         .explanation-button-wrapper.active .explanation-sub-buttons {
             opacity: 1;
             visibility: visible;
-            transform: translateX(-50%) translateY(0);
+            transform: translateX(-50%);
         }
 
         .explanation-sub-button {
@@ -148,14 +169,26 @@
             cursor: pointer;
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
             transition: transform 0.2s;
-            white-space: nowrap; /* 추가: 텍스트가 줄바꿈되지 않도록 */
+            white-space: nowrap; 
         }
 
         .explanation-sub-button:hover { transform: scale(1.05); }
 
+        /* 폰트 사이즈 컨트롤 버튼과 텍스트 크기 50%로 줄임 */
         #down, #up {
-            width: 54px; height: 54px; font-size: 40px; font-weight: normal; color: red; background-color: #fff; border: 1px solid #ccc; border-radius: 5px; cursor: pointer;
+            width: 27px; 
+            height: 27px; 
+            font-size: 20px; 
+            font-weight: normal; 
+            color: red; 
+            background-color: #fff; 
+            border: 1px solid #ccc; 
+            border-radius: 5px; 
+            cursor: pointer;
         }
+        .font-size-label { font-size: 20px; font-weight: bold; color: blue; }
+        #font-size { font-size: 20px; font-weight: bold; color: red; }
+
 
         /* 모달 */
         .modal { display: none; position: fixed; z-index: 200; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.4); }
@@ -176,17 +209,21 @@
         #search-count-container { display: flex; align-items: center; gap: 10px; }
         #search-count { font-size: 15pt; color: #007BFF; font-weight: bold; margin-left: 10px; white-space: nowrap; }
         #next-location-btn { padding: 5px 10px; font-size: 12pt; cursor: pointer; border: 1px solid #ccc; background-color: #f0f0f0; border-radius: 5px; display: none; }
+        
+        /* 검색창과 버튼 크기 80%로 줄임 */
+        .search-input { width: 60%; font-size: 12pt; }
+        .search-button, .search-reset-button { font-size: 10.4pt; }
+
     </style>
 </head>
-<!-- body 속성 제거하고 CSS로 처리했습니다 -->
 <body>
     <table class="top-fixed-table" id="main-table" cellpadding="0" cellspacing="0">
         <tr>
             <td class="search-cell">
                 <form name="f1" action="" onsubmit="findString(this.t1.value); return false">
-                    <input type="reset" name="b2" value="X" style="font-size:15pt;" onclick="clearHighlight()">
-                    <input type="text" style="font-size:15pt;" placeholder="검색어를 입력하세요" name="t1" value="" size="17">
-                    <input type="submit" name="b1" value="검색" style="font-size:13pt;">
+                    <input type="reset" name="b2" value="X" class="search-reset-button" onclick="clearHighlight()">
+                    <input type="text" placeholder="검색어를 입력하세요" name="t1" value="" class="search-input">
+                    <input type="submit" name="b1" value="검색" class="search-button">
                     <div id="search-count-container">
                         <span id="search-count"></span>
                         <button type="button" id="next-location-btn" onclick="nextLocation()">다음 위치</button>
@@ -196,8 +233,7 @@
             <td class="audio-cell">
                 <div id="custom-audio-player">
                     <audio id="audio-file" preload="auto">
-                        <!-- 수정: https 사용 -->
-                        <source src="https://vod47.anyline.co.kr/vod_ezra/%EC%9D%BD%EA%B8%B0%2001.mp3" type="audio/mp3">
+                        <source src="https://vod47.anyline.co.kr/vod_ezra/%EC%9D%BD%EA%B8%B0%2002.mp3" type="audio/mp3">
                     </audio>
                     <div class="player-controls">
                         <span id="current-time" class="time-display">0:00</span>
@@ -229,10 +265,8 @@
                 <span>📖</span>
             </button>
             <div class="explanation-sub-buttons">
-                <!-- 기존 버튼 유지 -->
                 <button class="explanation-sub-button" id="detailed-explanation-button">상세 구절설명</button>
                 <button class="explanation-sub-button" id="simple-explanation-button">간단 구절설명</button>
-                <!-- 새로운 버튼 추가 -->
                 <button class="explanation-sub-button" id="summary-simple-button">본문요약 간단</button>
                 <button class="explanation-sub-button" id="summary-detailed-button">본문요약 상세</button>
             </div>
@@ -241,10 +275,10 @@
 
     <div class="container">
         <br>
-        <p class="font-size-label" style="font-style: normal; font-weight: bold;color: blue;font-size: 40px;">Font Size</p>
-        <button id="down" style="font-style: normal; font-weight: normal;color: red;font-size: 40px;">-</button>
-        <p id="font-size" style="font-style: normal; font-weight: bold; color: red;font-size: 40px;">20</p>
-        <button id="up" style="font-style: normal; font-weight: normal;color: red;font-size: 40px;">+</button>
+        <p class="font-size-label">Font Size</p>
+        <button id="down">-</button>
+        <p id="font-size">20</p>
+        <button id="up">+</button>
     </div>
     <h2 id="bible-text" style="line-height: 1.2em;margin-left:15px;margin-right:15px;font-style: normal; font-weight: normal; color: black;font-size: 20px;word-break: break-all;">
          <strong>
@@ -596,7 +630,6 @@
 <br>&nbsp;</br>
 <br>    1일차 끝</br>
 <br>&nbsp;</br>
-   
         </h2>
     <div id="explanation-modal" class="modal">
         <div class="modal-content">
@@ -610,7 +643,7 @@
     <script>
         // ------------------------------
         // 설정: API 키를 여기에 넣으세요 (빈 문자열이면 호출은 실패합니다)
-        const apiKey = "AIzaSyDUlSQlSPgnrFBXpnUJMDoUO3s_KsaoFRU"; // <-- 여기에 Google API Key를 넣으세요
+        const apiKey = "AIzaSyDUlSQlSPgnrFBXpnUJMDoUO3s_KsaoFRU"; // <-- 여기에 Google API Key를 넣으세요 
         // ------------------------------
 
         // DOM 요소
@@ -621,7 +654,6 @@
         const explanationIconButton = document.getElementById('explanation-icon-button');
         const detailedExplanationButton = document.getElementById('detailed-explanation-button');
         const simpleExplanationButton = document.getElementById('simple-explanation-button');
-        // 수정: '구절 그림 설명' 버튼 삭제 및 새 버튼 ID 추가
         const summarySimpleButton = document.getElementById('summary-simple-button');
         const summaryDetailedButton = document.getElementById('summary-detailed-button');
         const modal = document.getElementById('explanation-modal');
@@ -645,6 +677,7 @@
         const downBtn = document.getElementById('down');
         const fontSizeEl = document.getElementById('font-size');
         const explanationButtonWrapper = document.querySelector('.explanation-button-wrapper');
+        const topFixedTable = document.getElementById('main-table');
 
         // 상태값
         let selectedVerse = "";
@@ -660,14 +693,27 @@
 
         // 페이지 초기화
         window.addEventListener('DOMContentLoaded', () => {
-            originalText = bibleTextEl.innerHTML; // 원본 저장 (요청대로 <br></br> 등은 그대로 유지)
+            originalText = bibleTextEl.innerHTML; // 원본 저장
             updateFontSizeDisplay();
             updateSpeed();
 
-            // 텍스트 드래그/선택取得
+            // 텍스트 드래그/선택 감지
             document.addEventListener('mouseup', () => {
                 const selection = window.getSelection();
                 selectedVerse = selection ? selection.toString().trim() : '';
+                if (selectedVerse) {
+                    const range = selection.getRangeAt(0);
+                    const rect = range.getBoundingClientRect();
+                    
+                    const containerRect = topFixedTable.getBoundingClientRect();
+                    const topOffset = containerRect.height + 10;
+                    
+                    explanationButtonWrapper.style.display = 'block';
+                    explanationButtonWrapper.style.top = `${window.scrollY + rect.bottom + 30}px`; // 선택된 텍스트 3줄 아래
+                    explanationButtonWrapper.style.left = `${window.scrollX + rect.left + rect.width / 2}px`;
+                } else {
+                    explanationButtonWrapper.style.display = 'none';
+                }
             });
 
             // 검색 폼
@@ -824,7 +870,6 @@
             }
             const escaped = escapeRegExp(searchText);
             const regex = new RegExp(escaped, 'gi');
-            // replace safely by match callback to preserve original matched casing
             const newContent = originalText.replace(regex, (match) => `<span class="search-highlight">${match}</span>`);
             bibleTextEl.innerHTML = newContent;
             foundSentences = Array.from(bibleTextEl.getElementsByClassName('search-highlight'));
@@ -997,16 +1042,5 @@ E. 비교 가능한 개념: - 필요 시 표로 비교(예: 창조의 날별 순
     </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
 
 
