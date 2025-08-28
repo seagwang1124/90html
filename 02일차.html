@@ -114,6 +114,8 @@
 
         .explanation-sub-buttons {
             display: flex;
+            flex-wrap: wrap; /* 추가: 버튼이 많아질 경우 줄바꿈 */
+            justify-content: center;
             gap: 10px;
             opacity: 0;
             visibility: hidden;
@@ -146,6 +148,7 @@
             cursor: pointer;
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
             transition: transform 0.2s;
+            white-space: nowrap; /* 추가: 텍스트가 줄바꿈되지 않도록 */
         }
 
         .explanation-sub-button:hover { transform: scale(1.05); }
@@ -166,7 +169,6 @@
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
         .search-highlight { background-color: yellow; color: black; }
-
         .scroll-marker-container { position: fixed; top: 0; right: 0; width: 8px; height: 100vh; z-index: 99; pointer-events: none; }
         .scroll-marker { position: absolute; right: 0; width: 8px; height: 8px; background-color: red; border-radius: 50%; box-shadow: 0 0 5px rgba(255, 0, 0, 0.7); cursor: pointer; pointer-events: auto; }
         .scroll-marker:hover { transform: scale(1.5); transition: transform 0.2s ease; }
@@ -227,9 +229,12 @@
                 <span>📖</span>
             </button>
             <div class="explanation-sub-buttons">
+                <!-- 기존 버튼 유지 -->
                 <button class="explanation-sub-button" id="detailed-explanation-button">상세 구절설명</button>
                 <button class="explanation-sub-button" id="simple-explanation-button">간단 구절설명</button>
-                <button class="explanation-sub-button" id="image-explanation-button">구절 그림 설명</button>
+                <!-- 새로운 버튼 추가 -->
+                <button class="explanation-sub-button" id="summary-simple-button">본문요약 간단</button>
+                <button class="explanation-sub-button" id="summary-detailed-button">본문요약 상세</button>
             </div>
         </div>
     </div>
@@ -241,9 +246,8 @@
         <p id="font-size" style="font-style: normal; font-weight: bold; color: red;font-size: 40px;">20</p>
         <button id="up" style="font-style: normal; font-weight: normal;color: red;font-size: 40px;">+</button>
     </div>
-
     <h2 id="bible-text" style="line-height: 1.2em;margin-left:15px;margin-right:15px;font-style: normal; font-weight: normal; color: black;font-size: 20px;word-break: break-all;">
-         <strong>
+          <strong>
 
 통독 2일차
 <br>범위: 창세기 12장- 23장</br>
@@ -591,10 +595,7 @@
 <br>&nbsp;</br>
 <br>    2일차 끝</br>
 <br>&nbsp;</br>
-   
-   
-  </h2>
-
+        </h2>
     <div id="explanation-modal" class="modal">
         <div class="modal-content">
             <span class="close-button" id="close-modal">&times;</span>
@@ -603,9 +604,7 @@
             <p id="modal-text">구절을 드래그하여 선택하고 '구절설명' 버튼을 누르세요.</p>
         </div>
     </div>
-
     <div id="scroll-marker-container" class="scroll-marker-container"></div>
-
     <script>
         // ------------------------------
         // 설정: API 키를 여기에 넣으세요 (빈 문자열이면 호출은 실패합니다)
@@ -620,7 +619,9 @@
         const explanationIconButton = document.getElementById('explanation-icon-button');
         const detailedExplanationButton = document.getElementById('detailed-explanation-button');
         const simpleExplanationButton = document.getElementById('simple-explanation-button');
-        const imageExplanationButton = document.getElementById('image-explanation-button');
+        // 수정: '구절 그림 설명' 버튼 삭제 및 새 버튼 ID 추가
+        const summarySimpleButton = document.getElementById('summary-simple-button');
+        const summaryDetailedButton = document.getElementById('summary-detailed-button');
         const modal = document.getElementById('explanation-modal');
         const closeModalButton = document.getElementById('close-modal');
         const modalTitle = document.getElementById('modal-title');
@@ -748,14 +749,26 @@
                 explanationButtonWrapper.classList.remove('active');
             });
 
-            // 이미지 + 설명
-            imageExplanationButton.addEventListener('click', () => {
-                const trimmedVerse = selectedVerse.trim();
-                if (!trimmedVerse) {
-                    showModal("구절을 먼저 선택하세요", "본문에서 구절이나 단어를 드래그하여 선택한 후 다시 버튼을 눌러주세요.");
+            // 본문요약 간단 (새로운 기능)
+            summarySimpleButton.addEventListener('click', () => {
+                const fullText = getFullBibleText();
+                if (!fullText.trim()) {
+                    showModal("본문이 없습니다", "요약할 성경 본문이 없습니다.");
                 } else {
-                    showLoadingModal(true);
-                    fetchImageAndExplanation(trimmedVerse);
+                    showLoadingModal(false);
+                    fetchSummary(fullText, 'simple');
+                }
+                explanationButtonWrapper.classList.remove('active');
+            });
+
+            // 본문요약 상세 (새로운 기능)
+            summaryDetailedButton.addEventListener('click', () => {
+                const fullText = getFullBibleText();
+                if (!fullText.trim()) {
+                    showModal("본문이 없습니다", "요약할 성경 본문이 없습니다.");
+                } else {
+                    showLoadingModal(false);
+                    fetchSummary(fullText, 'detailed');
                 }
                 explanationButtonWrapper.classList.remove('active');
             });
@@ -771,6 +784,14 @@
             closeModalButton.addEventListener('click', () => { modal.style.display = 'none'; });
             window.addEventListener('click', (event) => { if (event.target === modal) modal.style.display = 'none'; });
         });
+
+        // 성경 본문 전체를 가져오는 함수
+        function getFullBibleText() {
+            // 원본 텍스트에서 태그와 불필요한 공백 제거
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = originalText;
+            return tempDiv.textContent.replace(/\s+/g, ' ').trim();
+        }
 
         // 폰트 크기 표시 업데이트
         function updateFontSizeDisplay() {
@@ -875,7 +896,7 @@
             modalImage.style.display = 'none';
             modal.style.display = 'block';
         }
-
+        
         /**
          * fetchExplanation: 상세/간단 설명 생성
          * type: 'detailed' 또는 'simple'
@@ -884,56 +905,48 @@
             // build prompt according to user's specification
             let prompt;
             if (type === 'simple') {
-                prompt = `
-**명령:**
-다음 성경 용어/구절에 대해 300자에서 500자 사이의 짧고 간결한 설명을 작성해 주세요. 핵심 내용을 중심으로 요약해 주세요.
-
+                prompt = `**명령:**다음 성경 용어/구절에 대해 300자에서 500자 사이의 짧고 간결한 설명을 작성해 주세요. 핵심 내용을 중심으로 요약해 주세요.
 **요청 용어/구절:** "${promptText}"
-
-**지침(요약):**
-- 지명/족속/민족: 거주지와 위치 간단 설명(필요하면 지도 언급)
-- 이름(인물): 이름의 뜻/주요활동/간단한 배경
-- 제사 도구/성물 등: 간단한 설명
-- 동물/식물/광물: 성경적 의미 간단 설명
-- 비교 가능한 개념(선택적): 핵심 비교 항목 간단 나열
+**지침(요약):**- 지명/족속/민족: 거주지와 위치 간단 설명(필요하면 지도 언급)- 이름(인물): 이름의 뜻/주요활동/간단한 배경- 제사 도구/성물 등: 간단한 설명- 동물/식물/광물: 성경적 의미 간단 설명- 비교 가능한 개념(선택적): 핵심 비교 항목 간단 나열
                 `;
             } else { // detailed
-                prompt = `
-**명령:**
-다음 성경 용어/구절에 대해 성경적 관점에서 자세히 설명해 주세요. 답변은 최소 100자 이상으로 작성해 주세요. 필요한 경우 표 또는 간단한 지도를 포함하거나 참조해 주세요.
-
+                prompt = `**명령:**다음 성경 용어/구절에 대해 성경적 관점에서 자세히 설명해 주세요. 답변은 최소 100자 이상으로 작성해 주세요. 필요한 경우 표 또는 간단한 지도를 포함하거나 참조해 주세요.
 **요청 용어/구절:** "${promptText}"
-
-**지침:**
-A. 지명, 족속, 민족, 나라:
- - 지명: 지리적 위치, 역사적 배경, 성경 관련 사건, (간단한 지도 설명 권장)
- - 족속/민족/나라: 거주 지역, 주요 이주/이동, 성경 내 역할
-
-B. 인물:
- - 이름의 뜻, 생몰 시기(가능하면), 주 활동 지역 및 이동 경로, 주요 사건, (성화/그림이 있으면 언급)
-
-C. 제사 도구/성물:
- - 사용 목적, 방식, 역사적·신학적 의미, (성화/그림이 있으면 언급)
-
-D. 동물/생물/식물/광물:
- - 성경적 상징성, 관련 구절, 비교 가능한 항목(표 권장)
-
-E. 비교 가능한 개념:
- - 필요 시 표로 비교(예: 창조의 날별 순서, 제사의 종류, 12지파 상징 등)
-
+**지침:**A. 지명, 족속, 민족, 나라: - 지명: 지리적 위치, 역사적 배경, 성경 관련 사건, (간단한 지도 설명 권장) - 족속/민족/나라: 거주 지역, 주요 이주/이동, 성경 내 역할
+B. 인물: - 이름의 뜻, 생몰 시기(가능하면), 주 활동 지역 및 이동 경로, 주요 사건, (성화/그림이 있으면 언급)
+C. 제사 도구/성물: - 사용 목적, 방식, 역사적·신학적 의미, (성화/그림이 있으면 언급)
+D. 동물/생물/식물/광물: - 성경적 상징성, 관련 구절, 비교 가능한 항목(표 권장)
+E. 비교 가능한 개념: - 필요 시 표로 비교(예: 창조의 날별 순서, 제사의 종류, 12지파 상징 등)
 출력은 한국어로 명확하고 읽기 쉬운 문장으로 작성하세요.
                 `;
             }
+            
+            await callGenerativeAPI(promptText, prompt);
+        }
 
-            // API 호출 설정 (Google Generative Language 예시)
+        /**
+         * fetchSummary: 본문요약 간단/상세
+         * type: 'simple' 또는 'detailed'
+         */
+        async function fetchSummary(fullText, type) {
+            let prompt;
+            if (type === 'simple') {
+                prompt = `당신은 성경 주석가이자 성경 연구자입니다. 사용자가 선택한 성경 구절을 학문적·신학적 배경에서 분석하여, 핵심 주제와 메시지를 500자 미만으로 간단하게 요약해 주세요. 불필요한 장황한 설명은 피하고, 성경 본문의 핵심 의미와 교훈에 집중하세요. 선택된 성경 본문: "${fullText}"`;
+            } else { // detailed
+                prompt = `당신은 성경 주석가이자 성경 연구자입니다. 사용자가 선택한 성경 구절을 학문적·신학적 배경에서 분석하여, 핵심 주제와 메시지를 3000자 미만으로 상세하게 요약해 주세요. 불필요한 장황한 설명은 피하고, 성경 본문의 핵심 의미와 교훈에 집중하세요. 선택된 성경 본문: "${fullText}"`;
+            }
+            
+            await callGenerativeAPI('본문 요약', prompt);
+        }
+
+        async function callGenerativeAPI(modalTitleText, prompt) {
             const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
             const payload = {
                 contents: [
-                    { parts: [ { text: prompt } ] }
+                    { parts: [{ text: prompt }] }
                 ]
             };
-
-            // retry 로직
+        
             let retryCount = 0;
             const maxRetries = 3;
             let response = null;
@@ -957,104 +970,33 @@ E. 비교 가능한 개념:
                     return;
                 }
             }
-
+        
             if (!response || !response.ok) {
                 showModal("오류 발생", `API 호출에 실패했습니다. (상태 코드: ${response ? response.status : '알 수 없음'})`);
                 return;
             }
-
+        
             try {
                 const result = await response.json();
-                // 여러 API 응답 형태에 대비하여 안전하게 파싱
                 const explanation =
                     result?.candidates?.[0]?.content?.parts?.[0]?.text ||
                     result?.candidates?.[0]?.content?.[0]?.text ||
-                    result?.results?.[0]?.output_text ||
-                    result?.output?.[0]?.content?.[0]?.text ||
                     null;
-
+        
                 if (explanation) {
-                    showModal(promptText, explanation);
+                    showModal(modalTitleText, explanation);
                 } else {
-                    showModal(promptText, "요청하신 내용에 대한 설명을 찾을 수 없습니다.");
+                    showModal(modalTitleText, "요청하신 내용에 대한 설명을 찾을 수 없습니다.");
                 }
             } catch (parseError) {
                 showModal("오류 발생", "응답을 처리하는 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.");
             }
         }
-
-        /**
-         * fetchImageAndExplanation: 텍스트 설명(100자 미만) + 이미지 생성 (가능하면)
-         */
-        async function fetchImageAndExplanation(promptText) {
-            // 1) 텍스트 (간단) 프롬프트
-            const textPrompt = `
-**명령:**
-다음 성경 용어/구절에 대해 성경적 관점에서 간략히 작성해 주세요. 100자 내외로 간결하게 작성하세요.
-
-**요청 용어/구절:** "${promptText}"
-            `;
-
-            // 텍스트 가져오기
-            let textExplanation = "설명을 불러오는 중입니다...";
-            try {
-                const textApiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
-                const textPayload = { contents: [ { parts: [ { text: textPrompt } ] } ] };
-                const textRes = await fetch(textApiUrl, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(textPayload)
-                });
-                if (textRes.ok) {
-                    const textResult = await textRes.json();
-                    textExplanation = textResult?.candidates?.[0]?.content?.parts?.[0]?.text || textResult?.results?.[0]?.output_text || "설명을 찾을 수 없습니다.";
-                } else {
-                    textExplanation = "텍스트 설명을 가져오지 못했습니다.";
-                }
-            } catch (e) {
-                textExplanation = "설명을 가져오는 중 오류가 발생했습니다.";
-            }
-
-            // 2) 이미지 생성 (이미지 엔드포인트 사용 예시)
-            let imageUrl = '';
-            try {
-                const imagePrompt = `
-**명령:**
-다음 성경 용어/구절에 대해 지도 또는 그림(도표) 형태로 시각화해 주세요. 가능한 경우 고전적 성화 스타일의 디지털 페인팅으로 표현하세요.
-**요청 용어/구절:** "${promptText}"
-                `;
-                const imageApiUrl = `https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-002:predict?key=${apiKey}`;
-                const imagePayload = { instances: { prompt: imagePrompt }, parameters: { sampleCount: 1 } };
-
-                const imageRes = await fetch(imageApiUrl, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(imagePayload)
-                });
-
-                if (imageRes.ok) {
-                    const imageResult = await imageRes.json();
-                    // 여러 응답 포맷 대비
-                    const base64Data =
-                        imageResult?.predictions?.[0]?.bytesBase64Encoded ||
-                        imageResult?.predictions?.[0]?.content?.[0]?.image?.imageBase64 ||
-                        null;
-                    if (base64Data) {
-                        imageUrl = `data:image/png;base64,${base64Data}`;
-                    }
-                } else {
-                    console.warn('Image API returned non-ok status', imageRes.status);
-                }
-            } catch (e) {
-                console.error('Image generation failed:', e);
-            }
-
-            // 3) 결과 표시
-            showModal(promptText, textExplanation, imageUrl || null);
-        }
     </script>
 </body>
 </html>
+
+
 
 
 
