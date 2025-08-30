@@ -145,13 +145,18 @@
 
         input[type="range"] { 
             -webkit-appearance: none; 
-            width: 100px; 
+            width: 160px; 
             height: 5px; 
             background: #d3d3d3; 
             outline: none; 
             opacity: 0.7; 
             transition: opacity .2s; 
         }
+
+/* 🎵 오디오 타임바 전용 */
+#progress-bar {
+    width: 190px; /* 150% 확대 */
+}
 
         input[type="range"]::-webkit-slider-thumb { 
             -webkit-appearance: none; 
@@ -304,6 +309,13 @@
         #search-count-container { display: flex; align-items: center; gap: 10px; }
         #search-count { font-size: 15pt; color: #007BFF; font-weight: bold; margin-left: 10px; white-space: nowrap; }
         #next-location-btn { padding: 5px 10px; font-size: 12pt; cursor: pointer; border: 1px solid #ccc; background-color: #f0f0f0; border-radius: 5px; display: none; }
+    
+        /* iOS 길게 눌렀을 때 "복사/메뉴" 방지 */
+         #bible-text {
+         -webkit-user-select: text; /* iOS Safari에서 텍스트 선택 허용 */
+         user-select: text;          /* 다른 브라우저에서도 동일 */
+         -webkit-touch-callout: none; /* 📱 iOS에서 길게 눌렀을 때 복사/공유 메뉴 비활성화 */
+     }
     </style>
 </head>
 <body>
@@ -322,28 +334,28 @@
             </td>
             <td class="audio-cell">
                 <div id="custom-audio-player">
-                    <audio id="audio-file" preload="auto">
-                        <!-- 수정: https 사용 -->
-                        <source src="https://vod47.anyline.co.kr/vod_ezra/%EC%9D%BD%EA%B8%B0%2007.mp3" type="audio/mp3">
-                    </audio>
-                    <div class="player-controls">
-                        <span id="current-time" class="time-display">0:00</span>
-                        <button id="play-btn" class="control-btn">▶</button>
-                        <button id="pause-btn" class="control-btn">⏸</button>
-                        <button id="stop-btn" class="control-btn">■</button>
-                        <span id="remaining-time" class="time-display">0:00</span>
-                    </div>
-                    <div class="speed-controls">
-                        <button id="speed-down-02" class="speed-btn">&lt;&lt;</button>
-                        <button id="speed-down-01" class="speed-btn">&lt;</button>
-                        <span id="speed-display" class="speed-display">1.0x</span>
-                        <button id="speed-up-01" class="speed-btn">&gt;</button>
-                        <button id="speed-up-02" class="speed-btn">&gt;&gt;</button>
-                    </div>
-                    <div class="volume-control">
-                        <span style="font-size:12px;">볼륨</span>
-                        <input type="range" id="volume-slider" min="0" max="1" step="0.01" value="1">
-                    </div>
+    <audio id="audio-file" preload="auto">
+        <source src="https://vod47.anyline.co.kr/vod_ezra/%EC%9D%BD%EA%B8%B0%2007.mp3" type="audio/mp3">
+    </audio>
+    <div class="player-controls">
+        <span id="current-time" class="time-display">0:00</span>
+        <button id="play-btn" class="control-btn">▶</button>
+        <button id="pause-btn" class="control-btn">⏸</button>
+        <button id="stop-btn" class="control-btn">■</button>
+        <span id="remaining-time" class="time-display">0:00</span>
+    </div>
+    <input type="range" id="progress-bar" min="0" max="100" value="0" step="0.01">
+    <div class="speed-controls">
+        <button id="speed-down-02" class="speed-btn">&lt;&lt;</button>
+        <button id="speed-down-01" class="speed-btn">&lt;</button>
+        <span id="speed-display" class="speed-display">1.0x</span>
+        <button id="speed-up-01" class="speed-btn">&gt;</button>
+        <button id="speed-up-02" class="speed-btn">&gt;&gt;</button>
+    </div>
+    <div class="volume-control">
+        <span style="font-size:12px;">볼륨</span>
+        <input type="range" id="volume-slider" min="0" max="1" step="0.01" value="1">
+    </div>
                 </div>
             </td>
         </tr>
@@ -375,8 +387,9 @@
     </div>
 
     <!-- 5. 줄 간격 유지를 위해 <br></br> 태그 유지 -->
+    <div>
     <h2 id="bible-text" style="line-height: 1.2em;margin-left:15px;margin-right:15px;font-style: normal; font-weight: normal; color: black;font-size: 20px;word-break: break-all;">
-       <strong>
+     <strong>
 
 통독 7일차
 <br>범위: 출애굽기 25장- 40장</br>
@@ -1014,8 +1027,8 @@
 <br>&nbsp;</br>
 <br>    7일차 끝</br>
 <br>&nbsp;</br>
-   
-  </h2>
+        </h2>
+        </div>
     <div id="explanation-modal" class="modal">
         <div class="modal-content">
             <span class="close-button" id="close-modal">&times;</span>
@@ -1082,37 +1095,45 @@
             updateFontSizeDisplay();
             updateSpeed();
 
-            // 텍스트 드래그/선택 및 버튼 위치 조정
-            document.addEventListener('mouseup', () => {
-                const selection = window.getSelection();
-                const trimmedSelection = selection.toString().trim();
-                selectedVerse = trimmedSelection;
-                
-                // 선택이 bible-text 엘리먼트 내에서 이루어졌는지 확인
-                const isSelectionInBibleText = bibleTextEl.contains(selection.anchorNode) && bibleTextEl.contains(selection.focusNode);
-                
-                if (trimmedSelection && isSelectionInBibleText) {
-                    // 선택된 텍스트의 범위를 가져와서 위치를 계산합니다.
-                    const range = selection.getRangeAt(0);
-                    const rect = range.getBoundingClientRect();
+            // ✅ 선택 이벤트 (iOS 대응)
+        function updateSelectedVerse() {
+            const selection = window.getSelection();
+            const trimmedSelection = selection.toString().trim();
 
-                    // 문서의 스크롤 위치를 더하여 절대 위치를 계산합니다.
-                    const scrollY = window.scrollY || window.pageYOffset;
+            const isSelectionInBibleText =
+                bibleTextEl.contains(selection.anchorNode) &&
+                bibleTextEl.contains(selection.focusNode);
 
-                    // 버튼의 위치를 선택 영역의 아래쪽 + 10px로 설정합니다.
-                    // 기존 'fixed' 위치에서 'absolute'로 변경하여 문서 흐름에 따라 위치합니다.
-                    explanationButtonContainer.style.position = 'absolute';
-                    explanationButtonContainer.style.left = `${rect.left}px`;
-                    explanationButtonContainer.style.top = `${rect.bottom + scrollY + 10}px`; // 10px 오프셋 추가
-                    explanationButtonContainer.style.transform = 'none'; // translateX(-50%) 제거
-                    explanationButtonContainer.style.display = 'block';
-                } else {
-                    // 선택이 해제되면 버튼을 원래의 고정된 위치로 되돌립니다.
-                    explanationButtonContainer.style.position = 'fixed';
-                    explanationButtonContainer.style.left = '50%';
-                    explanationButtonContainer.style.top = '130px';
-                    explanationButtonContainer.style.transform = 'translateX(-50%)';
-                }
+            if (trimmedSelection && isSelectionInBibleText) {
+                selectedVerse = trimmedSelection;  // ✅ iOS에서 안 잡히던 부분 고침
+
+                const range = selection.getRangeAt(0);
+                const rect = range.getBoundingClientRect();
+                const scrollY = window.scrollY || window.pageYOffset;
+
+                explanationButtonContainer.style.position = 'absolute';
+                explanationButtonContainer.style.left = `${rect.left}px`;
+                explanationButtonContainer.style.top = `${rect.bottom + scrollY + 10}px`;
+                explanationButtonContainer.style.transform = 'none';
+                explanationButtonContainer.style.display = 'block';
+            } else {
+                selectedVerse = ""; // 선택 해제 시 초기화
+                explanationButtonContainer.style.position = 'fixed';
+                explanationButtonContainer.style.left = '50%';
+                explanationButtonContainer.style.top = '130px';
+                explanationButtonContainer.style.transform = 'translateX(-50%)';
+            }
+        }
+
+            // 📱 모바일 + PC 모두 대응 (지연 처리)
+            document.addEventListener('mouseup', () => setTimeout(updateSelectedVerse, 100));
+            document.addEventListener('touchend', () => setTimeout(updateSelectedVerse, 150));
+
+            // 📌 selectionchange 보조 이벤트 (iOS 안정성 강화 - 디바운스 적용)
+            let selectionTimeout;
+            document.addEventListener('selectionchange', () => {
+                clearTimeout(selectionTimeout);
+                selectionTimeout = setTimeout(updateSelectedVerse, 200);
             });
 
             // 검색 폼
@@ -1342,7 +1363,7 @@
             modalText.textContent = `설명을 생성 중입니다. 잠시만 기다려 주세요...`;
             modalImage.style.display = 'none';
             modal.style.display = 'block';
-        }              
+        }              
 
         /**
          * fetchExplanation: 상세/간단 설명 생성
@@ -1352,10 +1373,10 @@
             // build prompt according to user's specification
             let prompt;
             if (type === 'simple') {
-                prompt = `**명령:**다음 성경 용어/구절에 대해 300자에서 500자 사이의 짧고 간결한 설명을 작성해 주세요. 핵심 내용을 중심으로 요약해 주세요.**요청 용어/구절:** "${promptText}"**지침(요약):**- 지명/족속/민족: 거주지와 위치 간단 설명(필요하면 지도 언급)- 이름(인물): 이름의 뜻/주요활동/간단한 배경- 제사 도구/성물 등: 간단한 설명- 동물/식물/광물: 성경적 의미 간단 설명- 비교 가능한 개념(선택적): 핵심 비교 항목 간단 나열
+                prompt = `**명령:**다음 성경 용어/구절에 대해 모두 합쳐서 300자에서 500자 사이의 짧고 간결한 설명을 작성해 주세요. 만약에 선택어가 지명이름 또는 사람이름이면 (예를들면 단, 가나안, 하란, 브니엘, 세겜, 등 수많은 동일 이름들) 지명이면 인물을 검색하고 인물이면 지명을 검색해서 두가지 다 설명해 주세요. 핵심 내용을 중심으로 요약해 주세요.**요청 용어/구절:** "${promptText}"**지침(요약):**- 지명/족속/민족: 거주지와 위치 간단 설명(필요하면 지도 언급)- 이름(인물): 이름의 뜻/주요활동/간단한 배경- 제사 도구/성물 등: 간단한 설명- 동물/식물/광물: 성경적 의미 간단 설명- 비교 가능한 개념(선택적): 핵심 비교 항목 간단 나열
                 `;
             } else { // detailed
-                prompt = `**명령:**다음 성경 용어/구절에 대해 성경적 관점에서 자세히 설명해 주세요. 답변은 최소 100자 이상으로 작성해 주세요. 필요한 경우 표 또는 간단한 지도를 포함하거나 참조해 주세요.**요청 용어/구절:** "${promptText}"**지침:**A. 지명, 족속, 민족, 나라: - 지명: 지리적 위치, 역사적 배경, 성경 관련 사건, (간단한 지도 설명 권장) - 족속/민족/나라: 거주 지역, 주요 이주/이동, 성경 내 역할B. 인물: - 이름의 뜻, 생몰 시기(가능하면), 주 활동 지역 및 이동 경로, 주요 사건, (성화/그림이 있으면 언급)C. 제사 도구/성물: - 사용 목적, 방식, 역사적·신학적 의미, (성화/그림이 있으면 언급)D. 동물/생물/식물/광물: - 성경적 상징성, 관련 구절, 비교 가능한 항목(표 권장)E. 비교 가능한 개념: - 필요 시 표로 비교(예: 창조의 날별 순서, 제사의 종류, 12지파 상징 등)출력은 한국어로 명확하고 읽기 쉬운 문장으로 작성하세요.
+                prompt = `**명령:**다음 성경 용어/구절에 대해 성경적 관점에서 자세히 설명해 주세요. 답변은 모두 합쳐서 2,000자에서 3,000자 사이로 작성해 주세요. 만약에 선택어가 지명이름 또는 사람이름이면 (예를들면 단, 가나안, 하란, 브니엘, 세겜, 등 수많은 동일 이름들) 지명이면 인물을 검색하고 인물이면 지명을 검색해서 두가지 다 설명해 주세요. 필요한 경우 표 또는 간단한 지도를 포함하거나 참조해 주세요.**요청 용어/구절:** "${promptText}"**지침:**A. 지명, 족속, 민족, 나라: - 지명: 지리적 위치, 역사적 배경, 성경 관련 사건, (간단한 지도 설명 권장) - 족속/민족/나라: 거주 지역, 주요 이주/이동, 성경 내 역할B. 인물: - 이름의 뜻, 생몰 시기(가능하면), 주 활동 지역 및 이동 경로, 주요 사건, (성화/그림이 있으면 언급)C. 제사 도구/성물: - 사용 목적, 방식, 역사적·신학적 의미, (성화/그림이 있으면 언급)D. 동물/생물/식물/광물: - 성경적 상징성, 관련 구절, 비교 가능한 항목(표 권장)E. 비교 가능한 개념: - 필요 시 표로 비교(예: 창조의 날별 순서, 제사의 종류, 12지파 상징 등)출력은 한국어로 명확하고 읽기 쉬운 문장으로 작성하세요.
                 `;
             }
 
@@ -1369,9 +1390,9 @@
         async function fetchSummary(fullText, type) {
             let prompt;
             if (type === 'simple') {
-                prompt = `당신은 성경 주석가이자 성경 연구자입니다. 사용자가 선택한 성경 구절을 학문적·신학적 배경에서 분석하여, 핵심 주제와 메시지를 500자 미만으로 간단하게 요약해 주세요. 불필요한 장황한 설명은 피하고, 성경 본문의 핵심 의미와 교훈에 집중하세요. 선택된 성경 본문: "${fullText}"`;
-            } else { // detailed
-                prompt = `당신은 성경 주석가이자 성경 연구자입니다. 사용자가 선택한 성경 구절을 학문적·신학적 배경에서 분석하여, 핵심 주제와 메시지를 3000자 미만으로 상세하게 요약해 주세요. 불필요한 장황한 설명은 피하고, 성경 본문의 핵심 의미와 교훈에 집중하세요. 선택된 성경 본문: "${fullText}"`;
+                prompt = `당신은 성경 주석가이자 성경 연구자입니다. 사용자가 선택한 성경 구절을 학문적·신학적 배경에서 분석하여, 핵심 주제와 메시지를 모두 합쳐서 300자에서 500자 사이로 간단하게 요약해 주세요. 불필요한 장황한 설명은 피하고, 성경 본문의 핵심 의미와 교훈에 집중해 주세요. 만약에 선택어가 지명이름 또는 사람이름이면 (예를들면 단, 가나안, 하란, 브니엘, 세겜, 등 수많은 동일 이름들) 지명이면 인물을 검색하고 인물이면 지명을 검색해서 두가지 다 설명해 주세요. 한국어로 답변해 주세요.`;
+            } else {
+                prompt = `당신은 성경 주석가이자 성경 연구자입니다. 다음 성경 본문을 학문적·신학적 배경에서 분석하여, 본문의 주요 주제와 등장인물의 역할, 시대적 배경, 신학적 의미 등을 포함하여 자세히 설명해 주세요. 답변은 모두 합쳐서 2,500자에서 3,500자 사이로 작성해 주세요. 만약에 선택어가 지명이름 또는 사람이름이면 (예를들면 단, 가나안, 하란, 브니엘, 세겜, 등 수많은 동일 이름들) 지명이면 인물을 검색하고 인물이면 지명을 검색해서 두가지 다 설명해 주세요. 한국어로 답변해 주세요.`;
             }
 
             await callGenerativeAPI('본문 요약', prompt);
@@ -1428,6 +1449,4 @@
     </script>
 </body>
 </html>
-
-
 
