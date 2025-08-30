@@ -309,6 +309,13 @@
         #search-count-container { display: flex; align-items: center; gap: 10px; }
         #search-count { font-size: 15pt; color: #007BFF; font-weight: bold; margin-left: 10px; white-space: nowrap; }
         #next-location-btn { padding: 5px 10px; font-size: 12pt; cursor: pointer; border: 1px solid #ccc; background-color: #f0f0f0; border-radius: 5px; display: none; }
+    
+        /* iOS 길게 눌렀을 때 "복사/메뉴" 방지 */
+         #bible-text {
+         -webkit-user-select: text; /* iOS Safari에서 텍스트 선택 허용 */
+         user-select: text;          /* 다른 브라우저에서도 동일 */
+         -webkit-touch-callout: none; /* 📱 iOS에서 길게 눌렀을 때 복사/공유 메뉴 비활성화 */
+     }
     </style>
 </head>
 <body>
@@ -465,37 +472,45 @@
             updateFontSizeDisplay();
             updateSpeed();
 
-            // 텍스트 드래그/선택 및 버튼 위치 조정
-            document.addEventListener('mouseup', () => {
-                const selection = window.getSelection();
-                const trimmedSelection = selection.toString().trim();
-                selectedVerse = trimmedSelection;
-                
-                // 선택이 bible-text 엘리먼트 내에서 이루어졌는지 확인
-                const isSelectionInBibleText = bibleTextEl.contains(selection.anchorNode) && bibleTextEl.contains(selection.focusNode);
-                
-                if (trimmedSelection && isSelectionInBibleText) {
-                    // 선택된 텍스트의 범위를 가져와서 위치를 계산합니다.
-                    const range = selection.getRangeAt(0);
-                    const rect = range.getBoundingClientRect();
+            // ✅ 선택 이벤트 (iOS 대응)
+        function updateSelectedVerse() {
+            const selection = window.getSelection();
+            const trimmedSelection = selection.toString().trim();
 
-                    // 문서의 스크롤 위치를 더하여 절대 위치를 계산합니다.
-                    const scrollY = window.scrollY || window.pageYOffset;
+            const isSelectionInBibleText =
+                bibleTextEl.contains(selection.anchorNode) &&
+                bibleTextEl.contains(selection.focusNode);
 
-                    // 버튼의 위치를 선택 영역의 아래쪽 + 10px로 설정합니다.
-                    // 기존 'fixed' 위치에서 'absolute'로 변경하여 문서 흐름에 따라 위치합니다.
-                    explanationButtonContainer.style.position = 'absolute';
-                    explanationButtonContainer.style.left = `${rect.left}px`;
-                    explanationButtonContainer.style.top = `${rect.bottom + scrollY + 10}px`; // 10px 오프셋 추가
-                    explanationButtonContainer.style.transform = 'none'; // translateX(-50%) 제거
-                    explanationButtonContainer.style.display = 'block';
-                } else {
-                    // 선택이 해제되면 버튼을 원래의 고정된 위치로 되돌립니다.
-                    explanationButtonContainer.style.position = 'fixed';
-                    explanationButtonContainer.style.left = '50%';
-                    explanationButtonContainer.style.top = '130px';
-                    explanationButtonContainer.style.transform = 'translateX(-50%)';
-                }
+            if (trimmedSelection && isSelectionInBibleText) {
+                selectedVerse = trimmedSelection;  // ✅ iOS에서 안 잡히던 부분 고침
+
+                const range = selection.getRangeAt(0);
+                const rect = range.getBoundingClientRect();
+                const scrollY = window.scrollY || window.pageYOffset;
+
+                explanationButtonContainer.style.position = 'absolute';
+                explanationButtonContainer.style.left = `${rect.left}px`;
+                explanationButtonContainer.style.top = `${rect.bottom + scrollY + 10}px`;
+                explanationButtonContainer.style.transform = 'none';
+                explanationButtonContainer.style.display = 'block';
+            } else {
+                selectedVerse = ""; // 선택 해제 시 초기화
+                explanationButtonContainer.style.position = 'fixed';
+                explanationButtonContainer.style.left = '50%';
+                explanationButtonContainer.style.top = '130px';
+                explanationButtonContainer.style.transform = 'translateX(-50%)';
+            }
+        }
+
+            // 📱 모바일 + PC 모두 대응 (지연 처리)
+            document.addEventListener('mouseup', () => setTimeout(updateSelectedVerse, 100));
+            document.addEventListener('touchend', () => setTimeout(updateSelectedVerse, 150));
+
+            // 📌 selectionchange 보조 이벤트 (iOS 안정성 강화 - 디바운스 적용)
+            let selectionTimeout;
+            document.addEventListener('selectionchange', () => {
+                clearTimeout(selectionTimeout);
+                selectionTimeout = setTimeout(updateSelectedVerse, 200);
             });
 
             // 검색 폼
@@ -811,6 +826,3 @@
     </script>
 </body>
 </html>
-        
-
-
