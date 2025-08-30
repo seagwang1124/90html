@@ -460,40 +460,42 @@
             return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
         }
 
-        /**
-         * 선택된 텍스트의 위치를 기준으로 버튼을 이동하는 함수
-         */
-        function moveExplanationButton() {
-            const selection = window.getSelection();
-            const trimmedSelection = selection.toString().trim();
-            selectedVerse = trimmedSelection;
-            
-            // 선택이 bible-text 엘리먼트 내에서 이루어졌는지 확인
-            const isSelectionInBibleText = bibleTextEl.contains(selection.anchorNode) && bibleTextEl.contains(selection.focusNode);
-            
-            if (trimmedSelection && isSelectionInBibleText) {
-                // 선택된 텍스트의 범위를 가져와서 위치를 계산합니다.
-                const range = selection.getRangeAt(0);
-                const rect = range.getBoundingClientRect();
+        /** 선택된 텍스트의 위치를 기준으로 버튼 이동 */
+function moveExplanationButton() {
+    const selection = window.getSelection();
+    const trimmedSelection = selection.toString().trim();
+    selectedVerse = trimmedSelection;
 
-                // 문서의 스크롤 위치를 더하여 절대 위치를 계산합니다.
-                const scrollY = window.scrollY || window.pageYOffset;
+    const isSelectionInBibleText =
+        bibleTextEl.contains(selection.anchorNode) &&
+        bibleTextEl.contains(selection.focusNode);
 
-                // 버튼의 위치를 선택 영역의 아래쪽 + 10px로 설정합니다.
-                // 기존 'fixed' 위치에서 'absolute'로 변경하여 문서 흐름에 따라 위치합니다.
-                explanationButtonContainer.style.position = 'absolute';
-                explanationButtonContainer.style.left = `${rect.left}px`;
-                explanationButtonContainer.style.top = `${rect.bottom + scrollY + 10}px`; // 10px 오프셋 추가
-                explanationButtonContainer.style.transform = 'none'; // translateX(-50%) 제거
-                explanationButtonContainer.style.display = 'block';
-            } else {
-                // 선택이 해제되면 버튼을 원래의 고정된 위치로 되돌립니다.
-                explanationButtonContainer.style.position = 'fixed';
-                explanationButtonContainer.style.left = '50%';
-                explanationButtonContainer.style.top = '130px';
-                explanationButtonContainer.style.transform = 'translateX(-50%)';
-            }
+    if (trimmedSelection && isSelectionInBibleText) {
+        const range = selection.getRangeAt(0);
+        const rect = range.getBoundingClientRect();
+        const scrollY = window.scrollY || window.pageYOffset;
+
+        let left = rect.left;
+        let top = rect.bottom + scrollY + 10;
+
+        // ⚡ 모바일 보정: rect 값이 0이면 화면 중앙에 표시
+        if (rect.width === 0 && rect.height === 0) {
+            left = window.innerWidth / 2;
+            top = window.innerHeight / 2 + scrollY;
         }
+
+        explanationButtonContainer.style.position = 'absolute';
+        explanationButtonContainer.style.left = `${left}px`;
+        explanationButtonContainer.style.top = `${top}px`;
+        explanationButtonContainer.style.transform = 'none';
+        explanationButtonContainer.style.display = 'block';
+    } else {
+        explanationButtonContainer.style.position = 'fixed';
+        explanationButtonContainer.style.left = '50%';
+        explanationButtonContainer.style.top = '130px';
+        explanationButtonContainer.style.transform = 'translateX(-50%)';
+    }
+}
         
         // 페이지 초기화
         window.addEventListener('DOMContentLoaded', () => {
@@ -501,12 +503,9 @@
             updateFontSizeDisplay();
             updateSpeed();
 
-            // 텍스트 드래그/선택 및 버튼 위치 조정
-            // PC 환경을 위해 'mouseup' 이벤트 리스너를 유지합니다.
-            document.addEventListener('mouseup', moveExplanationButton);
-            
-            // 모바일 환경을 위해 'touchend' 이벤트 리스너를 추가합니다.
-            document.addEventListener('touchend', moveExplanationButton);
+            // 📱 모바일 + PC 모두 대응 (약간의 지연 적용)
+            document.addEventListener('mouseup', () => setTimeout(moveExplanationButton, 50));
+            document.addEventListener('touchend', () => setTimeout(moveExplanationButton, 100));
 
             // 검색 폼
             const searchForm = document.querySelector('form[name="f1"]');
@@ -571,10 +570,12 @@
             });
             // **수정된 부분 끝**
 
-            // 아이콘 클릭 -> 서브버튼 표시
-            explanationIconButton.addEventListener('click', (event) => {
-                event.stopPropagation();
-                explanationButtonWrapper.classList.toggle('active');
+            // 📖 아이콘 버튼: click + touchend 모두 지원
+            ["click", "touchend"].forEach(evt => {
+                explanationIconButton.addEventListener(evt, (event) => {
+                    event.stopPropagation();
+                    explanationButtonWrapper.classList.toggle('active');
+                });
             });
 
             // 상세 설명
@@ -832,3 +833,4 @@
     </script>
 </body>
 </html>
+
