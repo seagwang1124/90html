@@ -153,10 +153,10 @@
             transition: opacity .2s; 
         }
 
-/* 🎵 오디오 타임바 전용 */
-#progress-bar {
-    width: 190px; /* 150% 확대 */
-}
+        /* 🎵 오디오 타임바 전용 */
+        #progress-bar {
+            width: 190px; /* 150% 확대 */
+        }
 
         input[type="range"]::-webkit-slider-thumb { 
             -webkit-appearance: none; 
@@ -315,7 +315,36 @@
          -webkit-user-select: text; /* iOS Safari에서 텍스트 선택 허용 */
          user-select: text;          /* 다른 브라우저에서도 동일 */
          -webkit-touch-callout: none; /* 📱 iOS에서 길게 눌렀을 때 복사/공유 메뉴 비활성화 */
-     }
+        }
+        /* 속도 리셋 버튼 */
+        #speed-reset {
+            width: 28px;
+            height: 28px;
+            font-size: 12px;
+            cursor: pointer;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            background-color: #ff4d4d; /* 빨간색 */
+            color: white;
+            font-weight: bold;
+        }
+        #speed-reset:hover {
+            background-color: #e60000;
+        }
+
+        /* 뮤트 버튼 */
+        #mute-btn {
+            width: 30px;
+            height: 30px;
+            font-size: 16px;
+            cursor: pointer;
+            border: 1px solid #ccc;
+            border-radius: 50%;
+            background-color: #feebe1; /* 주황색 */
+        }
+        #mute-btn:hover {
+            background-color: #fdd835;
+        }
     </style>
 </head>
 <body>
@@ -351,9 +380,11 @@
         <span id="speed-display" class="speed-display">1.0x</span>
         <button id="speed-up-01" class="speed-btn">&gt;</button>
         <button id="speed-up-02" class="speed-btn">&gt;&gt;</button>
+        <button id="speed-reset">1.0</button> <!-- ✅ 추가 -->
     </div>
     <div class="volume-control">
         <span style="font-size:12px;">볼륨</span>
+        <button id="mute-btn">🔊</button> <!-- ✅ 추가 -->
         <input type="range" id="volume-slider" min="0" max="1" step="0.01" value="1">
     </div>
                 </div>
@@ -453,6 +484,22 @@
         const downBtn = document.getElementById('down');
         const fontSizeEl = document.getElementById('font-size');
         const explanationButtonWrapper = document.querySelector('.explanation-button-wrapper');
+        const speedResetBtn = document.getElementById('speed-reset');
+        const muteBtn = document.getElementById('mute-btn');
+
+        // 속도 리셋 버튼 기능
+        speedResetBtn.addEventListener('click', () => {
+            currentSpeed = 1.0;
+            updateSpeed();
+        });
+
+        // 뮤트 버튼 기능
+        let isMuted = false;
+        muteBtn.addEventListener('click', () => {
+            isMuted = !isMuted;
+            audio.muted = isMuted;
+            muteBtn.textContent = isMuted ? "🔇" : "🔊"; // 아이콘 변경
+        });
 
         // 상태값
         let selectedVerse = "";
@@ -831,4 +878,5 @@
     </script>
 </body>
 </html>
+
 
