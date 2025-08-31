@@ -153,10 +153,10 @@
             transition: opacity .2s; 
         }
 
-/* 🎵 오디오 타임바 전용 */
-#progress-bar {
-    width: 190px; /* 150% 확대 */
-}
+        /* 🎵 오디오 타임바 전용 */
+        #progress-bar {
+            width: 190px; /* 150% 확대 */
+        }
 
         input[type="range"]::-webkit-slider-thumb { 
             -webkit-appearance: none; 
@@ -315,8 +315,47 @@
          -webkit-user-select: text; /* iOS Safari에서 텍스트 선택 허용 */
          user-select: text;          /* 다른 브라우저에서도 동일 */
          -webkit-touch-callout: none; /* 📱 iOS에서 길게 눌렀을 때 복사/공유 메뉴 비활성화 */
-     }
+        }
+        /* 속도 리셋 버튼 */
+        #speed-reset {
+            width: 28px;
+            height: 28px;
+            font-size: 12px;
+            cursor: pointer;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            background-color: #ff4d4d; /* 빨간색 */
+            color: white;
+            font-weight: bold;
+        }
+        #speed-reset:hover {
+            background-color: #e60000;
+        }
+
+        /* 뮤트 버튼 */
+        #mute-btn {
+            width: 30px;
+            height: 30px;
+            font-size: 16px;
+            cursor: pointer;
+            border: 1px solid #ccc;
+            border-radius: 50%;
+            background-color: #fff; /* 주황색 */
+        }
+        #mute-btn:hover {
+            background-color: #e0e0e0;
+        }
     </style>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const audio = document.getElementById('audio-file');
+            const progressBar = document.getElementById('progress-bar');
+
+            progressBar.addEventListener('input', () => {
+                audio.currentTime = audio.duration * (progressBar.value / 100);
+            });
+        });
+    </script>
 </head>
 <body>
     <table class="top-fixed-table" id="main-table" cellpadding="0" cellspacing="0">
@@ -351,9 +390,11 @@
         <span id="speed-display" class="speed-display">1.0x</span>
         <button id="speed-up-01" class="speed-btn">&gt;</button>
         <button id="speed-up-02" class="speed-btn">&gt;&gt;</button>
+        <button id="speed-reset">1.0</button> <!-- ✅ 추가 -->
     </div>
     <div class="volume-control">
         <span style="font-size:12px;">볼륨</span>
+        <button id="mute-btn">🔊</button> <!-- ✅ 추가 -->
         <input type="range" id="volume-slider" min="0" max="1" step="0.01" value="1">
     </div>
                 </div>
@@ -993,6 +1034,30 @@
         const downBtn = document.getElementById('down');
         const fontSizeEl = document.getElementById('font-size');
         const explanationButtonWrapper = document.querySelector('.explanation-button-wrapper');
+        const speedResetBtn = document.getElementById('speed-reset');
+        const muteBtn = document.getElementById('mute-btn');
+
+        // 이벤트 연결 유지
+        document.addEventListener('mouseup', () => setTimeout(updateSelectedVerse, 100));
+        document.addEventListener('touchend', () => setTimeout(updateSelectedVerse, 150));
+        document.addEventListener('selectionchange', () => {
+            clearTimeout(selectionTimeout);
+            selectionTimeout = setTimeout(updateSelectedVerse, 200);
+        });
+
+        // 속도 리셋 버튼 기능
+        speedResetBtn.addEventListener('click', () => {
+            currentSpeed = 1.0;
+            updateSpeed();
+        });
+
+        // 뮤트 버튼 기능
+        let isMuted = false;
+        muteBtn.addEventListener('click', () => {
+            isMuted = !isMuted;
+            audio.muted = isMuted;
+            muteBtn.textContent = isMuted ? "🔇" : "🔊"; // 아이콘 변경
+        });
 
         // 상태값
         let selectedVerse = "";
@@ -1022,19 +1087,31 @@
                 bibleTextEl.contains(selection.focusNode);
 
             if (trimmedSelection && isSelectionInBibleText) {
-                selectedVerse = trimmedSelection;  // ✅ iOS에서 안 잡히던 부분 고침
+                selectedVerse = trimmedSelection;  // 선택된 구절
 
                 const range = selection.getRangeAt(0);
                 const rect = range.getBoundingClientRect();
                 const scrollY = window.scrollY || window.pageYOffset;
 
                 explanationButtonContainer.style.position = 'absolute';
-                explanationButtonContainer.style.left = `${rect.left}px`;
                 explanationButtonContainer.style.top = `${rect.bottom + scrollY + 10}px`;
-                explanationButtonContainer.style.transform = 'none';
+
+                // 화면 중앙 기준 좌우 판단
+                const screenCenterX = window.innerWidth / 2;
+                if (rect.left < screenCenterX) {
+                // 왼쪽 영역: 버튼을 오른쪽 아래로
+                explanationButtonContainer.style.left = `${rect.right}px`;
+                explanationButtonContainer.style.transform = 'translateX(10px)'; // 약간 여유 공간
+            } else {
+                // 오른쪽 영역: 버튼을 왼쪽 아래로
+                explanationButtonContainer.style.left = `${rect.left}px`;
+                explanationButtonContainer.style.transform = 'translateX(-100%) translateX(-10px)'; // 왼쪽으로 붙이기
+            }
+
                 explanationButtonContainer.style.display = 'block';
             } else {
-                selectedVerse = ""; // 선택 해제 시 초기화
+                // 선택 해제 시 원래 위치로 복원
+                selectedVerse = "";
                 explanationButtonContainer.style.position = 'fixed';
                 explanationButtonContainer.style.left = '50%';
                 explanationButtonContainer.style.top = '130px';
@@ -1189,6 +1266,11 @@
             audio.playbackRate = currentSpeed;
             speedDisplay.textContent = currentSpeed.toFixed(1) + 'x';
         }
+
+        // ✅ play 이벤트 발생할 때 현재 속도 유지
+        audio.addEventListener('play', () => {
+            audio.playbackRate = currentSpeed;
+        });
 
         // 시간 포맷
         function formatTime(seconds) {
@@ -1366,6 +1448,3 @@
     </script>
 </body>
 </html>
-
-
-
