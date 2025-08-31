@@ -340,12 +340,22 @@
             cursor: pointer;
             border: 1px solid #ccc;
             border-radius: 50%;
-            background-color: #feebe1; /* 주황색 */
+            background-color: #fff; /* 주황색 */
         }
         #mute-btn:hover {
-            background-color: #fdd835;
+            background-color: #e0e0e0;
         }
     </style>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const audio = document.getElementById('audio');
+            const progressBar = document.getElementById('progressBar');
+
+            progressBar.addEventListener('input', () => {
+                audio.currentTime = audio.duration * (progressBar.value / 100);
+            });
+        });
+    </script>
 </head>
 <body>
     <table class="top-fixed-table" id="main-table" cellpadding="0" cellspacing="0">
@@ -487,6 +497,14 @@
         const speedResetBtn = document.getElementById('speed-reset');
         const muteBtn = document.getElementById('mute-btn');
 
+        // 이벤트 연결 유지
+        document.addEventListener('mouseup', () => setTimeout(updateSelectedVerse, 100));
+        document.addEventListener('touchend', () => setTimeout(updateSelectedVerse, 150));
+        document.addEventListener('selectionchange', () => {
+            clearTimeout(selectionTimeout);
+            selectionTimeout = setTimeout(updateSelectedVerse, 200);
+        });
+
         // 속도 리셋 버튼 기능
         speedResetBtn.addEventListener('click', () => {
             currentSpeed = 1.0;
@@ -529,19 +547,31 @@
                 bibleTextEl.contains(selection.focusNode);
 
             if (trimmedSelection && isSelectionInBibleText) {
-                selectedVerse = trimmedSelection;  // ✅ iOS에서 안 잡히던 부분 고침
+                selectedVerse = trimmedSelection;  // 선택된 구절
 
                 const range = selection.getRangeAt(0);
                 const rect = range.getBoundingClientRect();
                 const scrollY = window.scrollY || window.pageYOffset;
 
                 explanationButtonContainer.style.position = 'absolute';
-                explanationButtonContainer.style.left = `${rect.left}px`;
                 explanationButtonContainer.style.top = `${rect.bottom + scrollY + 10}px`;
-                explanationButtonContainer.style.transform = 'none';
+
+                // 화면 중앙 기준 좌우 판단
+                const screenCenterX = window.innerWidth / 2;
+                if (rect.left < screenCenterX) {
+                // 왼쪽 영역: 버튼을 오른쪽 아래로
+                explanationButtonContainer.style.left = `${rect.right}px`;
+                explanationButtonContainer.style.transform = 'translateX(10px)'; // 약간 여유 공간
+            } else {
+                // 오른쪽 영역: 버튼을 왼쪽 아래로
+                explanationButtonContainer.style.left = `${rect.left}px`;
+                explanationButtonContainer.style.transform = 'translateX(-100%) translateX(-10px)'; // 왼쪽으로 붙이기
+            }
+
                 explanationButtonContainer.style.display = 'block';
             } else {
-                selectedVerse = ""; // 선택 해제 시 초기화
+                // 선택 해제 시 원래 위치로 복원
+                selectedVerse = "";
                 explanationButtonContainer.style.position = 'fixed';
                 explanationButtonContainer.style.left = '50%';
                 explanationButtonContainer.style.top = '130px';
