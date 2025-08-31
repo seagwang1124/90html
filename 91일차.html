@@ -348,8 +348,8 @@
     </style>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            const audio = document.getElementById('audio');
-            const progressBar = document.getElementById('progressBar');
+            const audio = document.getElementById('audio-file');
+            const progressBar = document.getElementById('progress-bar');
 
             progressBar.addEventListener('input', () => {
                 audio.currentTime = audio.duration * (progressBar.value / 100);
@@ -908,5 +908,3 @@
     </script>
 </body>
 </html>
-
-
