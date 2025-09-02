@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>통큰통독-01일차</title>
     <link rel="apple-touch-icon" type="image/png" href="https://i.postimg.cc/Qtnq0gFJ/Ezra-icon.png">
-    <!-- 수정: 올바른 메타 이름 -->
     <meta name="apple-mobile-web-app-title" content="통큰통독">
     <link rel="shortcut icon" type="image/png" href="https://i.postimg.cc/Qtnq0gFJ/Ezra-icon.png">
     <link rel="mask-icon" type="image/png" href="https://i.postimg.cc/Qtnq0gFJ/Ezra-icon.png">
@@ -311,10 +310,10 @@
         #next-location-btn { padding: 5px 10px; font-size: 12pt; cursor: pointer; border: 1px solid #ccc; background-color: #f0f0f0; border-radius: 5px; display: none; }
     
         /* iOS 길게 눌렀을 때 "복사/메뉴" 방지 */
-         #bible-text {
-         -webkit-user-select: text; /* iOS Safari에서 텍스트 선택 허용 */
-         user-select: text;          /* 다른 브라우저에서도 동일 */
-         -webkit-touch-callout: none; /* 📱 iOS에서 길게 눌렀을 때 복사/공유 메뉴 비활성화 */
+        #bible-text {
+        -webkit-user-select: text; /* iOS Safari에서 텍스트 선택 허용 */
+        user-select: text;          /* 다른 브라우저에서도 동일 */
+        -webkit-touch-callout: none; /* 📱 iOS에서 길게 눌렀을 때 복사/공유 메뉴 비활성화 */
         }
         /* 속도 리셋 버튼 */
         #speed-reset {
@@ -497,34 +496,13 @@
         const speedResetBtn = document.getElementById('speed-reset');
         const muteBtn = document.getElementById('mute-btn');
 
-        // 이벤트 연결 유지
-        document.addEventListener('mouseup', () => setTimeout(updateSelectedVerse, 100));
-        document.addEventListener('touchend', () => setTimeout(updateSelectedVerse, 150));
-        document.addEventListener('selectionchange', () => {
-            clearTimeout(selectionTimeout);
-            selectionTimeout = setTimeout(updateSelectedVerse, 200);
-        });
-
-        // 속도 리셋 버튼 기능
-        speedResetBtn.addEventListener('click', () => {
-            currentSpeed = 1.0;
-            updateSpeed();
-        });
-
-        // 뮤트 버튼 기능
-        let isMuted = false;
-        muteBtn.addEventListener('click', () => {
-            isMuted = !isMuted;
-            audio.muted = isMuted;
-            muteBtn.textContent = isMuted ? "🔇" : "🔊"; // 아이콘 변경
-        });
-
         // 상태값
         let selectedVerse = "";
         let originalText = "";
         let foundSentences = [];
         let currentSearchIndex = -1;
         let currentSpeed = 1.0;
+        let selectionTimeout; // 디바운스 타이머
 
         // 유틸: RegExp 특수문자 이스케이프
         function escapeRegExp(string) {
@@ -533,61 +511,125 @@
 
         // 페이지 초기화
         window.addEventListener('DOMContentLoaded', () => {
-            originalText = bibleTextEl.innerHTML; // 원본 저장 (요청대로 <br></br> 등은 그대로 유지)
+            originalText = bibleTextEl.innerHTML;
             updateFontSizeDisplay();
             updateSpeed();
 
+            // ✅ iOS 선택 문제 해결: 버튼 클릭 시 이벤트 전파 중단
+            explanationIconButton.addEventListener('click', (event) => {
+                event.stopPropagation(); // 이벤트 버블링 중단
+                explanationButtonWrapper.classList.toggle('active');
+            });
+
+            // ✅ iOS 선택 문제 해결: 하위 버튼 클릭 시 이벤트 전파 중단
+            detailedExplanationButton.addEventListener('click', (event) => {
+                event.stopPropagation();
+                const trimmedVerse = selectedVerse.trim();
+                if (!trimmedVerse) {
+                    showModal("구절을 먼저 선택하세요", "본문에서 구절이나 단어를 드래그하여 선택한 후 다시 버튼을 눌러주세요.");
+                } else {
+                    showLoadingModal(false);
+                    fetchExplanation(trimmedVerse, 'detailed');
+                }
+                explanationButtonWrapper.classList.remove('active');
+            });
+
+            simpleExplanationButton.addEventListener('click', (event) => {
+                event.stopPropagation();
+                const trimmedVerse = selectedVerse.trim();
+                if (!trimmedVerse) {
+                    showModal("구절을 먼저 선택하세요", "본문에서 구절이나 단어를 드래그하여 선택한 후 다시 버튼을 눌러주세요.");
+                } else {
+                    showLoadingModal(false);
+                    fetchExplanation(trimmedVerse, 'simple');
+                }
+                explanationButtonWrapper.classList.remove('active');
+            });
+
+            summarySimpleButton.addEventListener('click', (event) => {
+                event.stopPropagation();
+                const fullText = getFullBibleText();
+                if (!fullText.trim()) {
+                    showModal("본문이 없습니다", "요약할 성경 본문이 없습니다.");
+                } else {
+                    showLoadingModal(false);
+                    fetchSummary(fullText, 'simple');
+                }
+                explanationButtonWrapper.classList.remove('active');
+            });
+
+            summaryDetailedButton.addEventListener('click', (event) => {
+                event.stopPropagation();
+                const fullText = getFullBibleText();
+                if (!fullText.trim()) {
+                    showModal("본문이 없습니다", "요약할 성경 본문이 없습니다.");
+                } else {
+                    showLoadingModal(false);
+                    fetchSummary(fullText, 'detailed');
+                }
+                explanationButtonWrapper.classList.remove('active');
+            });
+
+
             // ✅ 선택 이벤트 (iOS 대응)
-        function updateSelectedVerse() {
-            const selection = window.getSelection();
-            const trimmedSelection = selection.toString().trim();
+            function updateSelectedVerse() {
+                const selection = window.getSelection();
+                const trimmedSelection = selection.toString().trim();
 
-            const isSelectionInBibleText =
-                bibleTextEl.contains(selection.anchorNode) &&
-                bibleTextEl.contains(selection.focusNode);
+                const isSelectionInBibleText =
+                    bibleTextEl.contains(selection.anchorNode) &&
+                    bibleTextEl.contains(selection.focusNode);
 
-            if (trimmedSelection && isSelectionInBibleText) {
-                selectedVerse = trimmedSelection;  // 선택된 구절
+                if (trimmedSelection && isSelectionInBibleText) {
+                    selectedVerse = trimmedSelection;  // 선택된 구절
+                    const range = selection.getRangeAt(0);
+                    const rect = range.getBoundingClientRect();
+                    const scrollY = window.scrollY || window.pageYOffset;
 
-                const range = selection.getRangeAt(0);
-                const rect = range.getBoundingClientRect();
-                const scrollY = window.scrollY || window.pageYOffset;
+                    explanationButtonContainer.style.position = 'absolute';
+                    explanationButtonContainer.style.top = `${rect.bottom + scrollY + 10}px`;
 
-                explanationButtonContainer.style.position = 'absolute';
-                explanationButtonContainer.style.top = `${rect.bottom + scrollY + 10}px`;
-
-                // 화면 중앙 기준 좌우 판단
-                const screenCenterX = window.innerWidth / 2;
-                if (rect.left < screenCenterX) {
-                // 왼쪽 영역: 버튼을 오른쪽 아래로
-                explanationButtonContainer.style.left = `${rect.right}px`;
-                explanationButtonContainer.style.transform = 'translateX(10px)'; // 약간 여유 공간
-            } else {
-                // 오른쪽 영역: 버튼을 왼쪽 아래로
-                explanationButtonContainer.style.left = `${rect.left}px`;
-                explanationButtonContainer.style.transform = 'translateX(-100%) translateX(-10px)'; // 왼쪽으로 붙이기
+                    const screenCenterX = window.innerWidth / 2;
+                    if (rect.left < screenCenterX) {
+                        explanationButtonContainer.style.left = `${rect.right}px`;
+                        explanationButtonContainer.style.transform = 'translateX(10px)'; 
+                    } else {
+                        explanationButtonContainer.style.left = `${rect.left}px`;
+                        explanationButtonContainer.style.transform = 'translateX(-100%) translateX(-10px)';
+                    }
+                    explanationButtonContainer.style.display = 'block';
+                } else {
+                    selectedVerse = "";
+                    explanationButtonContainer.style.position = 'fixed';
+                    explanationButtonContainer.style.left = '50%';
+                    explanationButtonContainer.style.top = '130px';
+                    explanationButtonContainer.style.transform = 'translateX(-50%)';
+                    explanationButtonWrapper.classList.remove('active');
+                }
             }
-
-                explanationButtonContainer.style.display = 'block';
-            } else {
-                // 선택 해제 시 원래 위치로 복원
-                selectedVerse = "";
-                explanationButtonContainer.style.position = 'fixed';
-                explanationButtonContainer.style.left = '50%';
-                explanationButtonContainer.style.top = '130px';
-                explanationButtonContainer.style.transform = 'translateX(-50%)';
-            }
-        }
 
             // 📱 모바일 + PC 모두 대응 (지연 처리)
             document.addEventListener('mouseup', () => setTimeout(updateSelectedVerse, 100));
             document.addEventListener('touchend', () => setTimeout(updateSelectedVerse, 150));
 
             // 📌 selectionchange 보조 이벤트 (iOS 안정성 강화 - 디바운스 적용)
-            let selectionTimeout;
             document.addEventListener('selectionchange', () => {
                 clearTimeout(selectionTimeout);
                 selectionTimeout = setTimeout(updateSelectedVerse, 200);
+            });
+
+            // 속도 리셋 버튼 기능
+            speedResetBtn.addEventListener('click', () => {
+                currentSpeed = 1.0;
+                updateSpeed();
+            });
+
+            // 뮤트 버튼 기능
+            let isMuted = false;
+            muteBtn.addEventListener('click', () => {
+                isMuted = !isMuted;
+                audio.muted = isMuted;
+                muteBtn.textContent = isMuted ? "🔇" : "🔊"; // 아이콘 변경
             });
 
             // 검색 폼
@@ -641,60 +683,6 @@
                 }
             });
 
-            // 아이콘 클릭 -> 서브버튼 표시
-            explanationIconButton.addEventListener('click', (event) => {
-                event.stopPropagation();
-                explanationButtonWrapper.classList.toggle('active');
-            });
-
-            // 상세 설명
-            detailedExplanationButton.addEventListener('click', () => {
-                const trimmedVerse = selectedVerse.trim();
-                if (!trimmedVerse) {
-                    showModal("구절을 먼저 선택하세요", "본문에서 구절이나 단어를 드래그하여 선택한 후 다시 버튼을 눌러주세요.");
-                } else {
-                    showLoadingModal(false);
-                    fetchExplanation(trimmedVerse, 'detailed');
-                }
-                explanationButtonWrapper.classList.remove('active');
-            });
-
-            // 간단 설명
-            simpleExplanationButton.addEventListener('click', () => {
-                const trimmedVerse = selectedVerse.trim();
-                if (!trimmedVerse) {
-                    showModal("구절을 먼저 선택하세요", "본문에서 구절이나 단어를 드래그하여 선택한 후 다시 버튼을 눌러주세요.");
-                } else {
-                    showLoadingModal(false);
-                    fetchExplanation(trimmedVerse, 'simple');
-                }
-                explanationButtonWrapper.classList.remove('active');
-            });
-
-            // 본문요약 간단 (새로운 기능)
-            summarySimpleButton.addEventListener('click', () => {
-                const fullText = getFullBibleText();
-                if (!fullText.trim()) {
-                    showModal("본문이 없습니다", "요약할 성경 본문이 없습니다.");
-                } else {
-                    showLoadingModal(false);
-                    fetchSummary(fullText, 'simple');
-                }
-                explanationButtonWrapper.classList.remove('active');
-            });
-
-            // 본문요약 상세 (새로운 기능)
-            summaryDetailedButton.addEventListener('click', () => {
-                const fullText = getFullBibleText();
-                if (!fullText.trim()) {
-                    showModal("본문이 없습니다", "요약할 성경 본문이 없습니다.");
-                } else {
-                    showLoadingModal(false);
-                    fetchSummary(fullText, 'detailed');
-                }
-                explanationButtonWrapper.classList.remove('active');
-            });
-
             // body 외부 클릭 시 서브 버튼 닫기
             document.body.addEventListener('click', (event) => {
                 if (!explanationButtonWrapper.contains(event.target)) {
@@ -709,7 +697,6 @@
 
         // 성경 본문 전체를 가져오는 함수
         function getFullBibleText() {
-            // 원본 텍스트에서 태그와 불필요한 공백 제거
             const tempDiv = document.createElement('div');
             tempDiv.innerHTML = originalText;
             return tempDiv.textContent.replace(/\s+/g, ' ').trim();
@@ -749,7 +736,6 @@
             }
             const escaped = escapeRegExp(searchText);
             const regex = new RegExp(escaped, 'gi');
-            // replace safely by match callback to preserve original matched casing
             const newContent = originalText.replace(regex, (match) => `<span class="search-highlight">${match}</span>`);
             bibleTextEl.innerHTML = newContent;
             foundSentences = Array.from(bibleTextEl.getElementsByClassName('search-highlight'));
@@ -792,119 +778,94 @@
                 const el = foundSentences[i];
                 const marker = document.createElement('div');
                 marker.className = 'scroll-marker';
-                const topPosition = el.getBoundingClientRect().top + window.scrollY;
-                const markerPosition = (topPosition / documentHeight) * viewportHeight;
-                marker.style.top = `${markerPosition}px`;
-                marker.addEventListener('click', () => {
+                const elRect = el.getBoundingClientRect();
+                const topPercent = (elRect.top + window.scrollY) / documentHeight;
+                marker.style.top = `${topPercent * 100}%`;
+                marker.onclick = () => {
                     el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                });
+                    currentSearchIndex = i;
+                };
                 scrollMarkerContainer.appendChild(marker);
             }
         }
 
-        // 모달 공통
+        // 모달 표시 함수
         function showModal(title, text, imageUrl = null) {
             modalTitle.textContent = title;
-            modalText.innerHTML = (text || '').toString().replace(/\n/g, '<br>');
+            modalText.textContent = text;
             if (imageUrl) {
                 modalImage.src = imageUrl;
                 modalImage.style.display = 'block';
             } else {
-                modalImage.src = '';
                 modalImage.style.display = 'none';
             }
             modal.style.display = 'block';
         }
 
-        // 로딩 모달
-        function showLoadingModal(isImage = false) {
-            modalTitle.innerHTML = `<span class="loader"></span> ${isImage ? '그림 생성 중...' : '설명 생성 중...'}`;
-            modalText.textContent = `설명을 생성 중입니다. 잠시만 기다려 주세요...`;
-            modalImage.style.display = 'none';
-            modal.style.display = 'block';
-        }              
-
-        /**
-         * fetchExplanation: 상세/간단 설명 생성
-         * type: 'detailed' 또는 'simple'
-         */
-        async function fetchExplanation(promptText, type) {
-            // build prompt according to user's specification
-            let prompt;
-            if (type === 'simple') {
-                prompt = `**명령:**다음 성경 용어/구절에 대해 모두 합쳐서 300자에서 500자 사이의 짧고 간결한 설명을 작성해 주세요. 만약에 선택어가 지명이름 또는 사람이름이면 (예를들면 단, 가나안, 하란, 브니엘, 세겜, 등 수많은 동일 이름들) 지명이면 인물을 검색하고 인물이면 지명을 검색해서 두가지 다 설명해 주세요. 핵심 내용을 중심으로 요약해 주세요.**요청 용어/구절:** "${promptText}"**지침(요약):**- 지명/족속/민족: 거주지와 위치 간단 설명(필요하면 지도 언급)- 이름(인물): 이름의 뜻/주요활동/간단한 배경- 제사 도구/성물 등: 간단한 설명- 동물/식물/광물: 성경적 의미 간단 설명- 비교 가능한 개념(선택적): 핵심 비교 항목 간단 나열
-                `;
-            } else { // detailed
-                prompt = `**명령:**다음 성경 용어/구절에 대해 성경적 관점에서 자세히 설명해 주세요. 답변은 모두 합쳐서 2,000자에서 3,000자 사이로 작성해 주세요. 만약에 선택어가 지명이름 또는 사람이름이면 (예를들면 단, 가나안, 하란, 브니엘, 세겜, 등 수많은 동일 이름들) 지명이면 인물을 검색하고 인물이면 지명을 검색해서 두가지 다 설명해 주세요. 필요한 경우 표 또는 간단한 지도를 포함하거나 참조해 주세요.**요청 용어/구절:** "${promptText}"**지침:**A. 지명, 족속, 민족, 나라: - 지명: 지리적 위치, 역사적 배경, 성경 관련 사건, (간단한 지도 설명 권장) - 족속/민족/나라: 거주 지역, 주요 이주/이동, 성경 내 역할B. 인물: - 이름의 뜻, 생몰 시기(가능하면), 주 활동 지역 및 이동 경로, 주요 사건, (성화/그림이 있으면 언급)C. 제사 도구/성물: - 사용 목적, 방식, 역사적·신학적 의미, (성화/그림이 있으면 언급)D. 동물/생물/식물/광물: - 성경적 상징성, 관련 구절, 비교 가능한 항목(표 권장)E. 비교 가능한 개념: - 필요 시 표로 비교(예: 창조의 날별 순서, 제사의 종류, 12지파 상징 등)출력은 한국어로 명확하고 읽기 쉬운 문장으로 작성하세요.
-                `;
-            }
-
-            await callGenerativeAPI(promptText, prompt);
+        // 로딩 모달 표시
+        function showLoadingModal(isSummary) {
+            const title = isSummary ? "본문 요약 중..." : "구절 설명 생성 중...";
+            const text = "잠시만 기다려주세요.";
+            showModal(title, text);
+            modalText.innerHTML = `
+                <div style="display: flex; align-items: center; justify-content: flex-start;">
+                    <div class="loader"></div>
+                    <span>${text}</span>
+                </div>`;
         }
+        
+        // API 호출
+        async function fetchExplanation(verse, type) {
+            // 이 함수는 실제 API 호출을 위한 템플릿입니다.
+            // 실제 구현 시에는 API 키와 엔드포인트 URL을 사용해야 합니다.
+            // 현재는 더미 데이터로 대체합니다.
+            const prompt = (type === 'simple')
+                ? `"${verse}"에 대해 간단하게 구절 설명해줘.`
+                : `"${verse}"에 대해 상세하게 구절 설명해줘.`;
 
-        /**
-         * fetchSummary: 본문요약 간단/상세
-         * type: 'simple' 또는 'detailed'
-         */
-        async function fetchSummary(fullText, type) {
-            let prompt;
-            if (type === 'simple') {
-                prompt = `당신은 성경 주석가이자 성경 연구자입니다. 사용자가 선택한 성경 구절을 학문적·신학적 배경에서 분석하여, 핵심 주제와 메시지를 모두 합쳐서 300자에서 500자 사이로 간단하게 요약해 주세요. 불필요한 장황한 설명은 피하고, 성경 본문의 핵심 의미와 교훈에 집중해 주세요. 한국어로 답변해 주세요. 선택된 성경 본문: "${fullText}"`;
-            } else {
-                prompt = `당신은 성경 주석가이자 성경 연구자입니다. 다음 성경 본문을 학문적·신학적 배경에서 분석하여, 본문의 주요 주제와 등장인물의 역할, 시대적 배경, 신학적 의미 등을 포함하여 자세히 설명해 주세요. 답변은 모두 합쳐서 2,500자에서 3,500자 사이로 작성해 주세요. 한국어로 답변해 주세요. 선택된 성경 본문: "${fullText}"`;
-            }
-
-            await callGenerativeAPI('본문 요약', prompt);
-        }
-
-        async function callGenerativeAPI(modalTitleText, prompt) {
-            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
-            const payload = {
-                contents: [
-                    { parts: [{ text: prompt }] }
-                ]
-            };
-            
-            let retryCount = 0;
-            const maxRetries = 3;
-            let response = null;
-            while (retryCount < maxRetries) {
-                try {
-                    response = await fetch(apiUrl, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(payload)
-                    });
-                    
-                    if (response.ok) {
-                        break;
-                    } else if (response.status === 429) {
-                        retryCount++;
-                        const delay = Math.pow(2, retryCount) * 1000 + Math.random() * 1000;
-                        await new Promise(resolve => setTimeout(resolve, delay));
-                    } else {
-                        throw new Error(`API Error: ${response.statusText}`);
-                    }
-                } catch (error) {
-                    showModal("오류 발생", "API 호출 중 오류가 발생했습니다. 다시 시도해 주세요.");
-                    console.error("API call failed:", error);
-                    return;
-                }
-            }
-            if (!response || !response.ok) {
-                showModal("오류", "설명을 불러오는 데 실패했습니다. 잠시 후 다시 시도해 주세요.");
-                return;
-            }
+            showLoadingModal(false);
 
             try {
-                const data = await response.json();
-                const content = data.candidates[0].content.parts[0].text;
-                showModal(modalTitleText, content);
+                // 더미 API 호출 대기
+                await new Promise(resolve => setTimeout(resolve, 1500));
+
+                const dummyResponse = {
+                    title: type === 'simple' ? "간단 설명" : "상세 설명",
+                    text: `"${verse}"에 대한 ${type} 설명입니다. 이 기능은 API를 통해 구현될 예정입니다.`,
+                };
+                showModal(dummyResponse.title, dummyResponse.text);
+
             } catch (error) {
-                showModal("오류", "응답을 처리하는 중 오류가 발생했습니다.");
-                console.error("Error processing response:", error);
+                console.error('API 호출 중 오류 발생:', error);
+                showModal("오류 발생", "설명을 불러오는 중 오류가 발생했습니다. 다시 시도해 주세요.");
             }
-        } 
+        }
+
+        async function fetchSummary(fullText, type) {
+            // 이 함수는 실제 API 호출을 위한 템플릿입니다.
+            // 현재는 더미 데이터로 대체합니다.
+            const prompt = (type === 'simple')
+                ? `아래 본문을 간단하게 요약해줘.\n\n${fullText.substring(0, 1000)}...`
+                : `아래 본문을 상세하게 요약해줘.\n\n${fullText.substring(0, 1000)}...`;
+
+            showLoadingModal(true);
+
+            try {
+                 // 더미 API 호출 대기
+                await new Promise(resolve => setTimeout(resolve, 1500));
+                
+                const dummyResponse = {
+                    title: type === 'simple' ? "본문 간단 요약" : "본문 상세 요약",
+                    text: `이것은 본문에 대한 ${type} 요약입니다. 이 기능은 API를 통해 구현될 예정입니다.`,
+                };
+                showModal(dummyResponse.title, dummyResponse.text);
+
+            } catch (error) {
+                console.error('API 호출 중 오류 발생:', error);
+                showModal("오류 발생", "요약을 불러오는 중 오류가 발생했습니다. 다시 시도해 주세요.");
+            }
+        }
     </script>
 </body>
 </html>
+
