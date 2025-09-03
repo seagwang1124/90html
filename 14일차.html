@@ -1,149 +1,203 @@
+<!DOCTYPE html>
 <html lang="ko">
 <head>
-
-  <meta charset="UTF-8">
-  
-<link rel="apple-touch-icon" type="image/png" href="https://i.postimg.cc/Qtnq0gFJ/Ezra-icon.png">
-<meta name="apple-mobile-web-app-title" content="통큰통독">
-
-<link rel="shortcut icon" type="image/png" href="https://i.postimg.cc/Qtnq0gFJ/Ezra-icon.png">
-
-<link rel="mask-icon" type="image/png" href="https://i.postimg.cc/Qtnq0gFJ/Ezra-icon.png">
-
-
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
   <title>통큰통독-14일차</title>
-  
+  <link rel="apple-touch-icon" type="image/png" href="https://i.postimg.cc/Qtnq0gFJ/Ezra-icon.png">
+  <meta name="apple-mobile-web-app-title" content="통큰통독">
+  <link rel="shortcut icon" type="image/png" href="https://i.postimg.cc/Qtnq0gFJ/Ezra-icon.png">
+  <link rel="mask-icon" type="image/png" href="https://i.postimg.cc/Qtnq0gFJ/Ezra-icon.png">
 
-  
-  
-<style>
-body { margin: 0px; }
-.container { 
-  width: 100%;
+  <style>
+    /* ---------------------------
+       전체 스타일 (원 디자인 유지)
+       --------------------------- */
+    :root{
+      --blue:#007BFF;
+      --pink:#ff99cc;
+      --shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    html,body { height:100%; margin:0; padding:0; font-family: Arial, sans-serif; -webkit-font-smoothing:antialiased; }
+    body { padding-top:150px; background:#fff; color:#000; }
 
-  text-align: center; 
-}
+    a:link { color:#0000FF; } a:visited{ color:#660099; }
 
-h2 { 
-  height: 0px; 
-  padding: 0;
-   text-align: left;
-}
+    /* 상단 고정 테이블 */
+    .top-fixed-table {
+      position: fixed; top:0; left:0; width:100%; background:transparent; border-bottom:none; z-index:100;
+      table-layout: fixed; padding:10px 0; box-sizing:border-box;
+    }
+    .search-cell { text-align:left; padding-left:10px; vertical-align:top; width:30%; }
+    .search-cell input[type="text"]{ width:50%; font-size:12pt; }
+    .search-cell input[type="submit"], .search-cell input[type="reset"]{ font-size:10pt; padding:5px 8px; height:auto; }
 
-  p { display: inline-block; }
-  .font-size-label { 
-  margin-right: 20px;
-   }
-  #font-size { margin: 0 5px; }
-  button { 
-    width: 54px;
-    height: 54px;
-  }
-  
-  audio {
-  position: fixed;
-  top: 0px;
-  Right: 10;
-  width: 30%;
-  height: 8%;
-  margin: right;
-  
-}
-  form { 
- 
-  position: fixed;
-  top: 5px;
-  left: 10;
-  
-  margin:left;
-  
- 
-}
-  
-  
-</style>
+    .audio-cell { text-align:right; padding-right:50px; vertical-align:top; width:30%; }
+    #custom-audio-player { display:flex; flex-direction:column; align-items:center; }
+    .player-controls{ display:flex; align-items:center; justify-content:center; gap:10px; margin-bottom:5px; }
+    .time-display{ font-size:14px; color:#555; margin:0 5px; min-width:44px; text-align:center; }
 
+    .control-btn{ width:28px; height:28px; font-size:14px; cursor:pointer; border:1px solid #ccc; background:#fff; border-radius:5px; }
+    .control-btn:hover{ background:#e0e0e0; }
+    #play-btn{ background:#d1f3d4; } #pause-btn{ background:#fff6d6; } #stop-btn{ background:#fddddd; }
 
+    .speed-controls{ display:flex; align-items:center; justify-content:center; gap:5px; margin-bottom:5px; }
+    .speed-btn{ width:21px; height:21px; font-size:10px; cursor:pointer; border:1px solid #ccc; border-radius:3px; background:#fff; }
+    .speed-btn:hover{ background:#e0e0e0; }
+    .speed-display{ font-weight:bold; color:var(--blue); width:50px; text-align:center; }
+
+    .volume-control{ display:flex; align-items:center; justify-content:center; gap:5px; }
+    input[type="range"]{ -webkit-appearance:none; width:160px; height:5px; background:#d3d3d3; outline:none; opacity:0.9; transition:opacity .2s; border-radius:3px;}
+    input[type="range"]::-webkit-slider-thumb{ -webkit-appearance:none; appearance:none; width:15px; height:15px; background:var(--blue); border-radius:50%; cursor:pointer; }
+
+    /* progress */
+    #progress-bar { width: 60%; max-width: 80px; }
+
+    /* volume */
+    #volume-slider { width: 80%; max-width: 120px; }
+
+    /* 설명 버튼 컨테이너 (플로팅) */
+    .explanation-button-container{ position:fixed; top:120px; left:45%; transform:translateX(-50%); z-index:100; display:block; padding:0 10px; transition:top .2s ease,left .2s ease,transform .2s ease; }
+    .explanation-button-wrapper{ position:relative; display:inline-block; cursor:pointer; }
+    .explanation-icon-button{ width:50px; height:50px; border-radius:50%; background:var(--pink); box-shadow:var(--shadow); border:none; display:flex; align-items:center; justify-content:center; font-size:40px; z-index:2; }
+    .explanation-sub-buttons{ display:flex; flex-direction:column; gap:10px; opacity:0; visibility:hidden; transition:opacity .3s ease,visibility .3s ease, transform .3s ease; position:absolute; left:45%; transform:translateX(-50%) translateY(25px); z-index:1; }
+    .explanation-button-wrapper.active .explanation-sub-buttons{ opacity:1; visibility:visible; transform:translateX(-50%) translateY(0); }
+    .explanation-sub-button{ padding:5px 10px; font-size:18px; background:var(--pink); border:none; border-radius:5px; cursor:pointer; box-shadow:var(--shadow); white-space:nowrap; }
+    .explanation-sub-button:hover{ transform:scale(1.03); }
+
+    /* 폰트 사이즈 및 본문 요약 버튼 (항상 표시) */
+    .container{ width:100%; text-align:center; margin-top:8px; }
+    .font-size-label{ font-size:20px !important; margin-right:12px; font-weight:bold; color:blue; display:inline-block; vertical-align:middle; }
+    #font-size{ font-size:20px !important; margin:0 8px; font-weight:bold; color:red; display:inline-block; vertical-align:middle; width:48px; }
+    #down,#up{ width:27px; height:27px; font-size:20px; color:red; background:#fff; border:1px solid #ccc; border-radius:5px; cursor:pointer; display:inline-block; vertical-align:middle; }
+
+    /* 본문 요약 버튼 - 항상 노출 (요구사항) */
+    .summary-buttons { display:inline-block; margin-left:16px; vertical-align:middle; }
+    .summary-btn { padding:6px 10px; margin-left:6px; font-size:14px; border-radius:6px; border:1px solid #ccc; background:#fff; cursor:pointer; }
+    .summary-btn:hover{ background:#f2f2f2; }
+
+    /* 본문 */
+    h2{ padding:0; text-align:left; margin-left:15px; margin-right:15px; }
+    p{ display:inline-block; }
+
+    /* 모달 */
+    .modal{ display:none; position:fixed; z-index:200; inset:0; width:100%; height:100%; overflow:auto; background:rgba(0,0,0,0.4); }
+    .modal-content{ background:#fff; margin:12% auto; padding:20px; border-radius:10px; width:80%; max-width:900px; box-shadow:0 4px 8px rgba(0,0,0,0.2); text-align:left; line-height:1.6; word-break:keep-all; white-space:pre-wrap; }
+    .close-button{ color:#aaa; float:right; font-size:28px; font-weight:bold; cursor:pointer; }
+    .close-button:hover{ color:#000; }
+    #modal-image{ max-width:100%; height:auto; margin-bottom:12px; display:none; border-radius:8px; }
+
+    /* 로딩 스피너 */
+    .loader{ border:4px solid #f3f3f3; border-top:4px solid #3498db; border-radius:50%; width:20px; height:20px; animation:spin 1s linear infinite; display:inline-block; vertical-align:middle; margin-right:8px; }
+    @keyframes spin{ 0%{transform:rotate(0deg);} 100%{transform:rotate(360deg);} }
+
+    /* 스크롤 마커 */
+    .search-highlight{ background:yellow; color:#000; }
+    .scroll-marker-container{ position:fixed; top:0; right:0; width:8px; height:100vh; z-index:99; pointer-events:none; }
+    .scroll-marker{ position:absolute; right:0; width:8px; height:8px; background:red; border-radius:50%; box-shadow:0 0 5px rgba(255,0,0,0.7); cursor:pointer; pointer-events:auto; }
+    .scroll-marker:hover{ transform:scale(1.5); transition:transform .2s ease; }
+
+    /* 선택 관련 (iOS) */
+    #bible-text{ -webkit-user-select:text; user-select:text; -webkit-touch-callout:none; }
+
+    /* 반응형 보완 */
+    @media (max-width:800px){
+      .search-cell{ width:55%; } .audio-cell{ width:45%; } .search-cell input[type="text"]{ width:60%; } #progress-bar{ width:160px; }
+    }
+    @media (max-width:600px){
+      .search-cell input[type="text"]{ width:68%; font-size:11pt; } .time-display{ font-size:13px; } #progress-bar{ width:140px; }
+      .explanation-sub-button{ font-size:16px; padding:6px 8px; }
+      .explanation-icon-button{ width:46px; height:46px; font-size:34px; }
+      .summary-btn{ padding:5px 8px; font-size:13px; }
+    }
+  </style>
 </head>
+<body>
+  <!-- 상단: 검색 + 오디오 -->
+  <table class="top-fixed-table" id="main-table" cellpadding="0" cellspacing="0">
+    <tr>
+      <td class="search-cell">
+        <form name="f1" action="">
+          <input type="reset" name="b2" value="X">
+          <input type="text" placeholder="검색어를 입력하세요" name="t1" value="">
+          <input type="submit" name="b1" value="검색">
+          <div id="search-count-container">
+            <span id="search-count"></span>
+            <button type="button" id="next-location-btn" style="display:none;">다음 위치</button>
+          </div>
+        </form>
+      </td>
+      
+       <td class="audio-cell">
+        <div id="custom-audio-player" role="region" aria-label="오디오 플레이어">
+            <audio id="audio-file" preload="auto" playsinline>
+              <source src="https://vod47.anyline.co.kr/vod_ezra/%EC%9D%BD%EA%B8%B0%2014.mp3" type="audio/mpeg">
+              브라우저가 오디오 요소를 지원하지 않습니다.
+            </audio>
 
+          <div class="player-controls">
+            <button id="play-btn" class="control-btn" aria-label="재생">▶</button>
+            <button id="pause-btn" class="control-btn" aria-label="일시정지">⏸</button>
+            <button id="stop-btn" class="control-btn" aria-label="정지">■</button>
+          </div>
+          
+          <div>
+          <strong><span style="font-size:15px;" id="current-time" class="time-display">0:00</span></strong>
+          <input type="range" id="progress-bar" min="0" max="100" value="0" step="0.01" aria-label="재생 위치">
+          <strong><span style="font-size:15px;" id="remaining-time" class="time-display">0:00</span></strong>
+          </div>
 
-<h1>   
-<div> 
-    <audio controls> 
-    <source src="http://vod47.anyline.co.kr/vod_ezra//%EC%9D%BD%EA%B8%B0%2014.mp3"  type="audio/mp3"> 
-     </audio>
+          <div class="speed-controls">
+            <button id="speed-down-02" class="speed-btn" aria-label="속도 -0.2">&laquo;</button>
+            <button id="speed-down-01" class="speed-btn" aria-label="속도 -0.1">&lt;</button>
+            <span id="speed-display" class="speed-display">1.0x</span>
+            <button id="speed-up-01" class="speed-btn" aria-label="속도 +0.1">&gt;</button>
+            <button id="speed-up-02" class="speed-btn" aria-label="속도 +0.2">&raquo;</button>
+            <button id="speed-reset" aria-label="속도 초기화">1.0</button>
+          </div>
 
-</div>
-</h1>
+          <div class="volume-control">
+            <span style="font-size:14px;">볼륨</span>
+            <button id="mute-btn" aria-label="음소거 토글">🔊</button>
+            <input type="range" id="volume-slider" min="0" max="1" step="0.01" value="1" aria-label="볼륨">
+          </div>
+        </div>
+      </td>
+    </tr>
+  </table>
 
+  <!-- 플로팅 책 버튼 (구절설명 토글) -->
+  <div class="explanation-button-container" id="explanation-button-container">
+    <div class="explanation-button-wrapper" id="explanation-button-wrapper">
+      <button class="explanation-icon-button" id="explanation-icon-button" aria-label="구절설명 열기">
+        <span>📖</span>
+      </button>
+      <div class="explanation-sub-buttons" id="explanation-sub-buttons" role="menu">
+        <button class="explanation-sub-button" id="detailed-explanation-button">상세 구절설명</button>
+        <button class="explanation-sub-button" id="simple-explanation-button">간단 구절설명</button>
+      </div>
+    </div>
+  </div>
 
-<h3>
-<div> 
-<body bgcolor="#FFFFFF" text="#000000" link="#0000FF" vlink="#660099"
-onLoad="if(top.changeAD)top.changeAD()">
-<a name="top"></a>
+  <!-- 폰트 크기 + 항상 표시되는 본문 요약 버튼 -->
+  <div class="container" style="margin-top:6px;">
+    <p class="font-size-label">Font Size</p>
+    <button id="down">-</button>
+    <p id="font-size">20</p>
+    <button id="up">+</button>
 
-<form name="f1" action="" 
-onSubmit="if(this.t1.value!=null && this.t1.value!='')
-findString(this.t1.value);return false"
->
-<input type="reset"name="b2" value="X" style="font-size:15pt;">
-<input type="text" style="font-size:15pt;" placeholder="검색어를 입력하세요" name="t1" value="" size="17">
-<input type="submit" name="b1" value="검색" style="font-size:13pt;">
-</form>
-</body>
-</div> 
-</h3>
+    <span class="summary-buttons" aria-hidden="false">
+      <button class="summary-btn" id="summary-simple-main">본문요약 간단</button>
+      <button class="summary-btn" id="summary-detailed-main">본문요약 상세</button>
+    </span>
+  </div>
 
-
-
-
-
-<body translate="no">
-<div class="container">
- <br></br>
- 
-  <p class="font-size-label;"
-  style="
-font-style: normal; 
-font-weight: bold;
-color: blue;
-font-size: 40px;">Font Size</p>
-  <button id="down"style="
-font-style: normal; 
-font-weight: normal;
-color: red;
-font-size: 40px;">-</button>
-  <p id="font-size"style="
-font-style: normal; 
-font-weight: bold; 
-color: red;
-font-size: 40px;">20</p>
-  <button id="up"style="
-font-style: normal; 
-font-weight: normal;
-color: red;
-font-size: 40px;">+</button>
-</div>
-
-
-  
-  <h2 style="
-line-height: 1.2em;
-margin-left:15px;
-margin-right:15;
-font-style: normal; 
-font-weight: normal; 
-color: black;
-font-size: 20px;
-font-family: arial;
-word-break: break-all;
-">
-
-
-<strong>
-
-통독 14일차
+  <!-- 본문 (원문 유지: <br></br> 포함) -->
+  <div>
+    <h2 id="bible-text" style="line-height:1.2em;margin-left:15px;margin-right:15px;font-style:normal;font-weight:normal;color:black;font-size:20px;word-break:break-all;">
+      <strong>
+      통독 14일차
 <br>범위: 신명기 19장- 34장/ 시편 90 편</br>
 <br>&nbsp;</br>
 
@@ -360,7 +414,7 @@ word-break: break-all;
 <br>15 원하건대 주의 거룩한 처소 하늘에서 보시고 주의 백성 이스라엘에게 복을 주시며 우리 조상들에게 맹세하여 우리에게 주신 젖과 꿀이 흐르는 땅에 복을 내리소서 할지니라</br>
 <br><i><font color="#808080">*하나님의 보배로운 백성*</font></i></br>
 <br>16 오늘 네 하나님 여호와께서 이 규례와 법도를 행하라고 네게 명령하시나니 그런즉 너는 마음을 다하고 뜻을 다하여 지켜 행하라</br>
-<br>17 네가 오늘 여호와를 네 하나님으로 인정하고 또 그 도를 행하고 그의 규례와 명령과 법도를 지키며 그의 소리를 들으라</br>
+<br>17 네가 오늘 여호와를 네 하나님으로 인정하고 또 그 도를 행하고 그의 규례와 명령과 법도를 지키며 그의 소리를 들으리라 확언하였고</br>
 <br>18 여호와께서도 네게 말씀하신 대로 오늘 너를 그의 보배로운 백성이 되게 하시고 그의 모든 명령을 지키라 확언하셨느니라</br>
 <br>19 그런즉 여호와께서 너를 그 지으신 모든 민족 위에 뛰어나게 하사 찬송과 명예와 영광을 삼으시고 그가 말씀하신 대로 너를 네 하나님 여호와의 성민이 되게 하시리라</br>
 <br>&nbsp;</br>
@@ -678,106 +732,475 @@ word-break: break-all;
 <br>16 주께서 행하신 일을 주의 종들에게 나타내시며 주의 영광을 그들의 자손에게 나타내소서</br>
 <br>17 주 우리 하나님의 은총을 우리에게 내리게 하사 우리의 손이 행한 일을 우리에게 견고하게 하소서 우리의 손이 행한 일을 견고하게 하소서</br>
 <br>&nbsp;</br>
-<br>    14일차 끝</br>
-<br>&nbsp;</br>
-   
-   
-  </h2>
+<br>    14일차 끝</br>
+      <br>&nbsp;</br>
+    </h2>
+  </div>
 
+  <!-- 모달 (설명/요약 출력) -->
+  <div id="explanation-modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <div class="modal-content">
+      <span class="close-button" id="close-modal" aria-label="닫기">&times;</span>
+      <h3 id="modal-title">구절 설명</h3>
+      <img id="modal-image" src="" alt="설명 관련 이미지" />
+      <div id="modal-text">구절을 드래그하여 선택하고 '구절설명' 버튼을 누르세요.</div>
+    </div>
+  </div>
 
-    <script src="https://cpwebassets.codepen.io/assets/common/stopExecutionOnTimeout-157cd5b220a5c80d4ff8e0e70ac069bffd87a61252088146915e8726e5d9f147.js"></script>
+  <div id="scroll-marker-container" class="scroll-marker-container" aria-hidden="true"></div>
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
-      <script id="rendered-js">
-// When + or - buttons are clicked the font size of the h2 is increased/decreased by 2
-// The max is set to 50px for this demo, the min is set by min font in the user's style sheet
+  <script>
+    // ------------------------------
+    // API KEY (사용자 입력 상태)
+    const apiKey = "AIzaSyDUlSQlSPgnrFBXpnUJMDoUO3s_KsaoFRU";
+    // ------------------------------
 
-function getSize() {
-  size = $("h2").css("font-size");
-  size = parseInt(size, 10);
-  $("#font-size").text(size);
-}
+    // DOM
+    const bibleTextEl = document.getElementById('bible-text');
+    const searchCountEl = document.getElementById('search-count');
+    const nextLocationBtn = document.getElementById('next-location-btn');
+    const scrollMarkerContainer = document.getElementById('scroll-marker-container');
 
-//get inital font size
-getSize();
+    const explanationIconButton = document.getElementById('explanation-icon-button');
+    const explanationButtonWrapper = document.getElementById('explanation-button-wrapper');
+    const explanationSubButtons = document.getElementById('explanation-sub-buttons');
+    const detailedExplanationButton = document.getElementById('detailed-explanation-button');
+    const simpleExplanationButton = document.getElementById('simple-explanation-button');
 
-$("#up").on("click", function () {
+    const summarySimpleMain = document.getElementById('summary-simple-main');
+    const summaryDetailedMain = document.getElementById('summary-detailed-main');
 
-  // parse font size, if less than 50 increase font size
-  if (size + 4 <= 80) {
-    $("h2").css("font-size", "+=4");
-    $("#font-size").text(size += 4);
-  }
-});
+    const modal = document.getElementById('explanation-modal');
+    const closeModalButton = document.getElementById('close-modal');
+    const modalTitle = document.getElementById('modal-title');
+    const modalImage = document.getElementById('modal-image');
+    const modalText = document.getElementById('modal-text');
 
-$("#down").on("click", function () {
-  if (size - 4 >= 12) {
-    $("h2").css("font-size", "-=4");
-    $("#font-size").text(size -= 4);
-  }
-});
-//# sourceURL=pen.js
-    </script>
+    const audio = document.getElementById('audio-file');
+    const playBtn = document.getElementById('play-btn');
+    const pauseBtn = document.getElementById('pause-btn');
+    const stopBtn = document.getElementById('stop-btn');
+    const progressBar = document.getElementById('progress-bar');
+    const speedDisplay = document.getElementById('speed-display');
+    const speedDown02Btn = document.getElementById('speed-down-02');
+    const speedDown01Btn = document.getElementById('speed-down-01');
+    const speedUp01Btn = document.getElementById('speed-up-01');
+    const speedUp02Btn = document.getElementById('speed-up-02');
+    const speedResetBtn = document.getElementById('speed-reset');
+    const volumeSlider = document.getElementById('volume-slider');
+    const muteBtn = document.getElementById('mute-btn');
+    const currentTimeEl = document.getElementById('current-time');
+    const remainingTimeEl = document.getElementById('remaining-time');
 
-  
+    const upBtn = document.getElementById('up');
+    const downBtn = document.getElementById('down');
+    const fontSizeEl = document.getElementById('font-size');
 
-  <script src="https://cpwebassets.codepen.io/assets/editor/iframe/iframeRefreshCSS-bb9a2ba1f03f6147732cb3cd52ac86c6b24524aa87a05ed0b726f11e46d7e277.js"></script>
+    // 상태
+    let originalText = "";
+    let selectedVerse = "";
+    let selectionRange = null; // 선택 영역 복원용
+    let foundSentences = [];
+    let currentSearchIndex = -1;
+    let currentSpeed = 1.0;
+    let isMuted = false;
+    let selectionDebounce = null;
 
-<script language="JavaScript">
-<!--
-if (
-    parent.location==self.location
-    && (""+self.location).toLowerCase().indexOf(".chm")==-1
-    && (""+self.location).toLowerCase().indexOf("~hh")==-1
-  )
- 
-</script>
+    // 유틸
+    function escapeRegExp(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
+    function formatTime(sec) { if (!isFinite(sec) || sec < 0) return '0:00'; const m = Math.floor(sec/60); const s = Math.floor(sec%60); return `${m}:${String(s).padStart(2,'0')}`; }
 
+    // 초기화
+    window.addEventListener('DOMContentLoaded', () => {
+      originalText = bibleTextEl.innerHTML; // 원본 보관
+      updateFontSizeDisplay();
+      updateSpeed();
 
+      // 폰트 버튼
+      upBtn.addEventListener('click', () => {
+        const current = parseFloat(getComputedStyle(bibleTextEl).fontSize);
+        if (current + 4 <= 80) { bibleTextEl.style.fontSize = (current + 4) + 'px'; updateFontSizeDisplay(); }
+      });
+      downBtn.addEventListener('click', () => {
+        const current = parseFloat(getComputedStyle(bibleTextEl).fontSize);
+        if (current - 4 >= 12) { bibleTextEl.style.fontSize = (current - 4) + 'px'; updateFontSizeDisplay(); }
+      });
 
-<script language="JavaScript">
-<!--
-var TRange=null
+      // 검색 폼
+      const searchForm = document.forms.f1;
+      searchForm.addEventListener('submit', (e) => { e.preventDefault(); findString(searchForm.t1.value); });
+      searchForm.b2.addEventListener('click', () => { clearHighlight(); });
 
-function findString (str) {
- if (parseInt(navigator.appVersion)<4) return;
- var strFound;
- if (navigator.appName=="Netscape") {
+      // nextLocation
+      nextLocationBtn.addEventListener('click', nextLocation);
 
-  // NAVIGATOR-SPECIFIC CODE
+      // 오디오
+      playBtn.addEventListener('click', () => { audio.play().catch(()=>{}); });
+      pauseBtn.addEventListener('click', () => audio.pause());
+      stopBtn.addEventListener('click', () => { audio.pause(); audio.currentTime = 0; });
 
-  strFound=self.find(str);
-  if (!strFound) {
-  strFound=self.find(str,0,1)
-  while (self.find(str,0,1)) continue
-  }
- }
- if (navigator.appName.indexOf("Microsoft")!=-1) {
+      speedDown02Btn.addEventListener('click', () => { currentSpeed = Math.max(0.5, currentSpeed - 0.2); updateSpeed(); });
+      speedDown01Btn.addEventListener('click', () => { currentSpeed = Math.max(0.5, currentSpeed - 0.1); updateSpeed(); });
+      speedUp01Btn.addEventListener('click', () => { currentSpeed = Math.min(2.0, currentSpeed + 0.1); updateSpeed(); });
+      speedUp02Btn.addEventListener('click', () => { currentSpeed = Math.min(2.0, currentSpeed + 0.2); updateSpeed(); });
+      speedResetBtn.addEventListener('click', () => { currentSpeed = 1.0; updateSpeed(); });
 
-  // EXPLORER-SPECIFIC CODE
+      volumeSlider.addEventListener('input', () => { audio.volume = Number(volumeSlider.value); });
+      muteBtn.addEventListener('click', () => { isMuted = !isMuted; audio.muted = isMuted; muteBtn.textContent = isMuted ? '🔇' : '🔊'; });
 
-  if (TRange!=null) {
-  TRange.collapse(false)
-  strFound=TRange.findText(str)
-  if (strFound) TRange.select()
-  }
-  if (TRange==null || strFound==0) {
-  TRange=self.document.body.createTextRange()
-  strFound=TRange.findText(str)
-  if (strFound) TRange.select()
-  }
- }
- if (!strFound) alert ("검색하신 단어 '"+str+"' 찾을수가 없습니다!")
-}
+      // progress bar updates
+      audio.addEventListener('timeupdate', () => {
+        if (!isFinite(audio.duration) || audio.duration <= 0) return;
+        const pct = (audio.currentTime / audio.duration) * 100;
+        progressBar.value = pct;
+        currentTimeEl.textContent = formatTime(audio.currentTime);
+        remainingTimeEl.textContent = '-' + formatTime(audio.duration - audio.currentTime);
+      }, { passive: true });
 
-//-->
-</script>
+      audio.addEventListener('loadedmetadata', () => {
+        currentTimeEl.textContent = '0:00';
+        remainingTimeEl.textContent = '-' + formatTime(audio.duration || 0);
+      });
 
+      progressBar.addEventListener('input', () => {
+        if (!isFinite(audio.duration) || audio.duration <= 0) return;
+        const pct = progressBar.value / 100;
+        audio.currentTime = audio.duration * pct;
+      }, { passive: true });
 
+      // 설명 버튼(책) - 클릭시 서브버튼 토글
+      // iOS에서 선택이 사라지는 문제를 피하기 위해 클릭/터치 이전 선택영역을 저장하고, 토글 후 복원
+      explanationIconButton.addEventListener('pointerdown', (ev) => {
+        // pointerdown에서 기본 동작을 방지하면 iOS가 선택을 잃지 않는 경우가 있지만, 안전하게 클론을 저장
+        const sel = window.getSelection();
+        try {
+          if (sel && sel.rangeCount > 0) selectionRange = sel.getRangeAt(0).cloneRange();
+        } catch(e) {
+          selectionRange = null;
+        }
+      }, { passive: true });
 
+      explanationIconButton.addEventListener('click', (ev) => {
+        ev.stopPropagation();
+        // 토글하기 전에 현재 선택을 저장(안전)
+        const sel = window.getSelection();
+        try { if (sel && sel.rangeCount > 0) selectionRange = sel.getRangeAt(0).cloneRange(); } catch(e){ selectionRange = null; }
+        explanationButtonWrapper.classList.toggle('active');
 
+        // 토글 후 약간 뒤에 선택 복원 (iOS에서 클릭으로 인해 사라졌다면 복원)
+        setTimeout(() => {
+          if (selectionRange) {
+            const sel2 = window.getSelection();
+            sel2.removeAllRanges();
+            try { sel2.addRange(selectionRange); } catch(e){ /* ignore */ }
+            // update selectedVerse accordingly
+            updateSelectedVerseFromRange(selectionRange);
+          }
+        }, 60);
+      });
 
+      // 책 버튼 외부 클릭으로 닫기
+      document.body.addEventListener('click', (ev) => {
+        if (!explanationButtonWrapper.contains(ev.target)) explanationButtonWrapper.classList.remove('active');
+      });
 
+      // 상세/간단 구절설명 버튼 - 클릭시 선택문구 사용
+      detailedExplanationButton.addEventListener('click', () => {
+        const v = (selectedVerse || '').trim();
+        if (!v) { showModal("구절을 먼저 선택하세요","본문에서 구절이나 단어를 드래그하여 선택한 후 다시 버튼을 눌러주세요."); }
+        else { fetchExplanation(v, 'detailed'); }
+        explanationButtonWrapper.classList.remove('active');
+      });
+      simpleExplanationButton.addEventListener('click', () => {
+        const v = (selectedVerse || '').trim();
+        if (!v) { showModal("구절을 먼저 선택하세요","본문에서 구절이나 단어를 드래그하여 선택한 후 다시 버튼을 눌러주세요."); }
+        else { fetchExplanation(v, 'simple'); }
+        explanationButtonWrapper.classList.remove('active');
+      });
+
+      // 본문 요약 버튼 (항상 보이는 위치)
+      summarySimpleMain.addEventListener('click', () => {
+        const full = getFullBibleText();
+        if (!full.trim()) { showModal("본문이 없습니다","요약할 성경 본문이 없습니다."); }
+        else { fetchSummary(full, 'simple'); }
+      });
+      summaryDetailedMain.addEventListener('click', () => {
+        const full = getFullBibleText();
+        if (!full.trim()) { showModal("본문이 없습니다","요약할 성경 본문이 없습니다."); }
+        else { fetchSummary(full, 'detailed'); }
+      });
+
+      // 모달 닫기
+      closeModalButton.addEventListener('click', () => { modal.style.display = 'none'; });
+      window.addEventListener('click', (ev) => { if (ev.target === modal) modal.style.display = 'none'; });
+
+      // 선택 이벤트: 데스크탑 + 모바일 대응 (디바운스)
+      const scheduleSelectionUpdate = () => {
+        clearTimeout(selectionDebounce);
+        selectionDebounce = setTimeout(handleSelectionChange, 160);
+      };
+      document.addEventListener('mouseup', scheduleSelectionUpdate, { passive:true });
+      document.addEventListener('touchend', scheduleSelectionUpdate, { passive:true });
+      document.addEventListener('selectionchange', scheduleSelectionUpdate);
+
+      // 초기 speed 표시
+      updateSpeed();
+    });
+
+    // --------------------------
+    // 선택 관리: iOS에서 선택이 사라지는 문제를 보완
+    function handleSelectionChange(){
+      const sel = window.getSelection();
+      if (!sel) return clearSelectionState();
+      const text = (sel.toString() || "").trim();
+      // 선택이 본문 내에 있는지 체크
+      let isInBible = false;
+      try {
+        if (sel.anchorNode && sel.focusNode) {
+          isInBible = bibleTextEl.contains(sel.anchorNode) && bibleTextEl.contains(sel.focusNode);
+        }
+      } catch(e){ isInBible = false; }
+
+      if (text && isInBible) {
+        selectedVerse = text;
+        try {
+          selectionRange = sel.getRangeAt(0).cloneRange();
+        } catch(e){ selectionRange = null; }
+        // 버튼 위치 표시
+        try {
+          const range = sel.getRangeAt(0);
+          const rect = range.getBoundingClientRect();
+          positionExplanationButton(rect);
+        } catch(e){
+          // fallback: 고정 위치
+          resetExplanationButton();
+        }
+      } else {
+        clearSelectionState();
+      }
+    }
+    function updateSelectedVerseFromRange(range) {
+      if (!range) return;
+      const txt = (range.toString() || "").trim();
+      if (txt) selectedVerse = txt;
+      // position button
+      try {
+        const rect = range.getBoundingClientRect();
+        positionExplanationButton(rect);
+      } catch(e){ resetExplanationButton(); }
+    }
+    function clearSelectionState(){
+      selectedVerse = "";
+      selectionRange = null;
+      resetExplanationButton();
+    }
+
+    // 버튼 위치 설정: 화면 밖으로 나가지 않도록 하기
+    function positionExplanationButton(rect){
+      const container = document.getElementById('explanation-button-container');
+      const scrollY = window.scrollY || window.pageYOffset;
+      const vh = window.innerHeight;
+      const containerHeight = container.offsetHeight || 80;
+      // 기본 top 계산
+      let topPos = rect.bottom + scrollY + 10;
+      // 화면 아래로 넘지 않게
+      const maxTop = (window.scrollY || window.pageYOffset) + window.innerHeight - containerHeight - 10;
+      topPos = Math.min(topPos, maxTop);
+      // 화면 위로 넘지 않게
+      const minTop = (window.scrollY || window.pageYOffset) + 10;
+      topPos = Math.max(topPos, minTop);
+      container.style.position = 'absolute';
+      container.style.top = topPos + 'px';
+
+      // 좌우
+      const screenCenterX = window.innerWidth / 2;
+      if (rect.left < screenCenterX) {
+        container.style.left = (rect.right) + 'px';
+        container.style.transform = 'translateX(10px)';
+      } else {
+        container.style.left = rect.left + 'px';
+        container.style.transform = 'translateX(-100%) translateX(-10px)';
+      }
+      container.style.display = 'block';
+    }
+    function resetExplanationButton(){
+      const container = document.getElementById('explanation-button-container');
+      container.style.position = 'fixed';
+      container.style.left = '45%';
+      container.style.top = '120px';
+      container.style.transform = 'translateX(-50%)';
+      // 노출 유지 (기본 상태)
+      //container.style.display = 'block';
+    }
+
+    // --------------------------
+    // 검색 / 하이라이트 / 스크롤 마커
+    function findString(searchText){
+      clearHighlight();
+      if (searchText == null || searchText.trim() === '') { searchCountEl.textContent = ''; nextLocationBtn.style.display = 'none'; return; }
+      const escaped = escapeRegExp(searchText.trim());
+      const regex = new RegExp(escaped, 'gi');
+      const newContent = originalText.replace(regex, (match) => `<span class="search-highlight">${match}</span>`);
+      bibleTextEl.innerHTML = newContent;
+      foundSentences = Array.from(bibleTextEl.getElementsByClassName('search-highlight'));
+      searchCountEl.textContent = `총 ${foundSentences.length}개 검색됨`;
+      if (foundSentences.length > 0) {
+        currentSearchIndex = 0;
+        foundSentences[currentSearchIndex].scrollIntoView({ behavior:'smooth', block:'center' });
+        nextLocationBtn.style.display = 'inline-block';
+        updateScrollMarkers();
+      } else {
+        showModal("검색 결과 없음", `"${searchText}"에 대한 검색 결과가 없습니다.`);
+        nextLocationBtn.style.display = 'none';
+      }
+    }
+    function nextLocation(){
+      if (!foundSentences.length) return;
+      currentSearchIndex = (currentSearchIndex + 1) % foundSentences.length;
+      foundSentences[currentSearchIndex].scrollIntoView({ behavior:'smooth', block:'center' });
+      // 마커 동기화
+      updateScrollMarkers();
+    }
+    function clearHighlight(){
+      bibleTextEl.innerHTML = originalText;
+      searchCountEl.textContent = '';
+      nextLocationBtn.style.display = 'none';
+      while (scrollMarkerContainer.firstChild) scrollMarkerContainer.removeChild(scrollMarkerContainer.firstChild);
+      foundSentences = [];
+      currentSearchIndex = -1;
+    }
+    function updateScrollMarkers(){
+      while (scrollMarkerContainer.firstChild) scrollMarkerContainer.removeChild(scrollMarkerContainer.firstChild);
+      const docH = document.documentElement.scrollHeight;
+      const vh = window.innerHeight;
+      foundSentences.forEach((el, idx) => {
+        const marker = document.createElement('div');
+        marker.className = 'scroll-marker';
+        const topPos = el.getBoundingClientRect().top + window.scrollY;
+        const markerPos = Math.min(Math.max((topPos / docH) * vh, 2), vh - 10);
+        marker.style.top = markerPos + 'px';
+        marker.addEventListener('click', () => { el.scrollIntoView({ behavior:'smooth', block:'center' }); });
+        scrollMarkerContainer.appendChild(marker);
+      });
+    }
+
+    // --------------------------
+    // 모달
+    function showModal(title, text, imageUrl=null){
+      modalTitle.textContent = title || '';
+      modalText.innerHTML = (text || '').toString().replace(/\n/g, '<br>');
+      if (imageUrl) { modalImage.src = imageUrl; modalImage.style.display = 'block'; } else { modalImage.src=''; modalImage.style.display='none'; }
+      modal.style.display = 'block';
+      // 선택영역 유지: 모달 열려도 선택 유지하도록 약간의 복원 시도
+      setTimeout(() => {
+        if (selectionRange) {
+          const sel = window.getSelection();
+          sel.removeAllRanges();
+          try { sel.addRange(selectionRange); } catch(e) { /* ignore */ }
+        }
+      }, 60);
+    }
+    function showLoadingModal(isImage=false){
+      modalTitle.innerHTML = `<span class="loader"></span> ${isImage ? '그림 생성 중...' : '설명 생성 중...'}`;
+      modalText.textContent = '설명을 생성 중입니다. 잠시만 기다려 주세요...';
+      modalImage.style.display = 'none';
+      modal.style.display = 'block';
+    }
+
+    // --------------------------
+    // 본문 전체 텍스트 획득 (요약용)
+    function getFullBibleText(){
+      const tmp = document.createElement('div');
+      tmp.innerHTML = originalText;
+      return tmp.textContent.replace(/\s+/g,' ').trim();
+    }
+
+    // --------------------------
+    // 설명/요약 API 호출 (Generative API 호출 핸들러)
+    async function callGenerativeAPI(modalTitleText, prompt){
+      const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
+      const payload = { contents: [ { parts: [ { text: prompt } ] } ] };
+
+      let retryCount = 0; const maxRetries = 3;
+      let response = null;
+      while (retryCount < maxRetries) {
+        try {
+          response = await fetch(apiUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+          if (response.ok) break;
+          if (response.status === 429) { retryCount++; const delay = Math.pow(2, retryCount)*1000 + Math.random()*1000; await new Promise(r=>setTimeout(r, delay)); }
+          else throw new Error(`API Error: ${response.status} ${response.statusText}`);
+        } catch (err) {
+          console.error('API call failed:', err);
+          showModal("오류 발생", "API 호출 중 오류가 발생했습니다. 다시 시도해 주세요.");
+          return;
+        }
+      }
+      if (!response || !response.ok) { showModal("오류", "설명을 불러오는 데 실패했습니다. 잠시 후 다시 시도해 주세요."); return; }
+
+      try {
+        const data = await response.json();
+        const content = data?.candidates?.[0]?.content?.parts?.[0]?.text || "응답을 가져오지 못했습니다.";
+        showModal(modalTitleText, content);
+      } catch (err) {
+        console.error('Error processing response:', err);
+        showModal("오류", "응답을 처리하는 중 오류가 발생했습니다.");
+      }
+    }
+
+    // fetchExplanation + fetchSummary
+    async function fetchExplanation(promptText, type){
+      let prompt;
+      if (type === 'simple') {
+        prompt = `**명령:**다음 성경 용어/구절에 대해 모두 합쳐서 300자에서 500자 사이의 짧고 간결한 설명을 작성해 주세요. 만약에 선택어가 지명이름 또는 사람이름이면 (예: 단, 가나안, 하란, 브니엘, 세겜 등) 지명이면 인물을 검색하고 인물이면 지명을 검색해서 두 가지 다 설명해 주세요. 핵심 내용을 중심으로 요약해 주세요.\n**요청 용어/구절:** "${promptText}"\n**지침(요약):**- 지명/족속/민족: 거주지와 위치 간단 설명(필요하면 지도 언급)\n- 이름(인물): 이름의 뜻/주요활동/간단한 배경\n- 제사 도구/성물 등: 간단한 설명\n- 동물/식물/광물: 성경적 의미 간단 설명\n- 비교 가능한 개념(선택적): 핵심 비교 항목 간단 나열`;
+      } else {
+        prompt = `**명령:**다음 성경 용어/구절에 대해 성경적 관점에서 자세히 설명해 주세요. 답변은 모두 합쳐서 2,000자에서 3,000자 사이로 작성해 주세요. 필요하면 표 또는 간단한 지도를 포함하거나 참조해 주세요.\n**요청 용어/구절:** "${promptText}"\n**지침:**A. 지명, 족속, 민족, 나라: 지리적 위치, 역사적 배경, 성경 관련 사건\nB. 인물: 이름의 뜻, 주요 사건, 활동 지역\nC. 제사 도구/성물: 사용 목적 및 신학적 의미\nD. 동물/식물: 성경적 상징성\n출력은 한국어로 작성하세요.`;
+      }
+      showLoadingModal(false);
+      await callGenerativeAPI('구절 설명', prompt);
+    }
+
+    async function fetchSummary(fullText, type){
+      let prompt;
+      if (type === 'simple') {
+        prompt = `당신은 성경 주석가이자 성경 연구자입니다. 사용자가 선택한 성경 본문을 학문적·신학적 배경에서 분석하여, 핵심 주제와 메시지를 모두 합쳐서 300자에서 500자 사이로 간단하게 요약해 주세요. 불필요한 장황한 설명은 피하고 핵심 의미와 교훈에 집중하세요.\n선택된 성경 본문: "${fullText}"`;
+      } else {
+        prompt = `당신은 성경 주석가이자 성경 연구자입니다. 다음 성경 본문을 학문적·신학적 배경에서 분석하여, 본문의 주요 주제와 등장인물의 역할, 시대적 배경, 신학적 의미 등을 포함하여 자세히 설명해 주세요. 답변은 2,500자에서 3,500자 사이로 작성하세요.\n선택된 성경 본문: "${fullText}"`;
+      }
+      showLoadingModal(false);
+      await callGenerativeAPI('본문 요약', prompt);
+    }
+
+    // --------------------------
+    // updateSpeed
+    function updateSpeed(){ audio.playbackRate = currentSpeed; speedDisplay.textContent = currentSpeed.toFixed(1) + 'x'; }
+
+    // --------------------------
+    // 선택관련 helper (외부에서 range 직접 설정 등)
+    // selectionRange는 이미 클론된 Range를 보유하거나 null
+    // handleSelectionChange()에서 selectedVerse 업데이트
+
+    // --------------------------
+    // selection 유지 보장: 유저가 터치/클릭 후 선택이 사라지는 경우, 이전에 저장된 selectionRange를 복원 시도
+    // 이 파일에서 selectionRange는 선택 직후 저장되며, 버튼 클릭 등으로 선택이 사라지면 복원 시도함.
+
+    // --------------------------
+    // 추가 유틸 (폰트 표시)
+    function updateFontSizeDisplay(){
+      const cur = parseFloat(getComputedStyle(bibleTextEl).fontSize);
+      fontSizeEl.textContent = Math.round(cur);
+    }
+
+    // --------------------------
+    // 안전한 context: window 전역에서 사용할 수 있도록 일부 함수 노출 (선택사항)
+    window.findString = findString;
+    window.nextLocation = nextLocation;
+
+    // --------------------------
+    // 종료
+  </script>
 </body>
-
 </html>
