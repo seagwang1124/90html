@@ -52,7 +52,10 @@
     input[type="range"]::-webkit-slider-thumb{ -webkit-appearance:none; appearance:none; width:15px; height:15px; background:var(--blue); border-radius:50%; cursor:pointer; }
 
     /* progress */
-    #progress-bar{ width:190px; }
+    #progress-bar{ width:100px; }
+
+    /* volume */
+    #volume-slider { width:120px; }
 
     /* 설명 버튼 컨테이너 (플로팅) */
     .explanation-button-container{ position:fixed; top:130px; left:50%; transform:translateX(-50%); z-index:100; display:block; padding:0 10px; transition:top .2s ease,left .2s ease,transform .2s ease; }
@@ -99,7 +102,7 @@
     #bible-text{ -webkit-user-select:text; user-select:text; -webkit-touch-callout:none; }
 
     /* 반응형 보완 */
-    @media (max-width:900px){
+    @media (max-width:800px){
       .search-cell{ width:55%; } .audio-cell{ width:45%; } .search-cell input[type="text"]{ width:60%; } #progress-bar{ width:160px; }
     }
     @media (max-width:600px){
@@ -704,3 +707,4 @@
   </script>
 </body>
 </html>
+
