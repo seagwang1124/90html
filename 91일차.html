@@ -249,8 +249,11 @@
 
   <script>
     // ------------------------------
-    // 설정: API 키는 런타임에 자동으로 제공됩니다.
-        const geminiApiKey = "";
+    // ------------------------------
+    // API KEY (사용자 입력 상태)
+    const apiKey = "";
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
+                
     // ------------------------------
 
     // DOM
@@ -702,4 +705,5 @@
   </script>
 </body>
 </html>
+
 
