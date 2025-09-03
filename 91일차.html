@@ -33,7 +33,7 @@
     .search-cell input[type="text"]{ width:50%; font-size:12pt; }
     .search-cell input[type="submit"], .search-cell input[type="reset"]{ font-size:10pt; padding:5px 8px; height:auto; }
 
-    .audio-cell { text-align:right; padding-right:100px; vertical-align:top; width:30%; }
+    .audio-cell { text-align:right; padding-right:50px; vertical-align:top; width:30%; }
     #custom-audio-player { display:flex; flex-direction:column; align-items:center; }
     .player-controls{ display:flex; align-items:center; justify-content:center; gap:10px; margin-bottom:5px; }
     .time-display{ font-size:14px; color:#555; margin:0 5px; min-width:44px; text-align:center; }
@@ -134,14 +134,16 @@
             </audio>
 
           <div class="player-controls">
-            <span id="current-time" class="time-display">0:00</span>
             <button id="play-btn" class="control-btn" aria-label="재생">▶</button>
             <button id="pause-btn" class="control-btn" aria-label="일시정지">⏸</button>
             <button id="stop-btn" class="control-btn" aria-label="정지">■</button>
-            <span id="remaining-time" class="time-display">0:00</span>
           </div>
-
+          
+          <div>
+          <strong><span style="font-size:15px;" id="current-time" class="time-display">0:00</span></strong>
           <input type="range" id="progress-bar" min="0" max="100" value="0" step="0.01" aria-label="재생 위치">
+          <strong><span style="font-size:15px;" id="remaining-time" class="time-display">0:00</span></strong>
+          </div>
 
           <div class="speed-controls">
             <button id="speed-down-02" class="speed-btn" aria-label="속도 -0.2">&laquo;</button>
@@ -153,7 +155,7 @@
           </div>
 
           <div class="volume-control">
-            <span style="font-size:12px;">볼륨</span>
+            <span style="font-size:14px;">볼륨</span>
             <button id="mute-btn" aria-label="음소거 토글">🔊</button>
             <input type="range" id="volume-slider" min="0" max="1" step="0.01" value="1" aria-label="볼륨">
           </div>
@@ -702,8 +704,3 @@
   </script>
 </body>
 </html>
-
-
-
-
-
