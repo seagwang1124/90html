@@ -127,9 +127,10 @@
       </td>
 <td class="audio-cell">
                 <div id="custom-audio-player">
-    <audio id="audio-file" preload="auto">
-        <source src="https://vod47.anyline.co.kr/vod_ezra/%EC%9D%BD%EA%B8%B0%2001.mp3" type="audio/mp3">
-    </audio>
+    <audio id="audio-file" preload="auto" playsinline>
+  <source src="https://vod47.anyline.co.kr/vod_ezra/%EC%9D%BD%EA%B8%B0%2001.mp3" type="audio/mpeg">
+  브라우저가 오디오 요소를 지원하지 않습니다.
+</audio>
     <div class="player-controls">
         <span id="current-time" class="time-display">0:00</span>
         <button id="play-btn" class="control-btn">▶</button>
@@ -696,5 +697,6 @@
   </script>
 </body>
 </html>
+
 
 
