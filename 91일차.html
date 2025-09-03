@@ -125,40 +125,34 @@
           </div>
         </form>
       </td>
-
-      <td class="audio-cell">
-        <div id="custom-audio-player" role="region" aria-label="오디오 플레이어">
-          <audio id="audio-file" preload="auto" controls crossorigin="anonymous">
-  <source src="https://vod47.anyline.co.kr/vod_ezra/%EC%9D%BD%EA%B8%B0%2001.mp3" type="audio/mpeg">
-  브라우저에서 오디오를 지원하지 않습니다.
-</audio>
-
-          <div class="player-controls">
-            <span id="current-time" class="time-display">0:00</span>
-            <button id="play-btn" class="control-btn" aria-label="재생">▶</button>
-            <button id="pause-btn" class="control-btn" aria-label="일시정지">⏸</button>
-            <button id="stop-btn" class="control-btn" aria-label="정지">■</button>
-            <span id="remaining-time" class="time-display">0:00</span>
-          </div>
-
-          <input type="range" id="progress-bar" min="0" max="100" value="0" step="0.01" aria-label="재생 위치">
-
-          <div class="speed-controls">
-            <button id="speed-down-02" class="speed-btn" aria-label="속도 -0.2">&laquo;</button>
-            <button id="speed-down-01" class="speed-btn" aria-label="속도 -0.1">&lt;</button>
-            <span id="speed-display" class="speed-display">1.0x</span>
-            <button id="speed-up-01" class="speed-btn" aria-label="속도 +0.1">&gt;</button>
-            <button id="speed-up-02" class="speed-btn" aria-label="속도 +0.2">&raquo;</button>
-            <button id="speed-reset" aria-label="속도 초기화">1.0</button>
-          </div>
-
-          <div class="volume-control">
-            <span style="font-size:12px;">볼륨</span>
-            <button id="mute-btn" aria-label="음소거 토글">🔊</button>
-            <input type="range" id="volume-slider" min="0" max="1" step="0.01" value="1" aria-label="볼륨">
-          </div>
-        </div>
-      </td>
+<td class="audio-cell">
+                <div id="custom-audio-player">
+    <audio id="audio-file" preload="auto">
+        <source src="https://vod47.anyline.co.kr/vod_ezra/%EC%9D%BD%EA%B8%B0%2001.mp3" type="audio/mp3">
+    </audio>
+    <div class="player-controls">
+        <span id="current-time" class="time-display">0:00</span>
+        <button id="play-btn" class="control-btn">▶</button>
+        <button id="pause-btn" class="control-btn">⏸</button>
+        <button id="stop-btn" class="control-btn">■</button>
+        <span id="remaining-time" class="time-display">0:00</span>
+    </div>
+    <input type="range" id="progress-bar" min="0" max="100" value="0" step="0.01">
+    <div class="speed-controls">
+        <button id="speed-down-02" class="speed-btn">&lt;&lt;</button>
+        <button id="speed-down-01" class="speed-btn">&lt;</button>
+        <span id="speed-display" class="speed-display">1.0x</span>
+        <button id="speed-up-01" class="speed-btn">&gt;</button>
+        <button id="speed-up-02" class="speed-btn">&gt;&gt;</button>
+        <button id="speed-reset">1.0</button> <!-- ✅ 추가 -->
+    </div>
+    <div class="volume-control">
+        <span style="font-size:12px;">볼륨</span>
+        <button id="mute-btn">🔊</button> <!-- ✅ 추가 -->
+        <input type="range" id="volume-slider" min="0" max="1" step="0.01" value="1">
+    </div>
+                </div>
+            </td>
     </tr>
   </table>
 
@@ -702,4 +696,5 @@
   </script>
 </body>
 </html>
+
 
