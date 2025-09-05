@@ -115,6 +115,25 @@
       .explanation-icon-button{ width:46px; height:46px; font-size:34px; }
       .summary-btn{ padding:5px 8px; font-size:13px; }
     }
+
+     /* --- 새 버튼 그룹 스타일 --- */
+    .toggle-buttons {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      margin-bottom: 6px;
+    }
+    .toggle-buttons button {
+      padding: 4px 8px;
+      font-size: 13px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      background: #fff;
+      cursor: pointer;
+    }
+    .toggle-buttons button:hover {
+      background: #f0f0f0;
+    }
   </style>
 </head>
 <body>
@@ -135,11 +154,12 @@
       
        <td class="audio-cell">
         <div id="custom-audio-player" role="region" aria-label="오디오 플레이어">
-            <audio id="audio-file" preload="auto" playsinline>
-              <source src="https://vod47.anyline.co.kr/vod_ezra/%EC%9D%BD%EA%B8%B0%2001.mp3" type="audio/mpeg">
-              브라우저가 오디오 요소를 지원하지 않습니다.
-            </audio>
+          <audio id="audio-file" preload="auto" playsinline>
+            <source src="https://vod47.anyline.co.kr/vod_ezra/%EC%9D%BD%EA%B8%B0%2001.mp3" type="audio/mpeg">
+            브라우저가 오디오 요소를 지원하지 않습니다.
+          </audio>
 
+          <!-- 기본 컨트롤 -->
           <div class="player-controls">
             <strong><span style="font-size:15px;" id="current-time" class="time-display">0:00</span></strong>
             <button id="play-btn" class="control-btn" aria-label="재생">▶</button>
@@ -147,26 +167,34 @@
             <button id="stop-btn" class="control-btn" aria-label="정지">■</button>
             <strong><span style="font-size:15px;" id="remaining-time" class="time-display">0:00</span></strong>
           </div>
-          
-          <div class="progress-container">
+
+          <!-- ✅ 새 버튼 그룹 -->
+          <div class="toggle-buttons">
+            <button id="show-progress">재생 위치</button>
+            <button id="show-speed">재생 속도</button>
+            <button id="show-volume">볼륨 조절</button>
+          </div>
+
+          <!-- 기본은 숨김 -->
+          <div class="progress-container" style="display:none;">
             <button id="rewind-10" class="skip-btn">⏪10s</button>
             <input type="range" id="progress-bar" min="0" max="100" value="0" step="0.01" aria-label="재생 위치">
             <button id="forward-10" class="skip-btn">10s⏩</button>
           </div>
 
-          <div class="speed-controls">
-            <button id="speed-down-02" class="speed-btn" aria-label="속도 -0.2">&laquo;</button>
-            <button id="speed-down-01" class="speed-btn" aria-label="속도 -0.1">&lt;</button>
+          <div class="speed-controls" style="display:none;">
+            <button id="speed-down-02" class="speed-btn">&laquo;</button>
+            <button id="speed-down-01" class="speed-btn">&lt;</button>
             <span id="speed-display" class="speed-display">1.0x</span>
-            <button id="speed-up-01" class="speed-btn" aria-label="속도 +0.1">&gt;</button>
-            <button id="speed-up-02" class="speed-btn" aria-label="속도 +0.2">&raquo;</button>
-            <button id="speed-reset" aria-label="속도 초기화">1.0</button>
+            <button id="speed-up-01" class="speed-btn">&gt;</button>
+            <button id="speed-up-02" class="speed-btn">&raquo;</button>
+            <button id="speed-reset">1.0</button>
           </div>
 
-          <div class="volume-control">
+          <div class="volume-control" style="display:none;">
             <span style="font-size:14px;">볼륨</span>
-            <button id="mute-btn" aria-label="음소거 토글">🔊</button>
-            <input type="range" id="volume-slider" min="0" max="1" step="0.01" value="1" aria-label="볼륨">
+            <button id="mute-btn">🔊</button>
+            <input type="range" id="volume-slider" min="0" max="1" step="0.01" value="1">
           </div>
         </div>
       </td>
@@ -202,8 +230,9 @@
   <!-- 본문 (원문 유지: <br></br> 포함) -->
   <div>
     <h2 id="bible-text" style="line-height:1.2em;margin-left:15px;margin-right:15px;font-style:normal;font-weight:normal;color:black;font-size:20px;word-break:break-all;">
-      <strong>
-      통독 1일차
+<strong>
+
+통독 1일차
 <br>범위: 창세기 1장- 11장</br>
 <br>&nbsp;</br>
 
@@ -215,8 +244,32 @@
 <br>3 하나님이 이르시되 빛이 있으라 하시니 빛이 있었고</br>
 <br>4 빛이 하나님이 보시기에 좋았더라 하나님이 빛과 어둠을 나누사</br>
 <br>5 하나님이 빛을 낮이라 부르시고 어둠을 밤이라 부르시니라 저녁이 되고 아침이 되니 이는 첫째 날이니라</br>
-<br>&nbsp;</br>
-      <br>    1일차 끝</br>
+<br>6 하나님이 이르시되 물 가운데에 궁창이 있어 물과 물로 나뉘라 하시고</br>
+<br>7 하나님이 궁창을 만드사 궁창 아래의 물과 궁창 위의 물로 나뉘게 하시니 그대로 되니라</br>
+<br>8 하나님이 궁창을 하늘이라 부르시니라 저녁이 되고 아침이 되니 이는 둘째 날이니라</br>
+<br>9 하나님이 이르시되 천하의 물이 한 곳으로 모이고 뭍이 드러나라 하시니 그대로 되니라</br>
+<br>10 하나님이 뭍을 땅이라 부르시고 모인 물을 바다라 부르시니 하나님이 보시기에 좋았더라</br>
+<br>11 하나님이 이르시되 땅은 풀과 씨 맺는 채소와 각기 종류대로 씨 가진 열매 맺는 나무를 내라 하시니 그대로 되어</br>
+<br>12 땅이 풀과 각기 종류대로 씨 맺는 채소와 각기 종류대로 씨 가진 열매 맺는 나무를 내니 하나님이 보시기에 좋았더라</br>
+<br>13 저녁이 되고 아침이 되니 이는 셋째 날이니라</br>
+<br>14 하나님이 이르시되 하늘의 궁창에 광명체들이 있어 낮과 밤을 나뉘게 하고 그것들로 징조와 계절과 날과 해를 이루게 하라</br>
+<br>15 또 광명체들이 하늘의 궁창에 있어 땅을 비추라 하시니 그대로 되니라</br>
+<br>16 하나님이 두 큰 광명체를 만드사 큰 광명체로 낮을 주관하게 하시고 작은 광명체로 밤을 주관하게 하시며 또 별들을 만드시고</br>
+<br>17 하나님이 그것들을 하늘의 궁창에 두어 땅을 비추게 하시며</br>
+<br>18 낮과 밤을 주관하게 하시고 빛과 어둠을 나뉘게 하시니 하나님이 보시기에 좋았더라</br>
+<br>19 저녁이 되고 아침이 되니 이는 넷째 날이니라</br>
+<br>20 하나님이 이르시되 물들은 생물을 번성하게 하라 땅 위 하늘의 궁창에는 새가 날으라 하시고</br>
+<br>21 하나님이 큰 바다 짐승들과 물에서 번성하여 움직이는 모든 생물을 그 종류대로, 날개 있는 모든 새를 그 종류대로 창조하시니 하나님이 보시기에 좋았더라</br>
+<br>22 하나님이 그들에게 복을 주시며 이르시되 생육하고 번성하여 여러 바닷물에 충만하라 새들도 땅에 번성하라 하시니라</br>
+<br>23 저녁이 되고 아침이 되니 이는 다섯째 날이니라</br>
+<br>24 하나님이 이르시되 땅은 생물을 그 종류대로 내되 가축과 기는 것과 땅의 짐승을 종류대로 내라 하시니 그대로 되니라</br>
+<br>25 하나님이 땅의 짐승을 그 종류대로, 가축을 그 종류대로, 땅에 기는 모든 것을 그 종류대로 만드시니 하나님이 보시기에 좋았더라</br>
+<br>26 하나님이 이르시되 우리의 형상을 따라 우리의 모양대로 우리가 사람을 만들고 그들로 바다의 물고기와 하늘의 새와 가축과 온 땅과 땅에 기는 모든 것을 다스리게 하자 하시고</br>
+<br>27 하나님이 자기 형상 곧 하나님의 형상대로 사람을 창조하시되 남자와 여자를 창조하시고</br>
+<br>28 하나님이 그들에게 복을 주시며 하나님이 그들에게 이르시되 생육하고 번성하여 땅에 충만하라, 땅을 정복하라, 바다의 물고기와 하늘의 새와 땅에 움직이는 모든 생물을 다스리라 하시니라</br>
+<br>29 하나님이 이르시되 내가 온 지면의 씨 맺는 모든 채소와 씨 가진 열매 맺는 모든 나무를 너희에게 주노니 너희의 먹을 거리가 되리라</br>
+<br>30 또 땅의 모든 짐승과 하늘의 모든 새와 생명이 있어 땅에 기는 모든 것에게는 내가 모든 푸른 풀을 먹을 거리로 주노라 하시니 그대로 되니라</br>
+<br>31 하나님이 지으신 그 모든 것을 보시니 보시기에 심히 좋았더라 저녁이 되고 아침이 되니 이는 여섯째 날이니라</br>
       <br>&nbsp;</br>
     </h2>
   </div>
@@ -696,9 +749,32 @@
     window.nextLocation = nextLocation;
 
     // --------------------------
-    // 종료
+    // --- ✅ 새 토글 버튼 로직 ---
+  const progressContainer = document.querySelector('.progress-container');
+  const speedControls = document.querySelector('.speed-controls');
+  const volumeControl = document.querySelector('.volume-control');
+  const showProgressBtn = document.getElementById('show-progress');
+  const showSpeedBtn = document.getElementById('show-speed');
+  const showVolumeBtn = document.getElementById('show-volume');
+
+  let hideTimeout;
+
+  function showOnly(target) {
+    progressContainer.style.display = "none";
+    speedControls.style.display = "none";
+    volumeControl.style.display = "none";
+
+    target.style.display = "flex";
+
+    if (hideTimeout) clearTimeout(hideTimeout);
+    hideTimeout = setTimeout(() => {
+      target.style.display = "none";
+    }, 10000);
+  }
+
+  showProgressBtn.addEventListener('click', () => showOnly(progressContainer));
+  showSpeedBtn.addEventListener('click', () => showOnly(speedControls));
+  showVolumeBtn.addEventListener('click', () => showOnly(volumeControl));
   </script>
 </body>
 </html>
-
-
