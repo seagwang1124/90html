@@ -62,7 +62,7 @@
     #volume-slider { width: 80%; max-width: 120px; }
 
     /* 설명 버튼 컨테이너 (플로팅) */
-    .explanation-button-container{ position:fixed; top:120px; left:45%; transform:translateX(-50%); z-index:100; display:block; padding:0 10px; transition:top .2s ease,left .2s ease,transform .2s ease; }
+    .explanation-button-container{ position:fixed; top:100px; left:30%; transform:translateX(-50%); z-index:100; display:block; padding:0 10px; transition:top .2s ease,left .2s ease,transform .2s ease; }
     .explanation-button-wrapper{ position:relative; display:inline-block; cursor:pointer; }
     .explanation-icon-button{ width:50px; height:50px; border-radius:50%; background:var(--pink); box-shadow:var(--shadow); border:none; display:flex; align-items:center; justify-content:center; font-size:40px; z-index:2; }
     .explanation-sub-buttons{ display:flex; flex-direction:column; gap:10px; opacity:0; visibility:hidden; transition:opacity .3s ease,visibility .3s ease, transform .3s ease; position:absolute; left:45%; transform:translateX(-50%) translateY(25px); z-index:1; }
@@ -230,7 +230,7 @@
   <!-- 본문 (원문 유지: <br></br> 포함) -->
   <div>
     <h2 id="bible-text" style="line-height:1.2em;margin-left:15px;margin-right:15px;font-style:normal;font-weight:normal;color:black;font-size:20px;word-break:break-all;">
-<strong>
+      <strong>
 
 통독 1일차
 <br>범위: 창세기 1장- 11장</br>
@@ -270,7 +270,7 @@
 <br>29 하나님이 이르시되 내가 온 지면의 씨 맺는 모든 채소와 씨 가진 열매 맺는 모든 나무를 너희에게 주노니 너희의 먹을 거리가 되리라</br>
 <br>30 또 땅의 모든 짐승과 하늘의 모든 새와 생명이 있어 땅에 기는 모든 것에게는 내가 모든 푸른 풀을 먹을 거리로 주노라 하시니 그대로 되니라</br>
 <br>31 하나님이 지으신 그 모든 것을 보시니 보시기에 심히 좋았더라 저녁이 되고 아침이 되니 이는 여섯째 날이니라</br>
-      <br>&nbsp;</br>
+<br>&nbsp;</br>
     </h2>
   </div>
 
@@ -575,8 +575,8 @@
     function resetExplanationButton(){
       const container = document.getElementById('explanation-button-container');
       container.style.position = 'fixed';
-      container.style.left = '45%';
-      container.style.top = '120px';
+      container.style.left = '30%';
+      container.style.top = '100px';
       container.style.transform = 'translateX(-50%)';
       // 노출 유지 (기본 상태)
       //container.style.display = 'block';
