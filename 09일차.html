@@ -38,6 +38,10 @@
     .player-controls{ display:flex; align-items:center; justify-content:center; gap:10px; margin-bottom:5px; }
     .time-display{ font-size:14px; color:#555; margin:0 5px; min-width:44px; text-align:center; }
 
+    .progress-container { display: flex; align-items: center; justify-content: center; gap: 6px; margin: 6px 0; }
+    .skip-btn { width: 48px; height: 28px; font-size: 13px; cursor: pointer; border: 1px solid #ccc; border-radius: 5px; background: #fff; }
+    .skip-btn:hover { background: #e0e0e0; }
+
     .control-btn{ width:28px; height:28px; font-size:14px; cursor:pointer; border:1px solid #ccc; background:#fff; border-radius:5px; }
     .control-btn:hover{ background:#e0e0e0; }
     #play-btn{ background:#d1f3d4; } #pause-btn{ background:#fff6d6; } #stop-btn{ background:#fddddd; }
@@ -52,13 +56,13 @@
     input[type="range"]::-webkit-slider-thumb{ -webkit-appearance:none; appearance:none; width:15px; height:15px; background:var(--blue); border-radius:50%; cursor:pointer; }
 
     /* progress */
-    #progress-bar { width: 60%; max-width: 80px; }
+    #progress-bar { width: 60%; max-width: 100px; }
 
     /* volume */
     #volume-slider { width: 80%; max-width: 120px; }
 
     /* 설명 버튼 컨테이너 (플로팅) */
-    .explanation-button-container{ position:fixed; top:120px; left:45%; transform:translateX(-50%); z-index:100; display:block; padding:0 10px; transition:top .2s ease,left .2s ease,transform .2s ease; }
+    .explanation-button-container{ position:fixed; top:100px; left:30%; transform:translateX(-50%); z-index:100; display:block; padding:0 10px; transition:top .2s ease,left .2s ease,transform .2s ease; }
     .explanation-button-wrapper{ position:relative; display:inline-block; cursor:pointer; }
     .explanation-icon-button{ width:50px; height:50px; border-radius:50%; background:var(--pink); box-shadow:var(--shadow); border:none; display:flex; align-items:center; justify-content:center; font-size:40px; z-index:2; }
     .explanation-sub-buttons{ display:flex; flex-direction:column; gap:10px; opacity:0; visibility:hidden; transition:opacity .3s ease,visibility .3s ease, transform .3s ease; position:absolute; left:45%; transform:translateX(-50%) translateY(25px); z-index:1; }
@@ -111,6 +115,25 @@
       .explanation-icon-button{ width:46px; height:46px; font-size:34px; }
       .summary-btn{ padding:5px 8px; font-size:13px; }
     }
+
+     /* --- 새 버튼 그룹 스타일 --- */
+    .toggle-buttons {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      margin-bottom: 6px;
+    }
+    .toggle-buttons button {
+      padding: 4px 8px;
+      font-size: 13px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      background: #fff;
+      cursor: pointer;
+    }
+    .toggle-buttons button:hover {
+      background: #f0f0f0;
+    }
   </style>
 </head>
 <body>
@@ -131,36 +154,47 @@
       
        <td class="audio-cell">
         <div id="custom-audio-player" role="region" aria-label="오디오 플레이어">
-            <audio id="audio-file" preload="auto" playsinline>
-              <source src="https://vod47.anyline.co.kr/vod_ezra/%EC%9D%BD%EA%B8%B0%2009.mp3" type="audio/mpeg">
-              브라우저가 오디오 요소를 지원하지 않습니다.
-            </audio>
+          <audio id="audio-file" preload="auto" playsinline>
+            <source src="https://vod47.anyline.co.kr/vod_ezra/%EC%9D%BD%EA%B8%B0%2009.mp3" type="audio/mpeg">
+            브라우저가 오디오 요소를 지원하지 않습니다.
+          </audio>
 
+          <!-- 기본 컨트롤 -->
           <div class="player-controls">
+            <strong><span style="font-size:15px;" id="current-time" class="time-display">0:00</span></strong>
             <button id="play-btn" class="control-btn" aria-label="재생">▶</button>
             <button id="pause-btn" class="control-btn" aria-label="일시정지">⏸</button>
             <button id="stop-btn" class="control-btn" aria-label="정지">■</button>
-          </div>
-          
-          <div>
-          <strong><span style="font-size:15px;" id="current-time" class="time-display">0:00</span></strong>
-          <input type="range" id="progress-bar" min="0" max="100" value="0" step="0.01" aria-label="재생 위치">
-          <strong><span style="font-size:15px;" id="remaining-time" class="time-display">0:00</span></strong>
+            <strong><span style="font-size:15px;" id="remaining-time" class="time-display">0:00</span></strong>
           </div>
 
-          <div class="speed-controls">
-            <button id="speed-down-02" class="speed-btn" aria-label="속도 -0.2">&laquo;</button>
-            <button id="speed-down-01" class="speed-btn" aria-label="속도 -0.1">&lt;</button>
+          <!-- ✅ 새 버튼 그룹 -->
+          <div class="toggle-buttons">
+            <button id="show-progress">재생 위치</button>
+            <button id="show-speed">재생 속도</button>
+            <button id="show-volume">볼륨 조절</button>
+          </div>
+
+          <!-- 기본은 숨김 -->
+          <div class="progress-container" style="display:none;">
+            <button id="rewind-10" class="skip-btn">⏪10s</button>
+            <input type="range" id="progress-bar" min="0" max="100" value="0" step="0.01" aria-label="재생 위치">
+            <button id="forward-10" class="skip-btn">10s⏩</button>
+          </div>
+
+          <div class="speed-controls" style="display:none;">
+            <button id="speed-down-02" class="speed-btn">&laquo;</button>
+            <button id="speed-down-01" class="speed-btn">&lt;</button>
             <span id="speed-display" class="speed-display">1.0x</span>
-            <button id="speed-up-01" class="speed-btn" aria-label="속도 +0.1">&gt;</button>
-            <button id="speed-up-02" class="speed-btn" aria-label="속도 +0.2">&raquo;</button>
-            <button id="speed-reset" aria-label="속도 초기화">1.0</button>
+            <button id="speed-up-01" class="speed-btn">&gt;</button>
+            <button id="speed-up-02" class="speed-btn">&raquo;</button>
+            <button id="speed-reset">1.0</button>
           </div>
 
-          <div class="volume-control">
+          <div class="volume-control" style="display:none;">
             <span style="font-size:14px;">볼륨</span>
-            <button id="mute-btn" aria-label="음소거 토글">🔊</button>
-            <input type="range" id="volume-slider" min="0" max="1" step="0.01" value="1" aria-label="볼륨">
+            <button id="mute-btn">🔊</button>
+            <input type="range" id="volume-slider" min="0" max="1" step="0.01" value="1">
           </div>
         </div>
       </td>
@@ -197,7 +231,8 @@
   <div>
     <h2 id="bible-text" style="line-height:1.2em;margin-left:15px;margin-right:15px;font-style:normal;font-weight:normal;color:black;font-size:20px;word-break:break-all;">
       <strong>
-      통독 9일차
+
+통독 9일차
 <br>범위: 레위기 11장- 27장</br>
 <br>&nbsp;</br>
 
@@ -879,7 +914,7 @@
 <br>34 이것은 여호와께서 시내 산에서 이스라엘 자손을 위하여 모세에게 명령하신 계명이니라</br>
 <br>&nbsp;</br>
 <br>    9일차 끝</br>
-      <br>&nbsp;</br>
+<br>&nbsp;</br>
     </h2>
   </div>
 
@@ -927,6 +962,8 @@
     const pauseBtn = document.getElementById('pause-btn');
     const stopBtn = document.getElementById('stop-btn');
     const progressBar = document.getElementById('progress-bar');
+    const rewindBtn = document.getElementById('rewind-10');
+    const forwardBtn = document.getElementById('forward-10');
     const speedDisplay = document.getElementById('speed-display');
     const speedDown02Btn = document.getElementById('speed-down-02');
     const speedDown01Btn = document.getElementById('speed-down-01');
@@ -1013,6 +1050,16 @@
         const pct = progressBar.value / 100;
         audio.currentTime = audio.duration * pct;
       }, { passive: true });
+
+      rewindBtn.addEventListener('click', () => {
+        audio.currentTime = Math.max(0, audio.currentTime - 10);
+      });
+
+      forwardBtn.addEventListener('click', () => {
+        if (isFinite(audio.duration)) {
+          audio.currentTime = Math.min(audio.duration, audio.currentTime + 10);
+        }
+      });
 
       // 설명 버튼(책) - 클릭시 서브버튼 토글
       // iOS에서 선택이 사라지는 문제를 피하기 위해 클릭/터치 이전 선택영역을 저장하고, 토글 후 복원
@@ -1172,8 +1219,8 @@
     function resetExplanationButton(){
       const container = document.getElementById('explanation-button-container');
       container.style.position = 'fixed';
-      container.style.left = '45%';
-      container.style.top = '120px';
+      container.style.left = '30%';
+      container.style.top = '100px';
       container.style.transform = 'translateX(-50%)';
       // 노출 유지 (기본 상태)
       //container.style.display = 'block';
@@ -1346,7 +1393,32 @@
     window.nextLocation = nextLocation;
 
     // --------------------------
-    // 종료
+    // --- ✅ 새 토글 버튼 로직 ---
+  const progressContainer = document.querySelector('.progress-container');
+  const speedControls = document.querySelector('.speed-controls');
+  const volumeControl = document.querySelector('.volume-control');
+  const showProgressBtn = document.getElementById('show-progress');
+  const showSpeedBtn = document.getElementById('show-speed');
+  const showVolumeBtn = document.getElementById('show-volume');
+
+  let hideTimeout;
+
+  function showOnly(target) {
+    progressContainer.style.display = "none";
+    speedControls.style.display = "none";
+    volumeControl.style.display = "none";
+
+    target.style.display = "flex";
+
+    if (hideTimeout) clearTimeout(hideTimeout);
+    hideTimeout = setTimeout(() => {
+      target.style.display = "none";
+    }, 10000);
+  }
+
+  showProgressBtn.addEventListener('click', () => showOnly(progressContainer));
+  showSpeedBtn.addEventListener('click', () => showOnly(speedControls));
+  showVolumeBtn.addEventListener('click', () => showOnly(volumeControl));
   </script>
 </body>
 </html>
