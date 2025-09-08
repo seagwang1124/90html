@@ -36,7 +36,7 @@
     .audio-cell { text-align:right; padding-right:50px; vertical-align:top; width:30%; }
     #custom-audio-player { display:flex; flex-direction:column; align-items:center; }
     .player-controls{ display:flex; align-items:center; justify-content:center; gap:10px; margin-bottom:5px; }
-    .time-display{ font-size:14px; color:#555; margin:0 5px; min-width:44px; text-align:center; }
+    .time-display{ font-size:16px; font-weight:bold; color:black; margin:0 5px; min-width:44px; text-align:center; }
 
     .progress-container { display: flex; align-items: center; justify-content: center; gap: 6px; margin: 6px 0; }
     .skip-btn { width: 48px; height: 28px; font-size: 13px; cursor: pointer; border: 1px solid #ccc; border-radius: 5px; background: #fff; }
@@ -161,11 +161,11 @@
 
           <!-- 기본 컨트롤 -->
           <div class="player-controls">
-            <strong><span style="font-size:15px;" id="current-time" class="time-display">0:00</span></strong>
+            <strong><span style="font-size:16px; background-color: #fcfcfc;" id="current-time" class="time-display">0:00</span></strong>
             <button id="play-btn" class="control-btn" aria-label="재생">▶</button>
             <button id="pause-btn" class="control-btn" aria-label="일시정지">⏸</button>
             <button id="stop-btn" class="control-btn" aria-label="정지">■</button>
-            <strong><span style="font-size:15px;" id="remaining-time" class="time-display">0:00</span></strong>
+            <strong><span style="font-size:16px; background-color: #fcfcfc;" id="remaining-time" class="time-display">0:00</span></strong>
           </div>
 
           <!-- ✅ 새 버튼 그룹 -->
@@ -778,3 +778,5 @@
   </script>
 </body>
 </html>
+
+
