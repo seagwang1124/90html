@@ -410,7 +410,7 @@
 
       e.preventDefault();
       window.scrollBy({
-        top: e.deltaY > 0 ? lineHeight : -lineHeight,
+        top: e.deltaY > 0 ? lineHeight * 2 : -lineHeight * 2,
         behavior: "smooth"
       });
     }, { passive: false });
@@ -839,6 +839,7 @@
   </script>
 </body>
 </html>
+
 
 
 
