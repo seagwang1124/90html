@@ -397,7 +397,24 @@
   window.addEventListener("scroll", highlightCenterLines);
   // 초기 실행
   highlightCenterLines();
-  // ---------------------------
+// ---------------------------
+    // (추가 3) PC에서 1줄씩 부드럽게 스크롤
+    // ---------------------------
+    window.addEventListener("wheel", function(e) {
+      if (e.ctrlKey) return;
+
+      const firstLine = document.querySelector("#bible-text .line");
+      if (!firstLine) return;
+
+      const lineHeight = firstLine.getBoundingClientRect().height;
+
+      e.preventDefault();
+      window.scrollBy({
+        top: e.deltaY > 0 ? lineHeight : -lineHeight,
+        behavior: "smooth"
+      });
+    }, { passive: false });
+// ---------------------------
 
       // 폰트 버튼
       upBtn.addEventListener('click', () => {
@@ -822,6 +839,7 @@
   </script>
 </body>
 </html>
+
 
 
 
