@@ -61,14 +61,18 @@
     /* volume */
     #volume-slider { width: 80%; max-width: 120px; }
 
+    /* 📖 구절 설명 버튼 컨테이너 */
+    #explanation-button-container { position: absolute; z-index: 1000; display: none; }
+
     /* 설명 버튼 컨테이너 (플로팅) */
-    .explanation-button-container{ position:fixed; top:100px; left:30%; transform:translateX(-50%); z-index:100; display:block; padding:0 10px; transition:top .2s ease,left .2s ease,transform .2s ease; }
+    .explanation-button-container{ position:fixed; top:100px; left:50%; transform:translateX(-50%, 0); z-index:100; display:block; padding:0 10px; transition:top .2s ease,left .2s ease,transform .2s ease; }
     .explanation-button-wrapper{ position:relative; display:inline-block; cursor:pointer; }
     .explanation-icon-button{ width:50px; height:50px; border-radius:50%; background:var(--pink); box-shadow:var(--shadow); border:none; display:flex; align-items:center; justify-content:center; font-size:40px; z-index:2; }
     .explanation-sub-buttons{ display:flex; flex-direction:column; gap:10px; opacity:0; visibility:hidden; transition:opacity .3s ease,visibility .3s ease, transform .3s ease; position:absolute; left:45%; transform:translateX(-50%) translateY(25px); z-index:1; }
     .explanation-button-wrapper.active .explanation-sub-buttons{ opacity:1; visibility:visible; transform:translateX(-50%) translateY(0); }
     .explanation-sub-button{ padding:5px 10px; font-size:18px; background:var(--pink); border:none; border-radius:5px; cursor:pointer; box-shadow:var(--shadow); white-space:nowrap; }
     .explanation-sub-button:hover{ transform:scale(1.03); }
+    
 
     /* 폰트 사이즈 및 본문 요약 버튼 (항상 표시) */
     .container{ width:100%; text-align:center; margin-top:8px; }
@@ -99,7 +103,21 @@
 
     /* 모달 */
     .modal{ display:none; position:fixed; z-index:200; inset:0; width:100%; height:100%; overflow:auto; background:rgba(0,0,0,0.4); }
-    .modal-content{ background:#fff; margin:12% auto; padding:20px; border-radius:10px; width:80%; max-width:900px; box-shadow:0 4px 8px rgba(0,0,0,0.2); text-align:left; line-height:1.6; word-break:keep-all; white-space:pre-wrap; }
+    .modal-content{ 
+      background:#fff; 
+      margin:12% auto; 
+      padding:20px; 
+      border-radius:10px; 
+      width:80%; 
+      max-width:900px; 
+      max-height: 80vh;     /* 🔹 화면 높이 80% 제한 */
+      overflow-y: auto;     /* 🔹 세로 스크롤 추가 */
+      box-shadow:0 4px 8px rgba(0,0,0,0.2); 
+      text-align:left; 
+      line-height:1.6; 
+      word-break:keep-all; 
+      white-space:pre-wrap; 
+      }
     .close-button{ color:#aaa; float:right; font-size:28px; font-weight:bold; cursor:pointer; }
     .close-button:hover{ color:#000; }
     #modal-image{ max-width:100%; height:auto; margin-bottom:12px; display:none; border-radius:8px; }
@@ -341,12 +359,66 @@
     // 유틸
     function escapeRegExp(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
     function formatTime(sec) { if (!isFinite(sec) || sec < 0) return '0:00'; const m = Math.floor(sec/60); const s = Math.floor(sec%60); return `${m}:${String(s).padStart(2,'0')}`; }
+    
+    // 선택한 단어 근처에 📖 버튼 표시
+    function showExplanationButton() {
+      const selection = window.getSelection();
+      if (!selection.rangeCount) return;
+    
+      const range = selection.getRangeAt(0);
+      const rect = range.getBoundingClientRect();
+    
+      const buttonContainer = document.getElementById("explanation-button-container");
+    
+      // 뷰포트 기준 중앙값
+      const viewportCenter = window.innerWidth / 2;
+    
+      let leftPos;
+      let transformX;
+    
+      if (rect.left < viewportCenter * 0.4) {
+        // 화면 왼쪽 → 버튼을 단어 오른쪽에 표시
+        leftPos = rect.right;
+        transformX = "translateX(0)";
+      } else if (rect.right > viewportCenter * 1.6) {
+        // 화면 오른쪽 → 버튼을 단어 왼쪽에 표시
+        leftPos = rect.left;
+        transformX = "translateX(-100%)";
+      } else {
+      
+      // 선택 영역 중앙 좌표
+      let leftPos = rect.left + rect.width / 2;
+      let topPos = rect.bottom + window.scrollY + 10;
+    
+      // 화면 바깥으로 나가지 않게 보정
+      const buttonWidth = 60; // 버튼 가로 크기 고려
+      const minX = buttonWidth / 2;
+      const maxX = window.innerWidth - buttonWidth / 2;
+    
+      if (leftPos < minX) leftPos = minX;
+      if (leftPos > maxX) leftPos = maxX;
+    
+      buttonContainer.style.left = leftPos + "px";
+      buttonContainer.style.top = topPos + "px";
+      buttonContainer.style.transform = "translateX(-50%)";
+      buttonContainer.style.display = "block";
+    }
+    }
 
     // 초기화
     window.addEventListener('DOMContentLoaded', () => {
       originalText = bibleTextEl.innerHTML; // 원본 보관
       updateFontSizeDisplay();
       updateSpeed();
+
+    // 텍스트 선택 이벤트
+    bibleTextEl.addEventListener("mouseup", () => {
+    setTimeout(() => {
+    const selection = window.getSelection();
+    if (selection && selection.toString().trim() !== "") {
+      showExplanationButton(); }
+    }, 100);
+    });
 
       // ---------------------------
   // (추가 1) 본문 줄 단위 분리
@@ -758,6 +830,19 @@
       }
     }
 
+      // 모달 내부 스크롤 고정
+      modal.addEventListener("wheel", function(e) {
+      if (modal.style.display === "block") {
+      const content = modal.querySelector(".modal-content");
+      const atTop = content.scrollTop === 0;
+      const atBottom = content.scrollHeight - content.scrollTop === content.clientHeight;
+
+       if ((atTop && e.deltaY < 0) || (atBottom && e.deltaY > 0)) {  
+      e.preventDefault(); // 바깥 스크롤 방지
+      }
+      }
+    }, { passive: false });
+
     // fetchExplanation + fetchSummary
     async function fetchExplanation(promptText, type){
       let prompt;
@@ -793,18 +878,14 @@
 
 또한 성경 본문과 같은 시대에 있었던 **다른 국가, 민족, 문화의 역사적 상황**을 알려 주어 배경 이해를 풍부하게 해 주세요.  
 
-**지침:**  
-A. 지명·족속·민족·나라 → 지리적 위치, 역사적 배경, 성경 관련 사건  
+**지침:** A. 지명·족속·민족·나라 → 지리적 위치, 역사적 배경, 성경 관련 사건  
 B. 인물 → 이름의 뜻, 주요 사건, 활동 지역, 신학적 의미  
 C. 제사 도구·성물 → 사용 목적 및 신학적 의미  
 D. 동물·식물 → 성경적 상징성  
 
-**출력 조건:**  
-- 한국어로 작성  
+**출력 조건:** - 한국어로 작성  
 - 글자 수 2,000자~3,000자 사이  
-- 선택된 성경 본문을 본격적으로 요약 및 해설  
-
-선택된 성경 본문: "${promptText}"`;
+- 선택된 성경 본문: "${promptText}"`;
       }
       showLoadingModal(false);
       await callGenerativeAPI('구절 설명', prompt);
@@ -845,18 +926,14 @@ D. 동물·식물 → 성경적 상징성
 
 또한 성경 본문과 같은 시대에 있었던 **다른 국가, 민족, 문화의 역사적 상황**을 알려 주어 배경 이해를 풍부하게 해 주세요.  
 
-**지침:**  
-A. 지명·족속·민족·나라 → 지리적 위치, 역사적 배경, 성경 관련 사건  
+**지침:** A. 지명·족속·민족·나라 → 지리적 위치, 역사적 배경, 성경 관련 사건  
 B. 인물 → 이름의 뜻, 주요 사건, 활동 지역, 신학적 의미  
 C. 제사 도구·성물 → 사용 목적 및 신학적 의미  
 D. 동물·식물 → 성경적 상징성  
 
-**출력 조건:**  
-- 한국어로 작성  
+**출력 조건:** - 한국어로 작성  
 - 글자 수 2,500자~3,500자 사이  
-- 선택된 성경 본문을 본격적으로 요약 및 해설  
-
-선택된 성경 본문: "${fullText}"`;
+- 선택된 성경 본문: "${fullText}"`;
       }
 
       showLoadingModal(false);
@@ -917,4 +994,4 @@ D. 동물·식물 → 성경적 상징성
   showVolumeBtn.addEventListener('click', () => showOnly(volumeControl));
   </script>
 </body>
-</html>
+</html
