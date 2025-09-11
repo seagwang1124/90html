@@ -20,7 +20,7 @@
     }
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
     html,body { height:100%; margin:0; padding:0; font-family: Arial, sans-serif; -webkit-font-smoothing:antialiased; }
-    body { padding-top:150px; background:#fff; color:#000; }
+    body { padding-top:150px; background:#fdfdf8; color:#222; }
 
     a:link { color:#0000FF; } a:visited{ color:#660099; }
 
@@ -62,7 +62,7 @@
     #volume-slider { width: 80%; max-width: 120px; }
 
     /* 설명 버튼 컨테이너 (플로팅) */
-    .explanation-button-container{ position:fixed; top:100px; left:30%; transform:translateX(-50%); z-index:100; display:block; padding:0 10px; transition:top .2s ease,left .2s ease,transform .2s ease; }
+    .explanation-button-container{ position:fixed; top:100px; left:30%;  transform:translateX(-50%);  padding:0 10px; transition:top .2s ease,left .2s ease,transform .2s ease; }
     .explanation-button-wrapper{ position:relative; display:inline-block; cursor:pointer; }
     .explanation-icon-button{ width:50px; height:50px; border-radius:50%; background:var(--pink); box-shadow:var(--shadow); border:none; display:flex; align-items:center; justify-content:center; font-size:40px; z-index:2; }
     .explanation-sub-buttons{ display:flex; flex-direction:column; gap:10px; opacity:0; visibility:hidden; transition:opacity .3s ease,visibility .3s ease, transform .3s ease; position:absolute; left:45%; transform:translateX(-50%) translateY(25px); z-index:1; }
@@ -85,12 +85,64 @@
     h2{ padding:0; text-align:left; margin-left:15px; margin-right:15px; }
     p{ display:inline-block; }
 
-    /* 모달 */
-    .modal{ display:none; position:fixed; z-index:200; inset:0; width:100%; height:100%; overflow:auto; background:rgba(0,0,0,0.4); }
-    .modal-content{ background:#fff; margin:12% auto; padding:20px; border-radius:10px; width:80%; max-width:900px; box-shadow:0 4px 8px rgba(0,0,0,0.2); text-align:left; line-height:1.6; word-break:keep-all; white-space:pre-wrap; }
-    .close-button{ color:#aaa; float:right; font-size:28px; font-weight:bold; cursor:pointer; }
-    .close-button:hover{ color:#000; }
-    #modal-image{ max-width:100%; height:auto; margin-bottom:12px; display:none; border-radius:8px; }
+
+    /*본문 중앙 색상*/
+    .highlight { background-color: #fdf6e3;    /* 연한 베이지 톤 (눈부심 최소화) */
+    -webkit-text-stroke:0.2px #76d6c6;
+     border-left: 4px solid #c0a060; /* 옆에 차분한 금색 포인트 */
+     font-weight:bold;
+     box-shadow: 0 0 8px rgba(0, 0, 0, 0.1);
+     padding: 2px 6px;
+    }
+  
+/* 📖 구절설명 버튼: 기본은 숨김, 화면 기준 고정 배치 */
+#explanation-button-container{
+  position:fixed;          /* ← viewport 기준: 문서 가로 스크롤 유발 방지 */
+  z-index:150;             /* 모달(z-index:200)보다 낮음 */
+  display:block;            /* 선택 시에만 보이도록 */
+}
+
+/* 모달이 열려 있으면 책 버튼은 숨김 (겹침/오해 방지) */
+body.modal-open #explanation-button-container{
+  display:none !important;
+}
+  
+  
+  /* 모달 */
+.modal{
+  display:none;
+  position:fixed;
+  z-index:200;
+  inset:0;
+  width:100%;
+  height:100%;
+  /* 오버레이는 스크롤 금지 */
+  background:rgba(0,0,0,0.4);
+}
+
+.modal-content{
+  background:#fff;
+  margin:12% auto;
+  padding:20px;
+  border-radius:10px;
+  width:80%;
+  max-width:900px;
+  /* ✅ 모달 내부에만 스크롤바가 생기도록 */
+  max-height:80vh;
+  overflow:auto;
+  /* ✅ 모달 끝에서 바깥으로 스크롤 전파 방지 */
+  overscroll-behavior:contain;
+
+  box-shadow:0 4px 8px rgba(0,0,0,0.2);
+  text-align:left;
+  line-height:1.6;
+  word-break:keep-all;
+  white-space:pre-wrap;
+}
+
+/* ✅ 모달 열릴 때 바깥(본문) 스크롤 잠금 */
+body.modal-open{ overflow:hidden; }
+
 
     /* 로딩 스피너 */
     .loader{ border:4px solid #f3f3f3; border-top:4px solid #3498db; border-radius:50%; width:20px; height:20px; animation:spin 1s linear infinite; display:inline-block; vertical-align:middle; margin-right:8px; }
@@ -204,7 +256,7 @@
   <!-- 플로팅 책 버튼 (구절설명 토글) -->
   <div class="explanation-button-container" id="explanation-button-container">
     <div class="explanation-button-wrapper" id="explanation-button-wrapper">
-      <button class="explanation-icon-button" id="explanation-icon-button" aria-label="구절설명 열기">
+      <button class="explanation-icon-button" id="explanation-icon-button" aria-label="구절설명 열기" title="단어나 문장을 선택하면 ‘간단설명’ 또는 ‘상세설명’을 볼 수 있어요.">
         <span>📖</span>
       </button>
       <div class="explanation-sub-buttons" id="explanation-sub-buttons" role="menu">
@@ -230,7 +282,7 @@
   <!-- 본문 (원문 유지: <br></br> 포함) -->
   <div>
     <h2 id="bible-text" style="line-height:1.2em;margin-left:15px;margin-right:15px;font-style:normal;font-weight:normal;color:black;font-size:20px;word-break:break-all;">
-      <strong>
+    <strong>
 
 통독 14일차
 <br>범위: 신명기 19장- 34장/ 시편 90 편</br>
@@ -853,6 +905,78 @@
       updateFontSizeDisplay();
       updateSpeed();
 
+      // ---------------------------
+  // (추가 1) 본문 줄 단위 분리
+  // ---------------------------
+  const lines = originalText.split(/<br\s*\/?>/i);
+  bibleTextEl.innerHTML = lines.map(line => {
+    if (line.trim() === "") return "<br>";
+    return `<span class="line">${line}</span><br>`;
+  }).join("");
+
+  const lineElements = document.querySelectorAll("#bible-text .line");
+
+  // ---------------------------
+  // (추가 2) 스크롤 시 중앙 두 줄 강조
+  // ---------------------------
+  function highlightCenterLines() {
+    const viewportCenter = window.innerHeight / 2 + window.scrollY;
+    let closestIndex = -1;
+    let minDistance = Infinity;
+
+    lineElements.forEach((line, i) => {
+      const rect = line.getBoundingClientRect();
+      const lineCenter = rect.top + window.scrollY + rect.height / 2;
+      const distance = Math.abs(lineCenter - viewportCenter);
+
+      if (distance < minDistance) {
+        minDistance = distance;
+        closestIndex = i;
+      }
+    });
+
+    // 강조 초기화
+    lineElements.forEach(line => line.classList.remove("highlight"));
+
+    // 중앙 두 줄 강조
+    if (closestIndex >= 0) {
+      lineElements[closestIndex].classList.add("highlight");
+      if (closestIndex + 1 < lineElements.length) {
+        lineElements[closestIndex + 1].classList.add("highlight");
+      }
+    }
+  }
+
+  // 스크롤 이벤트 등록
+  window.addEventListener("scroll", highlightCenterLines);
+  // 초기 실행
+  highlightCenterLines();
+// ---------------------------
+    // (추가 3) PC에서 2줄씩 부드럽게 스크롤
+    // ---------------------------
+   window.addEventListener("wheel", function(e) {
+  if (e.ctrlKey) return;
+
+  // ✅ 모달이 열려 있고, 이벤트가 모달 위에서 발생하면
+  //    전역 스크롤 커스텀을 "중단"해서 기본(모달 내부) 스크롤이 동작하도록 둡니다.
+  const modal = document.getElementById('explanation-modal');
+  if (modal && modal.style.display === 'block' && modal.contains(e.target)) {
+    return; // preventDefault 하지 않음 → 모달이 스스로 스크롤
+  }
+
+  const firstLine = document.querySelector("#bible-text .line");
+  if (!firstLine) return;
+
+  const lineHeight = firstLine.getBoundingClientRect().height;
+
+  e.preventDefault();
+  window.scrollBy({
+    top: e.deltaY > 0 ? lineHeight * 2 : -lineHeight * 2,
+    behavior: "smooth"
+  });
+}, { passive: false });
+// ---------------------------
+
       // 폰트 버튼
       upBtn.addEventListener('click', () => {
         const current = parseFloat(getComputedStyle(bibleTextEl).fontSize);
@@ -978,8 +1102,16 @@
       });
 
       // 모달 닫기
-      closeModalButton.addEventListener('click', () => { modal.style.display = 'none'; });
-      window.addEventListener('click', (ev) => { if (ev.target === modal) modal.style.display = 'none'; });
+      closeModalButton.addEventListener('click', () => { 
+        modal.style.display = 'none'; 
+        document.body.classList.remove('modal-open'); // ✅ 추가
+        });
+      window.addEventListener('click', (ev) => { 
+        if (ev.target === modal) {
+        modal.style.display = 'none';
+        document.body.classList.remove('modal-open'); // ✅ 추가
+      }
+    });
 
       // 선택 이벤트: 데스크탑 + 모바일 대응 (디바운스)
       const scheduleSelectionUpdate = () => {
@@ -1000,6 +1132,14 @@
       const sel = window.getSelection();
       if (!sel) return clearSelectionState();
       const text = (sel.toString() || "").trim();
+      
+      // 모달 위에서의 선택은 무시 (모달 내용 선택이 버튼을 호출하지 않도록)
+      const modalEl = document.getElementById('explanation-modal');
+      if (modalEl && modalEl.style.display === 'block') {
+      const sel = window.getSelection();
+      if (sel && (modalEl.contains(sel.anchorNode) || modalEl.contains(sel.focusNode))) return;
+    }
+      
       // 선택이 본문 내에 있는지 체크
       let isInBible = false;
       try {
@@ -1016,8 +1156,19 @@
         // 버튼 위치 표시
         try {
           const range = sel.getRangeAt(0);
-          const rect = range.getBoundingClientRect();
-          positionExplanationButton(rect);
+          const rects = Array.from(range.getClientRects());
+          const rect = rects.length
+            ? rects.reduce((u, r) => ({
+                top: Math.min(u.top, r.top),
+                left: Math.min(u.left, r.left),
+                right: Math.max(u.right, r.right),
+                bottom: Math.max(u.bottom, r.bottom),
+                width: 0, height: 0
+        }), { top:Infinity, left:Infinity, right:-Infinity, bottom:-Infinity })
+            : range.getBoundingClientRect();
+            rect.width  = rect.right - rect.left;
+            rect.height = rect.bottom - rect.top;
+            positionExplanationButton(rect);
         } catch(e){
           // fallback: 고정 위치
           resetExplanationButton();
@@ -1036,50 +1187,83 @@
         positionExplanationButton(rect);
       } catch(e){ resetExplanationButton(); }
     }
+    
+    function resetExplanationButton(){
+      const container = document.getElementById('explanation-button-container');
+      if (!container) return;
+      // ‘초기 자리’로 이동 + 숨김
+      container.style.position = 'fixed';
+      container.style.left = '30%';
+      container.style.top = '100px';
+      container.style.transform = 'translateX(-50%)';
+      container.style.display = 'block';
+      explanationButtonWrapper.classList.remove('active');
+    }
+    
     function clearSelectionState(){
       selectedVerse = "";
       selectionRange = null;
       resetExplanationButton();
     }
 
-    // 버튼 위치 설정: 화면 밖으로 나가지 않도록 하기
+    // 버튼 위치 설정 (화면 밖 방지 + 좌/우/중앙 규칙 + 위/아래 자동 배치)    
     function positionExplanationButton(rect){
-      const container = document.getElementById('explanation-button-container');
-      const scrollY = window.scrollY || window.pageYOffset;
-      const vh = window.innerHeight;
-      const containerHeight = container.offsetHeight || 80;
-      // 기본 top 계산
-      let topPos = rect.bottom + scrollY + 10;
-      // 화면 아래로 넘지 않게
-      const maxTop = (window.scrollY || window.pageYOffset) + window.innerHeight - containerHeight - 10;
-      topPos = Math.min(topPos, maxTop);
-      // 화면 위로 넘지 않게
-      const minTop = (window.scrollY || window.pageYOffset) + 10;
-      topPos = Math.max(topPos, minTop);
-      container.style.position = 'absolute';
-      container.style.top = topPos + 'px';
+  const container = document.getElementById('explanation-button-container');
+  if (!container) return;
 
-      // 좌우
-      const screenCenterX = window.innerWidth / 2;
-      if (rect.left < screenCenterX) {
-        container.style.left = (rect.right) + 'px';
-        container.style.transform = 'translateX(10px)';
-      } else {
-        container.style.left = rect.left + 'px';
-        container.style.transform = 'translateX(-100%) translateX(-10px)';
-      }
-      container.style.display = 'block';
-    }
-    function resetExplanationButton(){
-      const container = document.getElementById('explanation-button-container');
-      container.style.position = 'fixed';
-      container.style.left = '30%';
-      container.style.top = '100px';
-      container.style.transform = 'translateX(-50%)';
-      // 노출 유지 (기본 상태)
-      //container.style.display = 'block';
-    }
+  const vw = window.innerWidth;
+  const vh = window.innerHeight;
+  const margin = 8;
+  const pad = 10;
+  const viewportCenter = vw / 2;
 
+  // 🔸 추가: 넓은 선택(화면의 60% 이상)은 무조건 중앙 정렬
+  const isWide = rect.width >= vw * 0.6 || (rect.left <= margin*2 && rect.right >= vw - margin*2);
+
+  let baseX, transformX;
+  if (isWide) {
+    baseX = rect.left + rect.width / 2;
+    transformX = 'translateX(-50%)';
+  } else if (rect.left < viewportCenter * 0.4) {
+    baseX = rect.right;
+    transformX = 'translateX(0)';
+  } else if (rect.right > viewportCenter * 1.6) {
+    baseX = rect.left;
+    transformX = 'translateX(-100%)';
+  } else {
+    baseX = rect.left + rect.width / 2;
+    transformX = 'translateX(-50%)';
+  }
+
+  // 이하 클램프/표시 로직은 기존 그대로 유지
+  const cw = container.offsetWidth || 60;
+  const ch = container.offsetHeight || 60;
+
+  const leftEdge =
+    transformX === 'translateX(0)'     ? baseX :
+    transformX === 'translateX(-50%)'  ? baseX - cw/2 :
+                                         baseX - cw;
+
+  let clampedLeftEdge = Math.min(Math.max(leftEdge, margin), vw - margin - cw);
+
+  let finalLeft;
+  if (transformX === 'translateX(0)')        finalLeft = clampedLeftEdge;
+  else if (transformX === 'translateX(-50%)') finalLeft = clampedLeftEdge + cw/2;
+  else                                        finalLeft = clampedLeftEdge + cw;
+
+  let finalTop = rect.bottom + pad;
+  if (finalTop + ch + margin > vh) {
+    finalTop = Math.max(rect.top - pad - ch, margin);
+  }
+  finalTop = Math.min(Math.max(finalTop, margin), vh - margin - ch);
+
+  container.style.position = 'fixed';
+  container.style.left = `${finalLeft}px`;
+  container.style.top  = `${finalTop}px`;
+  container.style.transform = transformX;
+  container.style.display = 'block';
+}
+    
     // --------------------------
     // 검색 / 하이라이트 / 스크롤 마커
     function findString(searchText){
@@ -1138,6 +1322,8 @@
       modalText.innerHTML = (text || '').toString().replace(/\n/g, '<br>');
       if (imageUrl) { modalImage.src = imageUrl; modalImage.style.display = 'block'; } else { modalImage.src=''; modalImage.style.display='none'; }
       modal.style.display = 'block';
+      document.body.classList.add('modal-open'); // ✅ 추가
+
       // 선택영역 유지: 모달 열려도 선택 유지하도록 약간의 복원 시도
       setTimeout(() => {
         if (selectionRange) {
@@ -1155,6 +1341,12 @@
     }
 
     // --------------------------
+    
+    // 모달 내부에서 발생하는 휠은 바깥으로 전파되지 않게
+    modal.addEventListener('wheel', (e) => {
+      if (modal.style.display === 'block') e.stopPropagation();
+    }, { passive: true });
+    
     // 본문 전체 텍스트 획득 (요약용)
     function getFullBibleText(){
       const tmp = document.createElement('div');
@@ -1202,9 +1394,25 @@
     async function fetchExplanation(promptText, type){
       let prompt;
       if (type === 'simple') {
-        prompt = `**명령:**다음 성경 용어/구절에 대해 모두 합쳐서 300자에서 500자 사이의 짧고 간결한 설명을 작성해 주세요. 만약에 선택어가 지명이름 또는 사람이름이면 (예: 단, 가나안, 하란, 브니엘, 세겜 등) 지명이면 인물을 검색하고 인물이면 지명을 검색해서 두 가지 다 설명해 주세요. 핵심 내용을 중심으로 요약해 주세요.\n**요청 용어/구절:** "${promptText}"\n**지침(요약):**- 지명/족속/민족: 거주지와 위치 간단 설명(필요하면 지도 언급)\n- 이름(인물): 이름의 뜻/주요활동/간단한 배경\n- 제사 도구/성물 등: 간단한 설명\n- 동물/식물/광물: 성경적 의미 간단 설명\n- 비교 가능한 개념(선택적): 핵심 비교 항목 간단 나열`;
+        prompt = `[역할] 성경 주석가.
+                  [작업] 선택한 용어/구절을 350–500자 한국어로 간결 설명.
+                  [유형 규칙] 
+                  - 지명: 위치·시대·관련 사건
+                  - 인물: 이름의 뜻·역할·연관 지명
+                  - 제사/성물: 용도·상징적 의미
+                  - 동·식물·광물: 상징성
+                  필요 시 대비/유사 2–12가지만 간단히. (이름↔지명 직접 연결이 있으면 함께 언급)
+                  [금지] 장황함·추측·인용.
+                  [입력] "${promptText}"`; 
       } else {
-        prompt = `**명령:**다음 성경 용어/구절에 대해 성경적 관점에서 자세히 설명해 주세요. 답변은 모두 합쳐서 2,000자에서 3,000자 사이로 작성해 주세요. 필요하면 표 또는 간단한 지도를 포함하거나 참조해 주세요.\n**요청 용어/구절:** "${promptText}"\n**지침:**A. 지명, 족속, 민족, 나라: 지리적 위치, 역사적 배경, 성경 관련 사건\nB. 인물: 이름의 뜻, 주요 사건, 활동 지역\nC. 제사 도구/성물: 사용 목적 및 신학적 의미\nD. 동물/식물: 성경적 상징성\n출력은 한국어로 작성하세요.`;
+        prompt = `[역할] 성경 주석가.
+                  [작업] 선택 구절을 2,500–3,500자 한국어 해설로 심화 분석.
+                  [구성] 개요 → 배경(역사·지리·문화) → 본문 주제·핵심 논지 → 핵심 단어/도상 해석 
+                        → 인물·사건·장소의 기능 → 성경 전체 맥락과의 연결(언약/교리, 유사·대조 2–12가지) 
+                        → (선택) 3–6행 표로 요점 정리.
+                  [규칙] 본문 근거 중심, 난해한 부분은 간명히, 과도한 인용/주석어/반복 금지, 분량 준수.
+                  [긴 입력 시] 절/단락 단위로 요약 후 통합(최종 분량 준수).
+                  [입력] "${promptText}"`;
       }
       showLoadingModal(false);
       await callGenerativeAPI('구절 설명', prompt);
@@ -1213,10 +1421,24 @@
     async function fetchSummary(fullText, type){
       let prompt;
       if (type === 'simple') {
-        prompt = `당신은 성경 주석가이자 성경 연구자입니다. 사용자가 선택한 성경 본문을 학문적·신학적 배경에서 분석하여, 핵심 주제와 메시지를 모두 합쳐서 300자에서 500자 사이로 간단하게 요약해 주세요. 불필요한 장황한 설명은 피하고 핵심 의미와 교훈에 집중하세요.\n선택된 성경 본문: "${fullText}"`;
-      } else {
-        prompt = `당신은 성경 주석가이자 성경 연구자입니다. 다음 성경 본문을 학문적·신학적 배경에서 분석하여, 본문의 주요 주제와 등장인물의 역할, 시대적 배경, 신학적 의미 등을 포함하여 자세히 설명해 주세요. 답변은 2,500자에서 3,500자 사이로 작성하세요.\n선택된 성경 본문: "${fullText}"`;
+        prompt = `[역할] 성경 주석가.
+                  [작업] 입력된 성경 본문 전체를 450–650자 한국어 한 단락으로 간결 요약.
+                  [중점] 핵심 주제·메시지, 주요 사건 흐름, 하나님 행위/인간 반응. 배경은 필요한 한두 문장만. 삶에 적용되는 교훈이나 훈계를 간단히 2-3문장으로 추가.
+                  [금지] 장황함·추측·인용·소제목·서론/결론 문구. 분량 엄수.
+                  [긴 입력 시] 장(Chapter) 단위로 빠르게 요약→최종 450–650자로 통합.
+                  [입력] "${fullText}"`; 
+    } else {
+        prompt = `[역할] 성경 주석가.
+                  [작업] 입력 본문을 3,500–5,000자 한국어 해설로 정리.
+                  [구성] 1) 개요  2) 배경(역사·지리·문화)  3) 핵심 주제/신학적 의미 
+                        4) 인물·사건·장소의 역할  5) 성경 전체 맥락과 연결(필요 시 유사/대조 2–12가지)
+                        6) (선택) 3–12행 표로 핵심 정리.  7) 결론
+                        8) 삶에 적용되는 교훈이나 훈계를 간단히 4-5문장으로 추가.
+                  [규칙] 사실 기반, 과장/추측/설교체 금지, 불필요한 반복·장목록 금지, 분량 준수.
+                  [긴 입력 시] 장 단위로 개요→통합(최종 분량 준수).
+                  [입력] "${fullText}"`;
       }
+
       showLoadingModal(false);
       await callGenerativeAPI('본문 요약', prompt);
     }
