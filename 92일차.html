@@ -22,18 +22,26 @@
     * { box-sizing: border-box; }
     body { margin: 0; padding: 16px; background: var(--bg); color: var(--text);
       font-family: system-ui, -apple-system, Segoe UI, Roboto, Noto Sans, Apple SD Gothic Neo, "Apple Color Emoji", "Noto Color Emoji", sans-serif; }
-    h1 { font-size: 20px; margin: 0 0 12px; letter-spacing: .2px; }
-    .card { max-width: 980px; margin: 0 auto; background: var(--panel); border: 1px solid #1f2937; border-radius: 14px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,.35); }
+    h1 { font-size: 22px; margin: 0 0 12px; letter-spacing: .2px; }
+    .card { max-width: 1080px; margin: 0 auto; background: var(--panel); border: 1px solid #1f2937; border-radius: 14px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,.35); }
     .section { padding: 14px; }
     .row { display: flex; gap: 8px; align-items: center; }
     .row.wrap { flex-wrap: wrap; }
-    input[type="text"], input[type="url"], input[type="search"] { flex: 1; min-width: 220px; background: var(--panel-2); color: var(--text); border: 1px solid #374151; border-radius: 10px; padding: 12px 14px; outline: none; transition: border .15s ease; }
+    .grid { display: grid; gap: 8px; }
+
+    input[type="text"], input[type="url"], input[type="search"] {
+      flex: 1; min-width: 220px; background: var(--panel-2); color: var(--text); border: 1px solid #374151; border-radius: 10px; padding: 12px 14px; outline: none; transition: border .15s ease; }
     input[type="text"]:focus, input[type="url"]:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(96,165,250,.2); }
     button { background: linear-gradient(180deg, var(--accent), var(--accent-2)); color: #0b1220; border: none; border-radius: 10px; padding: 10px 14px; font-weight: 700; cursor: pointer; white-space: nowrap; }
     button.secondary { background: #374151; color: var(--text); font-weight: 600; }
     button.ghost { background: transparent; border: 1px solid #374151; color: var(--text); }
     button.link { background: transparent; color: var(--accent-2); text-decoration: underline; }
     button:disabled { opacity: .6; cursor: not-allowed; }
+
+    /* list rows */
+    .parts { display: grid; gap: 8px; }
+    .part-row { display: grid; grid-template-columns: auto 84px 1fr auto auto; gap: 8px; align-items: center; }
+    .part-label { width: 84px; text-align: center; background: #0b1220; border: 1px solid #374151; border-radius: 10px; padding: 10px 6px; }
 
     /* Player area */
     .player-wrap { position: relative; background: #000; }
@@ -70,16 +78,83 @@
     .warn { color: var(--warn); font-size: 13px; margin-top: 6px; }
     .ok { color: var(--ok); font-size: 13px; margin-top: 6px; }
 
-    @media (max-width: 520px) { .center-play .btn { width: 76px; height: 76px; } .triangle { border-left-width: 22px; border-top-width: 14px; border-bottom-width: 14px; } }
+    @media (max-width: 720px) {
+      .part-row { grid-template-columns: auto 80px 1fr auto auto; }
+      .part-label { width: 80px; }
+      .center-play .btn { width: 76px; height: 76px; }
+      .triangle { border-left-width: 22px; border-top-width: 14px; border-bottom-width: 14px; }
+    }
   </style>
 </head>
 <body>
   <div class="card">
+    <!-- 1. 큰 제목 -->
     <div class="section">
       <h1>성가대 유튜브 반복 플레이어</h1>
-      <div class="row wrap" role="group" aria-label="유튜브 주소 입력">
-        <input id="urlInput" type="url" inputmode="url" placeholder="유튜브 링크를 붙여넣고 ‘주소 입력’을 누르세요 (예: https://youtu.be/VIDEO_ID)" />
-        <button id="loadBtn">주소 입력</button>
+    </div>
+
+    <!-- 2. 찬양 제목 입력 -->
+    <div class="section">
+      <div class="row wrap" aria-label="찬양 제목 입력">
+        <span class="part-label" style="width:auto;">찬양 제목</span>
+        <input id="titleInput" type="text" placeholder="예: 할렐루야 찬양" />
+        <button id="titlePaste" class="ghost">붙여 넣기</button>
+        <button id="titleClear" class="ghost">삭제</button>
+      </div>
+    </div>
+
+    <!-- 3. 각 파트 링크 목록 -->
+    <div class="section">
+      <div class="help" style="margin-bottom:10px">각 파트에 유튜브 주소를 넣고, <b>선택</b>을 누르면 플레이어에 연결됩니다.</div>
+      <div class="parts" id="parts">
+        <!-- 합창 -->
+        <div class="part-row" data-key="ch">
+          <button class="secondary pick">선택</button>
+          <span class="part-label">합 창</span>
+          <input class="link" type="url" placeholder="https://youtu.be/VIDEO_ID" />
+          <button class="ghost paste">링크 넣기</button>
+          <button class="ghost remove">삭제</button>
+        </div>
+        <!-- 소프라노 -->
+        <div class="part-row" data-key="sop">
+          <button class="secondary pick">선택</button>
+          <span class="part-label">소프라노</span>
+          <input class="link" type="url" placeholder="https://youtu.be/VIDEO_ID" />
+          <button class="ghost paste">링크 넣기</button>
+          <button class="ghost remove">삭제</button>
+        </div>
+        <!-- 알토 -->
+        <div class="part-row" data-key="alt">
+          <button class="secondary pick">선택</button>
+          <span class="part-label">알 토</span>
+          <input class="link" type="url" placeholder="https://youtu.be/VIDEO_ID" />
+          <button class="ghost paste">링크 넣기</button>
+          <button class="ghost remove">삭제</button>
+        </div>
+        <!-- 테너 -->
+        <div class="part-row" data-key="ten">
+          <button class="secondary pick">선택</button>
+          <span class="part-label">테 너</span>
+          <input class="link" type="url" placeholder="https://youtu.be/VIDEO_ID" />
+          <button class="ghost paste">링크 넣기</button>
+          <button class="ghost remove">삭제</button>
+        </div>
+        <!-- 베이스 -->
+        <div class="part-row" data-key="bas">
+          <button class="secondary pick">선택</button>
+          <span class="part-label">베이스</span>
+          <input class="link" type="url" placeholder="https://youtu.be/VIDEO_ID" />
+          <button class="ghost paste">링크 넣기</button>
+          <button class="ghost remove">삭제</button>
+        </div>
+        <!-- 솔로 -->
+        <div class="part-row" data-key="sol">
+          <button class="secondary pick">선택</button>
+          <span class="part-label">솔 로</span>
+          <input class="link" type="url" placeholder="https://youtu.be/VIDEO_ID" />
+          <button class="ghost paste">링크 넣기</button>
+          <button class="ghost remove">삭제</button>
+        </div>
       </div>
       <div id="err" class="err" aria-live="polite"></div>
       <div id="cookieHelp" class="warn" hidden>임베드가 보이지 않으면 브라우저의 <b>서드파티 쿠키 차단</b> 또는 <b>광고 차단</b> 때문일 수 있습니다. 아래 "유튜브에서 열기"로 한 번 동의한 뒤 돌아오세요.</div>
@@ -88,6 +163,7 @@
       </div>
     </div>
 
+    <!-- 4. 동영상 플레이어 -->
     <div class="player-wrap ratio-16x9" id="playerWrap">
       <div id="player"></div>
       <div class="center-play" id="overlay" hidden>
@@ -97,6 +173,7 @@
       </div>
     </div>
 
+    <!-- 컨트롤 (변함 없음 + A–B) -->
     <div class="controls" aria-label="재생 컨트롤">
       <div class="time-row">
         <div id="cur" class="time">0:00</div>
@@ -104,7 +181,6 @@
         <div id="dur" class="time">0:00</div>
       </div>
 
-      <!-- A–B 구간 반복 제어 -->
       <div class="ab-row" aria-label="A–B 구간 반복">
         <button class="secondary" id="setA" title="현재 위치를 A로 설정 (단축키 A)">A지점 설정</button>
         <button class="secondary" id="setB" title="현재 위치를 B로 설정 (단축키 B)">B지점 설정</button>
@@ -129,8 +205,9 @@
       </div>
     </div>
 
+    <!-- 5. 공유 주소 -->
     <div class="section">
-      <div class="help" style="margin-bottom:8px">아래 주소를 복사해 대원들에게 보내면, 페이지가 해당 곡으로 열립니다. <b>A–B 반복을 켠 상태로 공유</b>하면 그 구간만 반복됩니다.</div>
+      <div class="help" style="margin-bottom:8px">아래 주소를 복사해 대원들에게 보내면, 페이지가 해당 곡으로 열립니다. 입력된 링크 목록과 제목은 <b>그대로 유지</b>됩니다.</div>
       <div class="share">
         <input id="share" type="text" readonly value="" aria-label="공유 주소" />
         <button id="copy" class="ghost">주소 복사</button>
@@ -178,9 +255,14 @@
     let bPoint = null; // seconds
     let abEnabled = false;
 
+    const partKeys = ['ch','sop','alt','ten','bas','sol'];
+    const partEls = {}; // {key: {row, input, pick, paste, remove}}
+
     const els = {
-      urlInput: document.getElementById('urlInput'),
-      loadBtn: document.getElementById('loadBtn'),
+      titleInput: document.getElementById('titleInput'),
+      titlePaste: document.getElementById('titlePaste'),
+      titleClear: document.getElementById('titleClear'),
+      parts: document.getElementById('parts'),
       err: document.getElementById('err'),
       overlay: document.getElementById('overlay'),
       overlayPlay: document.getElementById('overlayPlay'),
@@ -206,26 +288,48 @@
       tagB: document.getElementById('tagB')
     };
 
+    // 파트 행 초기화
+    document.querySelectorAll('.part-row').forEach(row => {
+      const key = row.getAttribute('data-key');
+      partEls[key] = {
+        row,
+        input: row.querySelector('.link'),
+        pick: row.querySelector('.pick'),
+        paste: row.querySelector('.paste'),
+        remove: row.querySelector('.remove')
+      };
+    });
+
     // ====== YouTube API Ready ======
     window.onYouTubeIframeAPIReady = function() {
+      // URL 파라미터 처리
       const params = new URLSearchParams(location.search);
       const vParam = params.get('v');
-      const urlParam = params.get('url');
-      const initialId = extractYouTubeId(vParam || urlParam || '');
+      const tParam = params.get('t');
+      if (tParam) els.titleInput.value = tParam;
 
-      // URL의 A–B 파라미터
-      const aParam = Number(params.get('a')); // 초 단위
+      // A–B 파라미터
+      const aParam = Number(params.get('a'));
       const bParam = Number(params.get('b'));
       if (!Number.isNaN(aParam) && !Number.isNaN(bParam) && bParam > aParam) {
-        aPoint = aParam; bPoint = bParam; abEnabled = true;
-        updateABUI();
+        aPoint = aParam; bPoint = bParam; abEnabled = true; updateABUI();
       }
 
+      // 각 파트 프리필
+      partKeys.forEach(k => {
+        const id = params.get(k);
+        if (id && /^[a-zA-Z0-9_-]{11}$/.test(id)) {
+          partEls[k].input.value = `https://www.youtube.com/watch?v=${id}`;
+        }
+      });
+
+      // 초기 로드: v 있으면 그거부터
+      const initialId = extractYouTubeId(vParam || '');
       if (initialId) {
-        els.urlInput.value = `https://www.youtube.com/watch?v=${initialId}`;
         loadVideo(initialId);
       } else {
-        toggleOverlay(false);
+        toggleOverlay(false); // 아직 재생 전
+        updateShareLink(''); // 입력된 목록 기준 공유 링크 갱신
       }
     };
 
@@ -240,7 +344,7 @@
       }
 
       player = new YT.Player('player', {
-        host: 'https://www.youtube-nocookie.com', // 쿠키 동의 팝업 완화
+        host: 'https://www.youtube-nocookie.com',
         videoId,
         playerVars: {
           origin: originParam,
@@ -279,17 +383,22 @@
         iframe.setAttribute('allow', 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share');
         iframe.setAttribute('referrerpolicy', 'strict-origin-when-cross-origin');
       } catch {}
-      toggleOverlay(true);
+      toggleOverlay(true); // 재생 전에는 중앙 재생 표시
     }
 
     function onPlayerStateChange(e) {
       const YTS = YT.PlayerState;
       if (e.data === YTS.ENDED) {
-        // 일반 끝 반복 안전장치 (A–B는 타이머에서 관리)
-        try { player.seekTo(0, true); player.playVideo(); } catch {}
+        // 일반 끝 반복 (A–B는 타이머에서 보정)
+        try { player.seekTo(aPoint ?? 0, true); player.playVideo(); } catch {}
       }
-      if (e.data === YTS.PAUSED) { toggleOverlay(true); hideCookieHelp(); }
-      else if (e.data === YTS.PLAYING) { toggleOverlay(false); hideCookieHelp(); }
+      if (e.data === YTS.PAUSED || e.data === YTS.CUED) {
+        toggleOverlay(true);
+        hideCookieHelp();
+      } else if (e.data === YTS.PLAYING) {
+        toggleOverlay(false); // 재생 중에는 숨김
+        hideCookieHelp();
+      }
     }
 
     function onPlayerError(e) {
@@ -330,17 +439,35 @@
 
     function showError(msg) { els.err.textContent = msg || ''; if (msg) setTimeout(() => (els.err.textContent = ''), 5000); }
 
-    function updateShareLink(id) {
+    // 입력된 모든 파트 → {key: id}
+    function collectPartIds() {
+      const map = {};
+      partKeys.forEach(k => {
+        const val = partEls[k].input.value.trim();
+        const id = extractYouTubeId(val);
+        if (id) map[k] = id;
+      });
+      return map;
+    }
+
+    function updateShareLink(currentId) {
       const url = new URL(location.href);
       url.search = '';
-      url.searchParams.set('v', id);
+      const map = collectPartIds();
+      if (currentId) url.searchParams.set('v', currentId);
+      // 제목
+      const title = els.titleInput.value.trim();
+      if (title) url.searchParams.set('t', title);
+      // 파트 목록
+      Object.entries(map).forEach(([k, id]) => url.searchParams.set(k, id));
+      // AB
       if (abEnabled && aPoint != null && bPoint != null && bPoint > aPoint) {
         url.searchParams.set('a', Math.floor(aPoint));
         url.searchParams.set('b', Math.floor(bPoint));
       }
       els.share.value = url.toString();
       history.replaceState({}, '', url.toString());
-      els.openYT.onclick = () => window.open(`https://www.youtube.com/watch?v=${id}`, '_blank', 'noopener');
+      if (currentId) els.openYT.onclick = () => window.open(`https://www.youtube.com/watch?v=${currentId}`,'_blank','noopener');
     }
 
     function showCookieHelp() { els.cookieHelp.hidden = false; els.openYT.hidden = false; }
@@ -364,6 +491,7 @@
       els.tagB.classList.toggle('off', bPoint == null);
       els.toggleAB.textContent = 'A–B 반복: ' + (abEnabled ? 'ON' : 'OFF');
       updateSeekABBG();
+      updateShareLink(currentVideoId || '');
     }
 
     function updateSeekABBG() {
@@ -383,7 +511,6 @@
       if (bPoint != null && bPoint <= aPoint) { bPoint = null; }
       updateABUI();
       if (abEnabled) { try { player.seekTo(aPoint, true); } catch {} }
-      updateShareLink(currentVideoId || '');
     }
 
     function setBHere() {
@@ -392,7 +519,6 @@
       if (aPoint == null) { showError('먼저 A 지점을 설정해 주세요.'); return; }
       if (bPoint != null && bPoint <= aPoint) { showError('B는 A보다 커야 합니다.'); bPoint = null; }
       updateABUI();
-      updateShareLink(currentVideoId || '');
     }
 
     function toggleABLoop() {
@@ -404,34 +530,24 @@
         abEnabled = false;
       }
       updateABUI();
-      updateShareLink(currentVideoId || '');
     }
 
-    function clearAB() {
-      aPoint = null; bPoint = null; abEnabled = false;
-      updateABUI();
-      updateShareLink(currentVideoId || '');
-    }
+    function clearAB() { aPoint = null; bPoint = null; abEnabled = false; updateABUI(); }
 
     // ====== 이벤트 바인딩 ======
-    els.loadBtn.addEventListener('click', () => {
-      const id = extractYouTubeId(els.urlInput.value);
-      if (!id) return showError('유효한 유튜브 링크(또는 영상 ID)를 입력해 주세요.');
-      loadVideo(id);
-    });
-    els.urlInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') els.loadBtn.click(); });
-
+    // 중앙 재생 버튼
     els.overlayPlay.addEventListener('click', () => { try { player.playVideo(); } catch {} });
+
     els.play.addEventListener('click', () => { try { player.playVideo(); } catch {} });
     els.pause.addEventListener('click', () => { try { player.pauseVideo(); } catch {} });
-    els.stop.addEventListener('click', () => { try { player.stopVideo(); player.seekTo(0, true); toggleOverlay(true); } catch {} });
+    els.stop.addEventListener('click', () => { try { player.stopVideo(); player.seekTo(aPoint ?? 0, true); toggleOverlay(true); } catch {} });
 
     els.back5.addEventListener('click', () => { try { const t = Math.max(0, (player.getCurrentTime?.() || 0) - 5); player.seekTo(t, true); } catch {} });
     els.fwd5.addEventListener('click', () => { try { const dur = player.getDuration?.() || 0; const t = Math.min(dur, (player.getCurrentTime?.() || 0) + 5); player.seekTo(t, true); } catch {} });
 
     els.vol.addEventListener('input', (e) => setVolume(e.target.value));
 
-    // Seek 슬라이더 드래그 핸들링
+    // Seek 드래그
     els.seek.addEventListener('input', () => { userDragging = true; const dur = player?.getDuration?.() || 0; const pos = Number(els.seek.value) / 1000; const t = dur * pos; els.cur.textContent = formatTime(t); });
     els.seek.addEventListener('change', () => { const dur = player?.getDuration?.() || 0; const pos = Number(els.seek.value) / 1000; const t = dur * pos; try { player.seekTo(t, true); } catch {} userDragging = false; });
 
@@ -439,6 +555,28 @@
     els.copy.addEventListener('click', async () => {
       try { await navigator.clipboard.writeText(els.share.value); els.copy.textContent = '복사됨!'; setTimeout(() => (els.copy.textContent = '주소 복사'), 1500); }
       catch { els.share.select(); document.execCommand('copy'); els.copy.textContent = '복사됨!'; setTimeout(() => (els.copy.textContent = '주소 복사'), 1500); }
+    });
+
+    // 제목: 붙여넣기/삭제
+    els.titlePaste.addEventListener('click', async () => {
+      try { const txt = await navigator.clipboard.readText(); els.titleInput.value = txt; updateShareLink(currentVideoId || ''); } catch { showError('클립보드 접근이 허용되지 않았습니다. 직접 붙여넣기 해 주세요.'); }
+    });
+    els.titleClear.addEventListener('click', () => { els.titleInput.value = ''; updateShareLink(currentVideoId || ''); });
+    els.titleInput.addEventListener('change', () => updateShareLink(currentVideoId || ''));
+
+    // 각 파트: 선택/링크넣기/삭제/수정
+    partKeys.forEach(k => {
+      const p = partEls[k];
+      p.pick.addEventListener('click', () => {
+        const id = extractYouTubeId(p.input.value);
+        if (!id) { showError('유효한 유튜브 링크를 입력해 주세요.'); return; }
+        loadVideo(id);
+      });
+      p.paste.addEventListener('click', async () => {
+        try { const txt = await navigator.clipboard.readText(); p.input.value = txt; updateShareLink(currentVideoId || ''); } catch { showError('클립보드 접근이 허용되지 않았습니다. 직접 붙여넣기 해 주세요.'); }
+      });
+      p.remove.addEventListener('click', () => { p.input.value = ''; updateShareLink(currentVideoId || ''); });
+      p.input.addEventListener('change', () => updateShareLink(currentVideoId || ''));
     });
 
     // A–B 버튼 & 단축키
@@ -459,5 +597,3 @@
   </script>
 </body>
 </html>
-
-
