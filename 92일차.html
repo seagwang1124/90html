@@ -49,7 +49,8 @@
     #player { width: 100%; height: 100%; }
 
     /* Center Play Overlay */
-    .center-play { position: absolute; inset: 0; display: grid; place-items: center; pointer-events: none; }
+    .center-play { position: absolute; inset: 0; display: grid; place-items: center; pointer-events: none; z-index: 5; }
+    .center-play.hide { display: none !important; }
     .center-play .btn { pointer-events: auto; width: 88px; height: 88px; border-radius: 9999px; background: rgba(255,255,255,.92); border: none; display: grid; place-items: center; box-shadow: 0 10px 25px rgba(0,0,0,.45); cursor: pointer; transition: transform .1s ease; }
     .center-play .btn:hover { transform: scale(1.03); }
     .triangle { width: 0; height: 0; border-left: 26px solid #0b1220; border-top: 16px solid transparent; border-bottom: 16px solid transparent; margin-left: 6px; }
@@ -328,7 +329,7 @@
       if (initialId) {
         loadVideo(initialId);
       } else {
-        toggleOverlay(false); // 아직 재생 전
+        setOverlay(false); // 아직 재생 전
         updateShareLink(''); // 입력된 목록 기준 공유 링크 갱신
       }
     };
@@ -375,7 +376,7 @@
       }, 2000);
     }
 
-    function onPlayerReady() {
+    function function onPlayerReady() {
       setupSeekTimer();
       setVolume(els.vol.value);
       try {
@@ -383,20 +384,30 @@
         iframe.setAttribute('allow', 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share');
         iframe.setAttribute('referrerpolicy', 'strict-origin-when-cross-origin');
       } catch {}
-      toggleOverlay(true); // 재생 전에는 중앙 재생 표시
+      setOverlay(true); // 재생 전에는 중앙 재생 표시
+    } catch {}
+      setOverlay(true); // 재생 전에는 중앙 재생 표시
     }
 
     function onPlayerStateChange(e) {
       const YTS = YT.PlayerState;
       if (e.data === YTS.ENDED) {
-        // 일반 끝 반복 (A–B는 타이머에서 보정)
         try { player.seekTo(aPoint ?? 0, true); player.playVideo(); } catch {}
       }
+      if (e.data === YTS.PLAYING || e.data === YTS.BUFFERING) {
+        setOverlay(false);
+        hideCookieHelp();
+      } else if (e.data === YTS.PAUSED || e.data === YTS.CUED) {
+        setOverlay(true);
+        hideCookieHelp();
+      }
+    } catch {}
+      }
       if (e.data === YTS.PAUSED || e.data === YTS.CUED) {
-        toggleOverlay(true);
+        setOverlay(true);
         hideCookieHelp();
       } else if (e.data === YTS.PLAYING) {
-        toggleOverlay(false); // 재생 중에는 숨김
+        setOverlay(false); // 재생 중에는 숨김
         hideCookieHelp();
       }
     }
@@ -415,10 +426,32 @@
         const dur = player.getDuration?.() || 0;
         const cur = player.getCurrentTime?.() || 0;
 
+        // 재생 상태 감시: 재생/버퍼링 중에는 오버레이 숨김, 일시정지/큐 상태면 표시
+        try {
+          const st = player.getPlayerState?.();
+          const YTS = YT.PlayerState || {};
+          if (st === YTS.PLAYING || st === YTS.BUFFERING) {
+            setOverlay(false);
+          } else if (st === YTS.PAUSED || st === YTS.CUED) {
+            setOverlay(true);
+          }
+        } catch {}
+
         // A–B 강제 루프
         if (abEnabled && aPoint != null && bPoint != null && bPoint > aPoint && dur > 0) {
           if (cur < aPoint - 0.08 || cur >= bPoint - 0.08) {
             try { player.seekTo(aPoint, true); player.playVideo(); } catch {}
+          }
+        }
+
+        els.cur.textContent = formatTime(cur);
+        els.dur.textContent = formatTime(dur);
+        if (dur > 0) {
+          els.seek.value = Math.min(1000, Math.floor((cur / dur) * 1000));
+        }
+        updateSeekABBG();
+      }, 200);
+    } catch {}
           }
         }
 
@@ -435,7 +468,12 @@
 
     function applyLoopHack(videoId) { try { player.setLoop?.(true); } catch {} try { player.cuePlaylist?.({ listType: 'playlist', playlist: [videoId] }); } catch {} }
 
-    function toggleOverlay(show) { els.overlay.hidden = !show; }
+    function setOverlay(show) {
+      // 이중 안전장치: hidden + display
+      els.overlay.hidden = !show;
+      els.overlay.classList.toggle('hide', !show);
+      els.overlay.setAttribute('aria-hidden', String(!show));
+    }
 
     function showError(msg) { els.err.textContent = msg || ''; if (msg) setTimeout(() => (els.err.textContent = ''), 5000); }
 
@@ -477,7 +515,7 @@
       currentVideoId = videoId;
       createOrLoadPlayer(videoId);
       updateShareLink(videoId);
-      toggleOverlay(true);
+      setOverlay(true);
       showError('');
     }
 
@@ -536,11 +574,11 @@
 
     // ====== 이벤트 바인딩 ======
     // 중앙 재생 버튼
-    els.overlayPlay.addEventListener('click', () => { try { player.playVideo(); } catch {} });
+    els.overlayPlay.addEventListener('click', () => { try { setOverlay(false); player.playVideo(); } catch {} }); } catch {} });
 
-    els.play.addEventListener('click', () => { try { player.playVideo(); } catch {} });
+    els.play.addEventListener('click', () => { try { setOverlay(false); player.playVideo(); } catch {} }); } catch {} });
     els.pause.addEventListener('click', () => { try { player.pauseVideo(); } catch {} });
-    els.stop.addEventListener('click', () => { try { player.stopVideo(); player.seekTo(aPoint ?? 0, true); toggleOverlay(true); } catch {} });
+    els.stop.addEventListener('click', () => { try { player.stopVideo(); player.seekTo(aPoint ?? 0, true); setOverlay(true); } catch {} }); player.seekTo(aPoint ?? 0, true); setOverlay(true); } catch {} });
 
     els.back5.addEventListener('click', () => { try { const t = Math.max(0, (player.getCurrentTime?.() || 0) - 5); player.seekTo(t, true); } catch {} });
     els.fwd5.addEventListener('click', () => { try { const dur = player.getDuration?.() || 0; const t = Math.min(dur, (player.getCurrentTime?.() || 0) + 5); player.seekTo(t, true); } catch {} });
