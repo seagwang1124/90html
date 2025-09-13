@@ -343,7 +343,7 @@
     function on(el, evt, fn, opts){ if (el && el.addEventListener) el.addEventListener(evt, fn, opts); }
 
     // === DOMContentLoaded 에 초기화 이동 (버튼 미반응 방지) ===
-    document.addEventListener('DOMContentLoaded', initUI);
+    (document.readyState === 'loading') ? document.addEventListener('DOMContentLoaded', initUI) : initUI();
 
     function initUI(){
       // 파트 행 수집
@@ -420,7 +420,7 @@
         catch(e){ showError('클립보드 접근이 허용되지 않았습니다. 직접 붙여넣기 해 주세요.'); }
       });
       on(els.titleClear, 'click', function(){ if (els.titleInput) els.titleInput.value = ''; updateShareLink(currentVideoId || ''); });
-      on(els.titleInput, 'change', function(){ updateShareLink(currentVideoId || '')); });
+      on(els.titleInput, 'change', function(){ updateShareLink(currentVideoId || ''); });
 
       // A–B 버튼 & 단축키
       on(els.setA, 'click', setAHere);
@@ -750,12 +750,9 @@
       ok('extract embed', extractYouTubeId('https://www.youtube.com/embed/dQw4w9WgXcQ') === 'dQw4w9WgXcQ');
       ok('overlay fade show/hide', (function(){ setOverlay(false); var h1 = (!!els.overlay && els.overlay.classList && els.overlay.classList.contains('is-hidden')) && (!!els.overlayCtrl && els.overlayCtrl.classList && els.overlayCtrl.classList.contains('is-hidden')); setOverlay(true); var h2 = (!els.overlay || !els.overlay.classList || !els.overlay.classList.contains('is-hidden')) && (!els.overlayCtrl || !els.overlayCtrl.classList || !els.overlayCtrl.classList.contains('is-hidden')); return h1 && h2; })());
       
-      // 추가 테스트: URL 변형/시간 포맷
-      ok('extract shorts', extractYouTubeId('https://www.youtube.com/shorts/dQw4w9WgXcQ') === 'dQw4w9WgXcQ');
-      ok('extract raw id', extractYouTubeId('dQw4w9WgXcQ') === 'dQw4w9WgXcQ');
-      ok('extract invalid', extractYouTubeId('https://example.com') === null);
-      ok('format 0', formatTime(0) === '0:00');
-      ok('format 65', formatTime(65) === '1:05');
+      $1
+      // UI 바인딩 검증: remove 버튼이 입력을 지우는지
+      ok('remove button clears input', (function(){ var p = partEls['ch']; if(!p||!p.input||!p.remove) return false; p.input.value = 'https://youtu.be/dQw4w9WgXcQ'; try { p.remove.click(); } catch(e) { return false; } return p.input.value === ''; })());
 
       // 추가 테스트: YT 미준비 시 loadVideo가 큐잉되는지
       (function(){ var bak = window.YT; try { window.YT = undefined; pendingVideoId = null; loadVideo('dQw4w9WgXcQ'); ok('loadVideo queues when YT not ready', pendingVideoId === 'dQw4w9WgXcQ'); } finally { window.YT = bak; pendingVideoId = null; } })();
