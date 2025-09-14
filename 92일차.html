@@ -201,6 +201,8 @@
   // ---- 헬퍼 ----
   function qs(id){ return document.getElementById(id); }
   function on(el, evt, fn, opts){ if (el && el.addEventListener) el.addEventListener(evt, fn, opts||false); }
+  function whenReady(fn){ if(document.readyState==='loading'){ document.addEventListener('DOMContentLoaded', fn); } else { fn(); } }
+  function ensureUIReady(){ if(!els.overlay || !els.overlayCtrl){ try{ initUI(); }catch(e){} els.overlay = els.overlay || qs('overlay'); els.overlayCtrl = els.overlayCtrl || qs('overlayCtrl'); } }
   function formatTime(sec){ sec=Math.max(0, Math.floor(sec||0)); var m=(sec/60)|0, s=sec%60; return m+':' + (s<10?('0'+s):s); }
   function extractYouTubeId(input){
     if(!input) return null; var str=String(input).trim();
@@ -220,11 +222,11 @@
   }
 
   // ---- 오버레이 표시 ----
-  function setCenterOverlay(show){ var el=els.overlay; if(!el) return; if(show){ el.hidden=false; requestAnimationFrame(function(){ el.classList.remove('is-hidden'); }); } else { el.classList.add('is-hidden'); } if(el.setAttribute) el.setAttribute('aria-hidden', String(!show)); }
-  function setControlsOverlay(show){ var el=els.overlayCtrl; if(!el) return; if(show){ el.hidden=false; requestAnimationFrame(function(){ el.classList.remove('is-hidden'); }); } else { el.classList.add('is-hidden'); } if(el.setAttribute) el.setAttribute('aria-hidden', String(!show)); }
+  function setCenterOverlay(show){ var el=els.overlay; if(!el) return; if(show){ el.hidden=false; requestAnimationFrame(function(){ if(el && el.classList) el.classList.remove('is-hidden'); }); } else { if(el && el.classList) el.classList.add('is-hidden'); } if(el && el.setAttribute) el.setAttribute('aria-hidden', String(!show)); }
+  function setControlsOverlay(show){ var el=els.overlayCtrl; if(!el) return; if(show){ el.hidden=false; requestAnimationFrame(function(){ if(el && el.classList) el.classList.remove('is-hidden'); }); } else { if(el && el.classList) el.classList.add('is-hidden'); } if(el && el.setAttribute) el.setAttribute('aria-hidden', String(!show)); }
   function setOverlay(show){ setCenterOverlay(show); setControlsOverlay(show); }
 
-  function updatePlayToggleUI(){ try{ var YTS=(window.YT&&YT.PlayerState)||{}; var st=player&&player.getPlayerState?player.getPlayerState():null; var playing=(st===YTS.PLAYING||st===YTS.BUFFERING); els.playToggle.textContent = playing? '⏸ 일시정지':'▶ 재생'; }catch(e){ if(els.playToggle) els.playToggle.textContent='▶ 재생'; } }
+  function updatePlayToggleUI(){ try{ var YTS=(window.YT&&YT.PlayerState)||{}; var st=player&&player.getPlayerState?player.getPlayerState():null; var playing=(st===YTS.PLAYING||st===YTS.BUFFERING); if(els.playToggle) els.playToggle.textContent = playing? '⏸ 일시정지':'▶ 재생'; }catch(e){ if(els.playToggle) els.playToggle.textContent='▶ 재생'; } }
   function updateMuteUI(){ try{ if(els.muteToggle) els.muteToggle.textContent = (player&&player.isMuted&&player.isMuted())? '🔇':'🔊'; }catch(e){} }
   function updateFsUI(){ if(els.fsToggle) els.fsToggle.textContent = document.fullscreenElement? '⛶ 종료':'⛶ 전체화면'; }
   function showError(msg){ if(els.err) els.err.textContent = msg||''; if(msg){ setTimeout(function(){ if(els && els.err) els.err.textContent=''; }, 5000);} }
@@ -240,7 +242,7 @@
   function setBHere(){ var dur=(player&&player.getDuration)?player.getDuration():0; try{ bPoint=Math.min(dur||Infinity, player&&player.getCurrentTime?player.getCurrentTime():0);}catch(e){ bPoint=null; } if(aPoint==null){ showError('먼저 A 지점을 설정해 주세요.'); return; } if(bPoint!=null && bPoint<=aPoint){ showError('B는 A보다 커야 합니다.'); bPoint=null; } updateABUI(); }
   function toggleABLoop(){ if(!abEnabled){ if(aPoint==null || bPoint==null || bPoint<=aPoint){ showError('A와 B를 올바르게 설정해 주세요.'); return; } abEnabled=true; try{ if(player&&player.seekTo) player.seekTo(aPoint,true); if(player&&player.playVideo) player.playVideo(); }catch(e){} } else { abEnabled=false; } updateABUI(); }
   function clearAB(){ aPoint=null; bPoint=null; abEnabled=false; updateABUI(); }
-  function updateABUI(){ var aTxt=(aPoint==null)?'—':formatTime(aPoint); var bTxt=(bPoint==null)?'—':formatTime(bPoint); var ta=qs('tagA'), tb=qs('tagB'); if(ta){ var v=ta.querySelector('.val'); if(v) v.textContent=aTxt; ta.classList[aPoint==null?'add':'remove']('off'); } if(tb){ var v2=tb.querySelector('.val'); if(v2) v2.textContent=bTxt; tb.classList[bPoint==null?'add':'remove']('off'); } if(els.toggleAB) els.toggleAB.textContent='A–B 반복: ' + (abEnabled?'ON':'OFF'); updateSeekABBG(); updateShareLink(currentVideoId||''); }
+  function updateABUI(){ var aTxt=(aPoint==null)?'—':formatTime(aPoint); var bTxt=(bPoint==null)?'—':formatTime(bPoint); var ta=qs('tagA'), tb=qs('tagB'); if(ta){ var v=ta.querySelector('.val'); if(v) v.textContent=aTxt; if(ta.classList) ta.classList[aPoint==null?'add':'remove']('off'); } if(tb){ var v2=tb.querySelector('.val'); if(v2) v2.textContent=bTxt; if(tb.classList) tb.classList[bPoint==null?'add':'remove']('off'); } if(els.toggleAB) els.toggleAB.textContent='A–B 반복: ' + (abEnabled?'ON':'OFF'); updateSeekABBG(); updateShareLink(currentVideoId||''); }
 
   function setupSeekTimer(){ clearInterval(seekTimer); seekTimer=setInterval(function(){ if(!player || userDragging) return; var dur=player&&player.getDuration?player.getDuration():0; var cur=player&&player.getCurrentTime?player.getCurrentTime():0; try{ var YTS=(window.YT&&YT.PlayerState)||{}; var st=player&&player.getPlayerState?player.getPlayerState():null; if(st===YTS.PLAYING || st===YTS.BUFFERING){ setCenterOverlay(false);} else if(st===YTS.PAUSED || st===YTS.CUED){ setCenterOverlay(true); setControlsOverlay(true);} }catch(e){}
     if(abEnabled && aPoint!=null && bPoint!=null && bPoint>aPoint && dur>0){ if(cur < aPoint-0.08 || cur >= bPoint-0.08){ try{ if(player&&player.seekTo) player.seekTo(aPoint,true); if(player&&player.playVideo) player.playVideo(); }catch(e){} } }
@@ -322,7 +324,7 @@
     if(els.bootMsg) els.bootMsg.textContent = '✅ 초기화 완료: 버튼 이벤트가 연결되었습니다.';
   }
 
-  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', initUI); else initUI();
+  whenReady(initUI);
 
   // ---- YT API Ready ----
   window.onYouTubeIframeAPIReady = function(){
@@ -341,14 +343,21 @@
   window.addEventListener('error', function(ev){ if(els && els.bootMsg){ els.bootMsg.textContent='⚠️ 스크립트 오류: '+ (ev && ev.message ? ev.message : '알 수 없음'); } });
 
   // ---- 자가 테스트 ----
-  (function(){ var fails=[]; function ok(name,cond){ try{ if(!cond) fails.push(name);}catch(e){ fails.push(name+' (threw)'); } }
+  function runSelfTests(){ ensureUIReady(); var fails=[]; function ok(name,cond){ try{ if(!cond) fails.push(name);}catch(e){ fails.push(name+' (threw)'); } }
+    // 기존 테스트(내용 유지)
     ok('extract watch', extractYouTubeId('https://www.youtube.com/watch?v=dQw4w9WgXcQ')==='dQw4w9WgXcQ');
     ok('extract youtu.be', extractYouTubeId('https://youtu.be/dQw4w9WgXcQ')==='dQw4w9WgXcQ');
     ok('extract embed', extractYouTubeId('https://www.youtube.com/embed/dQw4w9WgXcQ')==='dQw4w9WgXcQ');
-    (function(){ setOverlay(false); var h1 = els.overlay.classList.contains('is-hidden') && els.overlayCtrl.classList.contains('is-hidden'); setOverlay(true); var h2 = !els.overlay.classList.contains('is-hidden') && !els.overlayCtrl.classList.contains('is-hidden'); ok('overlay fade show/hide', h1 && h2); })();
+    (function(){ setOverlay(false); var h1 = (els.overlay && els.overlay.classList && els.overlay.classList.contains('is-hidden')) && (els.overlayCtrl && els.overlayCtrl.classList && els.overlayCtrl.classList.contains('is-hidden')); setOverlay(true); var h2 = (els.overlay && els.overlay.classList && !els.overlay.classList.contains('is-hidden')) && (els.overlayCtrl && els.overlayCtrl.classList && !els.overlayCtrl.classList.contains('is-hidden')); ok('overlay fade show/hide', h1 && h2); })();
     ok('format 65', formatTime(65)==='1:05');
+
+    // 추가 테스트(내구성)
+    (function(){ var bkO=els.overlay, bkC=els.overlayCtrl; els.overlay=null; els.overlayCtrl=null; var threw=false; try{ setOverlay(true); setOverlay(false); }catch(e){ threw=true; } els.overlay=bkO; els.overlayCtrl=bkC; ok('setOverlay tolerates missing elements', !threw); })();
+    (function(){ var threw=false; try{ openQualityMenu(); }catch(e){ threw=true; } ok('quality menu open without player does not throw', !threw); })();
+
     if(fails.length && console && console.warn){ console.warn('FAILED TESTS:', fails); if(els && els.bootMsg){ els.bootMsg.textContent='⚠️ 테스트 실패: '+fails.join(', ');} }
-  })();
+  }
+  whenReady(runSelfTests);
   </script>
 </body>
 </html>
