@@ -274,7 +274,7 @@
               <div class="time-label" id="timeLabel">0:00 / 0:00</div>
             </div>
             <div class="right">
-              <button class="secondary" id="autoToggle" type="button" title="찬양 5곡이 모두 선택 / 해제가 됨" data-compact="1">찬양 5곡: 끔</button>
+              <button class="secondary" id="autoToggle" type="button" title="찬양 5곡만 모두 선택 / 해제가 됨" data-compact="1">찬양5곡 전체: 끔</button>
               <button class="secondary" id="ccToggle" type="button" title="자막">CC</button>
               <div style="position:relative">
                 <button class="secondary" id="qualityBtn" type="button" title="화질 설정" data-compact="1">⚙︎ 화질</button>
@@ -315,7 +315,7 @@
 
     <!-- 추가 찬양 5곡 -->
     <div class="section">
-      <h2 style="margin:0 0 8px;font-size:18px">추가 찬양 5곡</h2>
+      <h2 style="margin:0 0 8px;font-size:18px"> 찬양 5곡 </h2>
       <div class="help" style="margin-bottom:10px">찬양 곡 <b>제목</b>이나 해당 곡의 <b>유튜브 주소</b>를 <b>넣기</b>로 입력하고, <b>선택</b>을 누르면 <b>위 플레이어</b>에 연결됩니다.</div>
       <div id="moreSongs" class="songs">
         <!-- 곡 1 -->
@@ -520,7 +520,7 @@
 
       function updateCCToggleUI(){ els.ccToggle&& (els.ccToggle.textContent=captionsOn?'CC 켜짐':'CC 꺼짐'); }
       on(els.ccToggle,'click',function(){ captionsOn=!captionsOn; updateCCToggleUI(); rebuildPlayerKeepTime(); }); updateCCToggleUI();
-      function updateAutoUI(){ if(els.autoToggle){ var on=autoPlayOn?'켬':'끔'; els.autoToggle.textContent=(window.innerWidth<=540)?('자동: '+on):('찬양 5곡: '+on); } }
+      function updateAutoUI(){ if(els.autoToggle){ var on=autoPlayOn?'켬':'끔'; els.autoToggle.textContent=(window.innerWidth<=540)?('자동: '+on):('찬양5곡 전체: '+on); } }
       on(els.autoToggle,'click',function(){ autoPlayOn=!autoPlayOn; updateAutoUI(); }); updateAutoUI(); window.addEventListener('resize',updateAutoUI);
 
       on(els.copy,'click',function(){ if(!els.share) return; var txt=els.share.value||''; if(navigator.clipboard&&navigator.clipboard.writeText){ navigator.clipboard.writeText(txt).then(function(){ els.copy.textContent='복사됨!'; setTimeout(function(){ els.copy.textContent='주소 복사'; },1500); }).catch(function(){ try{ els.share.select(); document.execCommand('copy'); els.copy.textContent='복사됨!'; setTimeout(function(){ els.copy.textContent='주소 복사'; },1500);}catch(e){} }); } else { try{ els.share.select(); document.execCommand('copy'); }catch(e){} } });
@@ -557,6 +557,7 @@
   </script>
 </body>
 </html>
+
 
 
 
