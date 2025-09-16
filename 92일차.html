@@ -96,7 +96,7 @@
       .time-label{min-width:72px;font-size:11px}
     }
     @media(max-width:540px){
-      /* 파트 행을 세로 스택으로 재배치 */
+      /* 파트 행: 540px까지는 세로 스택 유지(모바일 가독성) */
       .part-row{grid-template-columns:auto 1fr;grid-template-areas:
         "pick label"
         "input input"
@@ -108,12 +108,34 @@
       .part-row .remove{grid-area:remove;justify-self:end}
       input[type=text],input[type=url]{min-width:0;width:100%}
 
-      /* 오른쪽 컨트롤 세로 스택 */
+      /* 왼쪽/오른쪽 컨트롤 모두 세로 스택 */
+      .overlay-ctrl .left{flex-direction:column;align-items:flex-start}
       .overlay-ctrl .right{flex-direction:column;align-items:flex-end}
-      .overlay-ctrl .right > *{width:auto}
+      .overlay-ctrl .right > *,.overlay-ctrl .left > *{width:auto}
 
       .seek-dock{padding:6px 8px}
       .dock-time{min-width:64px;font-size:11px}
+    }
+    /* 초협폭(<=420px): 한 줄 배치 + 버튼 축소(50~70%) */
+    @media(max-width:420px){
+      /* 전체 폰트/패딩 축소 */
+      body{padding:12px}
+      button{padding:6px 8px;border-radius:8px;font-size:11px}
+      input[type=text],input[type=url]{padding:8px 10px;font-size:12px}
+      .part-label{padding:6px 2px;font-size:12px}
+      .center-play .btn{width:64px;height:64px}
+
+      /* 제목 줄: 버튼 세로화로 폭 절약 */
+      #titlePaste,#titleClear{writing-mode:vertical-rl;text-orientation:mixed;letter-spacing:-1px;height:64px;padding:4px 2px}
+
+      /* 파트 행을 한 줄로: 좁은 버튼 + 세로 글자 */
+      .part-row{grid-template-columns:34px 54px 1fr 34px 34px;grid-template-areas:none}
+      .part-row .pick,.part-row .paste,.part-row .remove{width:34px;min-width:34px;height:64px;padding:4px 2px;writing-mode:vertical-rl;text-orientation:mixed;letter-spacing:-1px}
+      .part-row .part-label{width:54px}
+      .part-row .link{min-width:0}
+
+      /* 오버레이 컨트롤 버튼 더 작게 */
+      .overlay-ctrl button{padding:5px 7px;font-size:11px}
     }
   </style>
 </head>
@@ -269,7 +291,24 @@
     function showControlsTemporarily(){ setControlsOverlay(true); clearTimeout(mobileHideTimer); try{ var YTS=(window.YT&&YT.PlayerState)||{}; var st=player&&player.getPlayerState?player.getPlayerState():null; if(st===YTS.PLAYING||st===YTS.BUFFERING){ mobileHideTimer=setTimeout(function(){ setControlsOverlay(false); }, 2500); } }catch(e){} }
 
     function isPausedLike(){ try{ var YTS=(window.YT&&YT.PlayerState)||{}; var st=player&&player.getPlayerState?player.getPlayerState():null; return (st===YTS.PAUSED||st===YTS.CUED||st===YTS.UNSTARTED||st===-1); }catch(e){ return true; } }
-    function handleSurfaceTap(){ if(isPausedLike()){ setCenterOverlay(false); try{ player&&player.playVideo&&player.playVideo(); }catch(e){} } else { showControlsTemporarily(); } }
+    function handleSurfaceTap(){
+      try{
+        var YTS=(window.YT&&YT.PlayerState)||{};
+        var st=player&&player.getPlayerState?player.getPlayerState():null;
+        if(st===YTS.PLAYING||st===YTS.BUFFERING){
+          // 재생 중: 화면 아무 곳이나 클릭/탭 → 일시정지 + 컨트롤 표시 + 중앙버튼 표시
+          player&&player.pauseVideo&&player.pauseVideo();
+          setCenterOverlay(true); setControlsOverlay(true);
+        } else {
+          // 정지/대기: 클릭/탭 → 재생
+          setCenterOverlay(false);
+          player&&player.playVideo&&player.playVideo();
+        }
+      }catch(e){
+        // 상태 판별 실패시: 컨트롤만 표시
+        showControlsTemporarily();
+      }
+    }
 
     function updatePlayToggleUI(){ try{ var YTS=(window.YT&&YT.PlayerState)||{}; var st=player&&player.getPlayerState?player.getPlayerState():null; var playing=(st===YTS.PLAYING||st===YTS.BUFFERING); if(els.playToggle) els.playToggle.textContent=playing?'⏸ 일시정지':'▶ 재생'; }catch(e){ if(els.playToggle) els.playToggle.textContent='▶ 재생'; } }
     function updateMuteUI(){ try{ if(els.muteToggle) els.muteToggle.textContent=(player&&player.isMuted&&player.isMuted())?'🔇':'🔊'; }catch(e){} }
@@ -352,15 +391,15 @@
       on(els.setA,'click',setAHere); on(els.setB,'click',setBHere); on(els.toggleAB,'click',toggleABLoop); on(els.clearAB,'click',clearAB);
       document.addEventListener('keydown',function(e){ var tag=document.activeElement&&document.activeElement.tagName; if(tag==='INPUT'||tag==='TEXTAREA') return; var k=(e.key||'').toLowerCase(); if(k==='a') setAHere(); else if(k==='b') setBHere(); else if(k==='l') toggleABLoop(); else if(k==='c') clearAB(); });
 
-      // 호버/클릭 표시 + 클릭 재생(정지 상태)
+      // 호버/클릭 표시 + 클릭 재생/일시정지
       on(els.playerWrap,'mouseenter',function(){ setControlsOverlay(true); });
       on(els.playerWrap,'mousemove',function(){ setControlsOverlay(true); });
       on(els.playerWrap,'mouseleave',function(){ try{ var YTS=(window.YT&&YT.PlayerState)||{}; var st=player&&player.getPlayerState?player.getPlayerState():null; if(st===YTS.PLAYING||st===YTS.BUFFERING) setControlsOverlay(false); }catch(e){} });
 
-      // 데스크탑: 플레이어 영역 아무 곳 클릭하면 (정지 상태일 때) 재생
+      // 데스크탑: 플레이어 영역 아무 곳 클릭하면 상태에 맞게 토글
       on(els.playerWrap,'click',function(e){ if(els.overlayCtrl && els.overlayCtrl.contains(e.target)) return; if(els.overlay && els.overlay.contains(e.target)) return; handleSurfaceTap(); });
 
-      // 모바일: iframe 위에서도 한 번 터치로 컨트롤 표시 + 정지상태면 재생
+      // 모바일: iframe 위에서도 한 번 터치로 컨트롤 표시/토글
       on(els.tapCatcher,'touchstart',function(ev){ try{ ev.preventDefault(); ev.stopPropagation(); }catch(_){} handleSurfaceTap(); }, {passive:false});
       on(els.tapCatcher,'click',function(ev){ try{ ev.preventDefault(); ev.stopPropagation(); }catch(_){} handleSurfaceTap(); });
     }
@@ -381,4 +420,6 @@
   </script>
 </body>
 </html>
+
+
 
