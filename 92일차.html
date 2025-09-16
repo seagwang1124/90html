@@ -95,41 +95,16 @@
       .overlay-ctrl button{padding:6px 8px;font-size:12px}
       .time-label{min-width:72px;font-size:11px}
     }
+
+    /* 540px 이하: 제목/파트 줄을 "한 줄" 그리드로 강제, 버튼 세로글자 적용 */
     @media(max-width:540px){
-      /* 파트 행: 540px까지는 세로 스택 유지(모바일 가독성) */
-      .part-row{grid-template-columns:auto 1fr;grid-template-areas:
-        "pick label"
-        "input input"
-        "paste remove";align-items:start}
-      .part-row .pick{grid-area:pick}
-      .part-row .part-label{grid-area:label}
-      .part-row .link{grid-area:input;min-width:0;width:100%}
-      .part-row .paste{grid-area:paste}
-      .part-row .remove{grid-area:remove;justify-self:end}
-      input[type=text],input[type=url]{min-width:0;width:100%}
-
-      /* 오른쪽/왼쪽 컨트롤 모두 세로 스택 */
-      .overlay-ctrl .left{flex-direction:column;align-items:flex-start}
-      .overlay-ctrl .right{flex-direction:column;align-items:flex-end}
-      .overlay-ctrl .right > *,.overlay-ctrl .left > *{width:auto}
-
-      .seek-dock{padding:6px 8px}
-      .dock-time{min-width:64px;font-size:11px}
-    }
-    /* 초협폭(<=420px): 한 줄 배치 + 버튼 축소(50~70%) */
-    @media(max-width:420px){
-      body{padding:12px}
-      button{padding:6px 8px;border-radius:8px;font-size:11px}
-      input[type=text],input[type=url]{padding:8px 10px;font-size:12px}
-      .part-label{padding:6px 2px;font-size:12px}
-      .center-play .btn{width:64px;height:64px}
-
-      /* 제목 줄을 그리드로 재배치 (겹침 방지) */
+      /* 제목 줄 */
       .title-row{display:grid;grid-template-columns:54px minmax(0,1fr) 36px 36px;gap:6px;align-items:center}
       .title-row .part-label{width:54px}
+      .title-row > *{min-width:0}
       #titlePaste,#titleClear{writing-mode:vertical-rl;text-orientation:mixed;letter-spacing:-1px;height:56px;padding:4px 2px}
 
-      /* 파트 행을 한 줄로: minmax로 입력창 폭 보장 + 겹침 방지 */
+      /* 파트 줄 - 한 줄 레이아웃 */
       .parts{gap:6px}
       .part-row{grid-template-columns:36px 56px minmax(0,1fr) 36px 36px;gap:6px;align-items:center}
       .part-row > *{min-width:0}
@@ -137,7 +112,24 @@
       .part-row .part-label{width:56px}
       .part-row .link{min-width:0;width:100%}
 
-      /* 오버레이 컨트롤 버튼 더 작게 */
+      /* 하단 컨트롤은 세로 스택 유지 */
+      .overlay-ctrl .left{flex-direction:column;align-items:flex-start}
+      .overlay-ctrl .right{flex-direction:column;align-items:flex-end}
+      .overlay-ctrl .right > *,.overlay-ctrl .left > *{width:auto}
+
+      .seek-dock{padding:6px 8px}
+      .dock-time{min-width:64px;font-size:11px}
+    }
+
+    /* 초협폭(<=420px): 추가 축소 */
+    @media(max-width:420px){
+      body{padding:12px}
+      button{padding:6px 8px;border-radius:8px;font-size:11px}
+      input[type=text],input[type=url]{padding:8px 10px;font-size:12px}
+      .part-label{padding:6px 2px;font-size:12px}
+      .center-play .btn{width:64px;height:64px}
+
+      /* 제목 줄/파트 줄 정의는 540px 규칙 그대로 적용, 여기서는 크기만 더 줄임 */
       .overlay-ctrl button{padding:5px 7px;font-size:11px}
     }
   </style>
