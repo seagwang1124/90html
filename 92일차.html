@@ -99,10 +99,11 @@
     /* 540px 이하: 제목/파트 줄을 "한 줄" 그리드로 강제, 버튼 세로글자 적용 */
     @media(max-width:540px){
       /* 제목 줄 */
-      .title-row{display:grid;grid-template-columns:54px minmax(0,1fr) 36px 36px;gap:6px;align-items:center}
+      .title-row{display:grid;grid-template-columns:54px minmax(0,1fr) 36px 36px;gap:6px;align-items:stretch}
       .title-row .part-label{width:54px}
       .title-row > *{min-width:0}
-      #titlePaste,#titleClear{writing-mode:vertical-rl;text-orientation:mixed;letter-spacing:-1px;height:56px;padding:4px 2px}
+      .title-row input{min-width:0;width:100%}
+      #titlePaste,#titleClear{writing-mode:vertical-rl;text-orientation:mixed;letter-spacing:-1px;height:56px;padding:4px 2px;width:36px;min-width:36px}
 
       /* 파트 줄 - 한 줄 레이아웃 */
       .parts{gap:6px}
@@ -128,8 +129,6 @@
       input[type=text],input[type=url]{padding:8px 10px;font-size:12px}
       .part-label{padding:6px 2px;font-size:12px}
       .center-play .btn{width:64px;height:64px}
-
-      /* 제목 줄/파트 줄 정의는 540px 규칙 그대로 적용, 여기서는 크기만 더 줄임 */
       .overlay-ctrl button{padding:5px 7px;font-size:11px}
     }
   </style>
