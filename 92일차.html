@@ -137,6 +137,12 @@
     }
       /* 제목 라벨 기본: 넓은 화면에서는 한 줄 */
     .title-label .narrow{display:none}
+    .title-label .wide{display:inline}
+    /* 작은 화면에서 우선 적용되도록 아래에 배치 (+ !important) */
+    @media(max-width:540px){
+      .title-label .wide{display:none !important}
+      .title-label .narrow{display:inline-block !important; line-height:1.05; text-align:center}
+    }
   </style>
 </head>
 <body>
