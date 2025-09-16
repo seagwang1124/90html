@@ -108,7 +108,7 @@
       .part-row .remove{grid-area:remove;justify-self:end}
       input[type=text],input[type=url]{min-width:0;width:100%}
 
-      /* 왼쪽/오른쪽 컨트롤 모두 세로 스택 */
+      /* 오른쪽/왼쪽 컨트롤 모두 세로 스택 */
       .overlay-ctrl .left{flex-direction:column;align-items:flex-start}
       .overlay-ctrl .right{flex-direction:column;align-items:flex-end}
       .overlay-ctrl .right > *,.overlay-ctrl .left > *{width:auto}
@@ -118,21 +118,24 @@
     }
     /* 초협폭(<=420px): 한 줄 배치 + 버튼 축소(50~70%) */
     @media(max-width:420px){
-      /* 전체 폰트/패딩 축소 */
       body{padding:12px}
       button{padding:6px 8px;border-radius:8px;font-size:11px}
       input[type=text],input[type=url]{padding:8px 10px;font-size:12px}
       .part-label{padding:6px 2px;font-size:12px}
       .center-play .btn{width:64px;height:64px}
 
-      /* 제목 줄: 버튼 세로화로 폭 절약 */
-      #titlePaste,#titleClear{writing-mode:vertical-rl;text-orientation:mixed;letter-spacing:-1px;height:64px;padding:4px 2px}
+      /* 제목 줄을 그리드로 재배치 (겹침 방지) */
+      .title-row{display:grid;grid-template-columns:54px minmax(0,1fr) 36px 36px;gap:6px;align-items:center}
+      .title-row .part-label{width:54px}
+      #titlePaste,#titleClear{writing-mode:vertical-rl;text-orientation:mixed;letter-spacing:-1px;height:56px;padding:4px 2px}
 
-      /* 파트 행을 한 줄로: 좁은 버튼 + 세로 글자 */
-      .part-row{grid-template-columns:34px 54px 1fr 34px 34px;grid-template-areas:none}
-      .part-row .pick,.part-row .paste,.part-row .remove{width:34px;min-width:34px;height:64px;padding:4px 2px;writing-mode:vertical-rl;text-orientation:mixed;letter-spacing:-1px}
-      .part-row .part-label{width:54px}
-      .part-row .link{min-width:0}
+      /* 파트 행을 한 줄로: minmax로 입력창 폭 보장 + 겹침 방지 */
+      .parts{gap:6px}
+      .part-row{grid-template-columns:36px 56px minmax(0,1fr) 36px 36px;gap:6px;align-items:center}
+      .part-row > *{min-width:0}
+      .part-row .pick,.part-row .paste,.part-row .remove{flex:0 0 36px;width:36px;min-width:36px;height:56px;padding:4px 2px;display:flex;align-items:center;justify-content:center;writing-mode:vertical-rl;text-orientation:mixed;letter-spacing:-1px}
+      .part-row .part-label{width:56px}
+      .part-row .link{min-width:0;width:100%}
 
       /* 오버레이 컨트롤 버튼 더 작게 */
       .overlay-ctrl button{padding:5px 7px;font-size:11px}
@@ -144,7 +147,7 @@
     <div class="section"><h1>성가대 유튜브 반복 플레이어</h1></div>
 
     <div class="section">
-      <div class="row wrap" aria-label="찬양 제목 입력">
+      <div class="row wrap title-row" aria-label="찬양 제목 입력">
         <span class="part-label" style="width:auto;">찬양 제목</span>
         <input id="titleInput" type="text" placeholder="예: 할렐루야 찬양" />
         <button id="titlePaste" class="ghost" type="button">넣기</button>
@@ -278,10 +281,8 @@
     function on(el,evt,fn,opts){ if(el&&el.addEventListener) el.addEventListener(evt,fn,opts||false) }
     function formatTime(sec){sec=Math.max(0,Math.floor(sec||0));var m=(sec/60)|0,s=sec%60;return m+':' + (s<10?('0'+s):s)}
 
-    // 수집
     function collectPartRows(){ var rows=document.querySelectorAll('.part-row'); for(var i=0;i<rows.length;i++){ var row=rows[i]; var key=row.getAttribute('data-key'); partEls[key]={ row:row, input:row.querySelector('.link'), pick:row.querySelector('.pick'), paste:row.querySelector('.paste'), remove:row.querySelector('.remove') }; } }
 
-    // YT ID
     function extractYouTubeId(input){ if(!input) return null; var str=String(input).trim(); if(/^[a-zA-Z0-9_-]{11}$/.test(str)) return str; try{ var u=new URL(str); var host=u.hostname.replace(/^www\./,''); if(host==='youtu.be'){ var seg=u.pathname.split('/').filter(Boolean); if(seg[0]&&/^[A-Za-z0-9_-]{11}$/.test(seg[0])) return seg[0]; } if(/youtube\.com$/.test(host)){ var v=u.searchParams.get('v'); if(v&&/^[A-Za-z0-9_-]{11}$/.test(v)) return v; var m1=u.pathname.match(/\/embed\/([A-Za-z0-9_-]{11})/); if(m1) return m1[1]; var m2=u.pathname.match(/\/shorts\/([A-Za-z0-9_-]{11})/); if(m2) return m2[1]; } }catch(e){ var m=str.match(/[?&]v=([A-Za-z0-9_-]{11})/); if(m) return m[1]; var m2=str.match(/youtu\.be\/([A-Za-z0-9_-]{11})/); if(m2) return m2[1]; } return null; }
 
     function setCenterOverlay(show){ var el=els.overlay; if(!el) return; if(show){ el.hidden=false; requestAnimationFrame(function(){ el.classList.remove('is-hidden'); }); } else { el.classList.add('is-hidden'); } el.setAttribute('aria-hidden',String(!show)); }
@@ -296,16 +297,13 @@
         var YTS=(window.YT&&YT.PlayerState)||{};
         var st=player&&player.getPlayerState?player.getPlayerState():null;
         if(st===YTS.PLAYING||st===YTS.BUFFERING){
-          // 재생 중: 화면 아무 곳이나 클릭/탭 → 일시정지 + 컨트롤 표시 + 중앙버튼 표시
           player&&player.pauseVideo&&player.pauseVideo();
           setCenterOverlay(true); setControlsOverlay(true);
         } else {
-          // 정지/대기: 클릭/탭 → 재생
           setCenterOverlay(false);
           player&&player.playVideo&&player.playVideo();
         }
       }catch(e){
-        // 상태 판별 실패시: 컨트롤만 표시
         showControlsTemporarily();
       }
     }
@@ -327,7 +325,7 @@
     function clearAB(){ aPoint=null; bPoint=null; abEnabled=false; updateABUI(); }
     function updateABUI(){ var aTxt=(aPoint==null)?'—':formatTime(aPoint); var bTxt=(bPoint==null)?'—':formatTime(bPoint); var ta=els.tagA,tb=els.tagB; if(ta){ var v=ta.querySelector('.val'); if(v) v.textContent=aTxt; ta.classList.toggle('off',aPoint==null); } if(tb){ var v2=tb.querySelector('.val'); if(v2) v2.textContent=bTxt; tb.classList.toggle('off',bPoint==null); } if(els.toggleAB) els.toggleAB.textContent='A–B 반복: '+(abEnabled?'ON':'OFF'); updateSeekABBG(); updateShareLink(currentVideoId||''); }
 
-    function setupSeekTimer(){ clearInterval(seekTimer); seekTimer=setInterval(function(){ if(!player||userDragging) return; var dur=player&&player.getDuration?player.getDuration():0; var cur=player&&player.getCurrentTime?player.getCurrentTime():0; try{ var YTS=(window.YT&&YT.PlayerState)||{}; var st=player&&player.getPlayerState?player.getPlayerState():null; if(st===YTS.PLAYING||st===YTS.BUFFERING){ setCenterOverlay(false);} else if(st===YTS.PAUSED||st===YTS.CUED){ setCenterOverlay(true); setControlsOverlay(true);} }catch(e){} if(abEnabled&&aPoint!=null&&bPoint!=null&&bPoint>aPoint&&dur>0){ if(cur<aPoint-0.08||cur>=bPoint-0.08){ try{ if(player&&player.seekTo) player.seekTo(aPoint,true); if(player&&player.playVideo) player.playVideo(); }catch(e){} } } if(els.timeLabel) els.timeLabel.textContent=formatTime(cur)+' / '+formatTime(dur); var dt=gid('dockTime'); if(dt) dt.textContent=formatTime(cur)+' / '+formatTime(dur); if(els.seek&&dur>0){ els.seek.value=Math.min(1000,Math.floor((cur/dur)*1000)); } updateSeekABBG(); },200); }
+    function setupSeekTimer(){ clearInterval(seekTimer); seekTimer=setInterval(function(){ if(!player||userDragging) return; var dur=player&&player.getDuration?player.getDuration():0; var cur=player&&player.getCurrentTime?player.getCurrentTime():0; try{ var YTS=(window.YT&&YT.PlayerState)||{}; var st=player&&player.getPlayerState?player.getPlayerState():null; if(st===YTS.PLAYING||st===YTS.BUFFERING){ setCenterOverlay(false);} else if(st===YTS.PAUSED||st===YTS.CUED){ setCenterOverlay(true); setControlsOverlay(true);} }catch(e){} if(abEnabled&&aPoint!=null&&bPoint!=null&&bPoint>aPoint&&dur>0){ if(cur<aPoint-0.08||cur>=bPoint-0.08){ try{ if(player&&player.seekTo) player.seekTo(aPoint,true); if(player&&player.playVideo) player.playVideo(); }catch(e){} } } var tl=gid('timeLabel'); if(tl) tl.textContent=formatTime(cur)+' / '+formatTime(dur); var dt=gid('dockTime'); if(dt) dt.textContent=formatTime(cur)+' / '+formatTime(dur); if(els.seek&&dur>0){ els.seek.value=Math.min(1000,Math.floor((cur/dur)*1000)); } updateSeekABBG(); },200); }
 
     function createOrLoadPlayer(videoId,startAt){ if(typeof startAt==='undefined') startAt=0; var isHttp=(location.protocol==='http:'||location.protocol==='https:'); var originParam=isHttp?location.origin:undefined; if(!window.YT||!YT.Player){ pendingVideoId=videoId; showError('유튜브 API 로딩 중입니다. 잠시 후 재생됩니다.'); return; } if(player){ try{ if(player.loadVideoById) player.loadVideoById({videoId:videoId,startSeconds:startAt}); }catch(e){} if(autoPlayOn){ try{ if(player.playVideo) player.playVideo(); }catch(e){} } return; }
       player=new YT.Player('player',{
@@ -391,15 +389,12 @@
       on(els.setA,'click',setAHere); on(els.setB,'click',setBHere); on(els.toggleAB,'click',toggleABLoop); on(els.clearAB,'click',clearAB);
       document.addEventListener('keydown',function(e){ var tag=document.activeElement&&document.activeElement.tagName; if(tag==='INPUT'||tag==='TEXTAREA') return; var k=(e.key||'').toLowerCase(); if(k==='a') setAHere(); else if(k==='b') setBHere(); else if(k==='l') toggleABLoop(); else if(k==='c') clearAB(); });
 
-      // 호버/클릭 표시 + 클릭 재생/일시정지
       on(els.playerWrap,'mouseenter',function(){ setControlsOverlay(true); });
       on(els.playerWrap,'mousemove',function(){ setControlsOverlay(true); });
       on(els.playerWrap,'mouseleave',function(){ try{ var YTS=(window.YT&&YT.PlayerState)||{}; var st=player&&player.getPlayerState?player.getPlayerState():null; if(st===YTS.PLAYING||st===YTS.BUFFERING) setControlsOverlay(false); }catch(e){} });
 
-      // 데스크탑: 플레이어 영역 아무 곳 클릭하면 상태에 맞게 토글
       on(els.playerWrap,'click',function(e){ if(els.overlayCtrl && els.overlayCtrl.contains(e.target)) return; if(els.overlay && els.overlay.contains(e.target)) return; handleSurfaceTap(); });
 
-      // 모바일: iframe 위에서도 한 번 터치로 컨트롤 표시/토글
       on(els.tapCatcher,'touchstart',function(ev){ try{ ev.preventDefault(); ev.stopPropagation(); }catch(_){} handleSurfaceTap(); }, {passive:false});
       on(els.tapCatcher,'click',function(ev){ try{ ev.preventDefault(); ev.stopPropagation(); }catch(_){} handleSurfaceTap(); });
     }
@@ -411,7 +406,6 @@
     function mapQualityLabel(q){ var m={ small:'240p', medium:'360p', large:'480p', hd720:'720p', hd1080:'1080p', hd1440:'1440p', hd2160:'2160p', highres:'고해상도' }; return m[q]||q; }
     function openQualityMenu(){ try{ var levels=(player&&player.getAvailableQualityLevels)?player.getAvailableQualityLevels():[]; els.qualityMenu.innerHTML=''; var opts=['default'].concat(levels); for(var i=0;i<opts.length;i++){ (function(q){ var btn=document.createElement('button'); btn.textContent=(q==='default')? '자동': mapQualityLabel(q); btn.addEventListener('click',function(){ try{ player&&player.setPlaybackQuality&&player.setPlaybackQuality(q);}catch(e){} els.qualityMenu.classList.remove('open'); }); els.qualityMenu.appendChild(btn); })(opts[i]); } els.qualityMenu.classList.add('open'); }catch(e){} }
 
-    // 간단 자가 테스트
     (function(){ var fails=[]; function ok(name,cond){ try{ if(!cond) fails.push(name);}catch(e){ fails.push(name+' (threw)'); } }
       ok('extract watch', extractYouTubeId('https://www.youtube.com/watch?v=dQw4w9WgXcQ')==='dQw4w9WgXcQ');
       ok('overlay show/hide', (function(){ setOverlay(false); var h1=(els.overlay.classList.contains('is-hidden')&&els.overlayCtrl.classList.contains('is-hidden')); setOverlay(true); var h2=(!els.overlay.classList.contains('is-hidden')&&!els.overlayCtrl.classList.contains('is-hidden')); return h1&&h2; })());
@@ -420,6 +414,3 @@
   </script>
 </body>
 </html>
-
-
-
