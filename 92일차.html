@@ -125,6 +125,7 @@
       .song-title-row{grid-template-columns:54px minmax(0,1fr) 36px 36px}
       .song-title-row > *{min-width:0}
       .song-title-row .part-label{width:54px}
+      .song-title-row input{min-width:0;width:100%}
       .song-title-row .song-title-paste,.song-title-row .song-title-clear{writing-mode:vertical-rl;text-orientation:mixed;letter-spacing:-1px;height:56px;padding:4px 2px;width:36px;min-width:36px}
 
       /* 하단 컨트롤은 세로 스택 유지 */
@@ -171,6 +172,15 @@
       .title-row button,.part-row button,.song-title-row button{font-size:14px !important}
       .title-row .part-label,.part-row .part-label,.song-title-row .part-label{font-size:14px !important}
       #titlePaste,#titleClear,.part-row .pick,.part-row .paste,.part-row .remove,.song-title-row .song-title-paste,.song-title-row .song-title-clear{height:34px;width:34px;padding:2px !important}
+    }
+      /* 곡 제목 라벨 wide/narrow 토글 */
+    .song-title-label .narrow{display:none}
+    .song-title-label .wide{display:inline}
+    @media(max-width:540px){
+      .song-title-label .wide{display:none !important}
+      .song-title-label .narrow{display:inline-block !important; line-height:1.05; text-align:center}
+      .song-title-row .part-label{padding:4px 2px;font-size:14px}
+      .song-title-row .song-title{min-width:0;width:100%}
     }
   </style>
 </head>
@@ -310,7 +320,7 @@
       <div id="moreSongs" class="songs">
         <!-- 곡 1 -->
         <div class="song-title-row" data-skey="g1">
-          <span class="part-label">곡1 제목</span>
+          <span class="part-label song-title-label"><span class="wide">곡1 제목<\/span><span class="narrow">곡1<br>제목<\/span><\/span>
           <input id="songTitle_g1" class="song-title" type="text" placeholder="곡 1 제목" />
           <button class="ghost song-title-paste" type="button">넣기</button>
           <button class="ghost song-title-clear" type="button">삭제</button>
@@ -324,7 +334,7 @@
         </div>
         <!-- 곡 2 -->
         <div class="song-title-row" data-skey="g2">
-          <span class="part-label">곡2 제목</span>
+          <span class="part-label song-title-label"><span class="wide">곡2 제목<\/span><span class="narrow">곡2<br>제목<\/span><\/span>
           <input id="songTitle_g2" class="song-title" type="text" placeholder="곡 2 제목" />
           <button class="ghost song-title-paste" type="button">넣기</button>
           <button class="ghost song-title-clear" type="button">삭제</button>
@@ -338,7 +348,7 @@
         </div>
         <!-- 곡 3 -->
         <div class="song-title-row" data-skey="g3">
-          <span class="part-label">곡3 제목</span>
+          <span class="part-label song-title-label"><span class="wide">곡3 제목<\/span><span class="narrow">곡3<br>제목<\/span><\/span>
           <input id="songTitle_g3" class="song-title" type="text" placeholder="곡 3 제목" />
           <button class="ghost song-title-paste" type="button">넣기</button>
           <button class="ghost song-title-clear" type="button">삭제</button>
@@ -352,7 +362,7 @@
         </div>
         <!-- 곡 4 -->
         <div class="song-title-row" data-skey="g4">
-          <span class="part-label">곡4 제목</span>
+          <span class="part-label song-title-label"><span class="wide">곡4 제목<\/span><span class="narrow">곡4<br>제목<\/span><\/span>
           <input id="songTitle_g4" class="song-title" type="text" placeholder="곡 4 제목" />
           <button class="ghost song-title-paste" type="button">넣기</button>
           <button class="ghost song-title-clear" type="button">삭제</button>
@@ -366,7 +376,7 @@
         </div>
         <!-- 곡 5 -->
         <div class="song-title-row" data-skey="g5">
-          <span class="part-label">곡5 제목</span>
+          <span class="part-label song-title-label"><span class="wide">곡5 제목<\/span><span class="narrow">곡5<br>제목<\/span><\/span>
           <input id="songTitle_g5" class="song-title" type="text" placeholder="곡 5 제목" />
           <button class="ghost song-title-paste" type="button">넣기</button>
           <button class="ghost song-title-clear" type="button">삭제</button>
