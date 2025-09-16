@@ -274,7 +274,7 @@
               <div class="time-label" id="timeLabel">0:00 / 0:00</div>
             </div>
             <div class="right">
-              <button class="secondary" id="autoToggle" type="button" title="자동 재생" data-compact="1">자동재생: 끔</button>
+              <button class="secondary" id="autoToggle" type="button" title="찬양 5곡이 모두 선택 / 해제가 됨" data-compact="1">찬양 5곡: 끔</button>
               <button class="secondary" id="ccToggle" type="button" title="자막">CC</button>
               <div style="position:relative">
                 <button class="secondary" id="qualityBtn" type="button" title="화질 설정" data-compact="1">⚙︎ 화질</button>
@@ -520,7 +520,7 @@
 
       function updateCCToggleUI(){ els.ccToggle&& (els.ccToggle.textContent=captionsOn?'CC 켜짐':'CC 꺼짐'); }
       on(els.ccToggle,'click',function(){ captionsOn=!captionsOn; updateCCToggleUI(); rebuildPlayerKeepTime(); }); updateCCToggleUI();
-      function updateAutoUI(){ if(els.autoToggle){ var on=autoPlayOn?'켬':'끔'; els.autoToggle.textContent=(window.innerWidth<=540)?('자동: '+on):('자동재생: '+on); } }
+      function updateAutoUI(){ if(els.autoToggle){ var on=autoPlayOn?'켬':'끔'; els.autoToggle.textContent=(window.innerWidth<=540)?('자동: '+on):('찬양 5곡: '+on); } }
       on(els.autoToggle,'click',function(){ autoPlayOn=!autoPlayOn; updateAutoUI(); }); updateAutoUI(); window.addEventListener('resize',updateAutoUI);
 
       on(els.copy,'click',function(){ if(!els.share) return; var txt=els.share.value||''; if(navigator.clipboard&&navigator.clipboard.writeText){ navigator.clipboard.writeText(txt).then(function(){ els.copy.textContent='복사됨!'; setTimeout(function(){ els.copy.textContent='주소 복사'; },1500); }).catch(function(){ try{ els.share.select(); document.execCommand('copy'); els.copy.textContent='복사됨!'; setTimeout(function(){ els.copy.textContent='주소 복사'; },1500);}catch(e){} }); } else { try{ els.share.select(); document.execCommand('copy'); }catch(e){} } });
@@ -557,6 +557,7 @@
   </script>
 </body>
 </html>
+
 
 
 
