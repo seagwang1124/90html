@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>성가대 유튜브 반복 플레이어</title>
+  <title>성가대 찬양 반복 연습 플레이어</title>
   <style>
     :root {
       --bg:#0f172a; --panel:#111827; --panel-2:#1f2937; --text:#e5e7eb; --muted:#9ca3af; --accent:#60a5fa; --accent-2:#93c5fd; --danger:#ef4444; --warn:#f59e0b; --ok:#22c55e; --chip-bg:#0b1220; --chip-brd:#334155;
@@ -28,6 +28,10 @@
     .parts{display:grid;gap:8px}
     .part-row{display:grid;grid-template-columns:auto 84px 1fr auto auto;gap:8px;align-items:center}
     .part-label{width:84px;text-align:center;background:#0b1220;border:1px solid #374151;border-radius:10px;padding:10px 6px}
+
+    /* 추가 곡 영역 */
+    .songs{display:grid;gap:8px}
+    .song-title-row{display:grid;grid-template-columns:auto 1fr auto auto;gap:8px;align-items:center}
 
     /* 플레이어 */
     .player-wrap{position:relative;background:#000}
@@ -96,7 +100,7 @@
       .time-label{min-width:72px;font-size:11px}
     }
 
-    /* 540px 이하: 제목/파트 줄을 "한 줄" 그리드로 강제, 버튼 세로글자 적용 */
+    /* 540px 이하: 제목/파트/추가곡 줄을 한 줄로, 버튼 세로글자 적용 */
     @media(max-width:540px){
       /* 제목 라벨: 좁은 화면에서 두 줄(찬양 / 제목)로 표기 */
       .title-label .wide{display:none}
@@ -116,6 +120,12 @@
       .part-row .pick,.part-row .paste,.part-row .remove{flex:0 0 36px;width:36px;min-width:36px;height:56px;padding:4px 2px;display:flex;align-items:center;justify-content:center;writing-mode:vertical-rl;text-orientation:mixed;letter-spacing:-1px}
       .part-row .part-label{width:56px}
       .part-row .link{min-width:0;width:100%}
+
+      /* 추가 곡: 제목 줄(곡X 제목)도 한 줄 레이아웃 */
+      .song-title-row{grid-template-columns:54px minmax(0,1fr) 36px 36px}
+      .song-title-row > *{min-width:0}
+      .song-title-row .part-label{width:54px}
+      .song-title-row .song-title-paste,.song-title-row .song-title-clear{writing-mode:vertical-rl;text-orientation:mixed;letter-spacing:-1px;height:56px;padding:4px 2px;width:36px;min-width:36px}
 
       /* 하단 컨트롤은 세로 스택 유지 */
       .overlay-ctrl .left{flex-direction:column;align-items:flex-start}
@@ -153,18 +163,23 @@
       /* 파트 라벨 & 버튼들(선택/넣기/삭제) */
       .part-row .part-label{padding:4px 2px;font-size:14px}
       .part-row .pick,.part-row .paste,.part-row .remove{height:36px;width:36px;padding:2px;font-size:14px;line-height:1}
+      /* 추가 곡 제목 버튼 */
+      .song-title-row .song-title-paste,.song-title-row .song-title-clear{height:36px;width:36px;padding:2px;font-size:14px;line-height:1}
     }
     /* 초협폭(≤420px): 폰트 크기는 유지하면서 버튼만 더 컴팩트 */
     @media(max-width:420px){
-      .title-row button,.part-row button{font-size:14px !important}
-      .title-row .part-label,.part-row .part-label{font-size:14px !important}
-      #titlePaste,#titleClear,.part-row .pick,.part-row .paste,.part-row .remove{height:34px;width:34px;padding:2px !important}
+      .title-row button,.part-row button,.song-title-row button{font-size:14px !important}
+      .title-row .part-label,.part-row .part-label,.song-title-row .part-label{font-size:14px !important}
+      #titlePaste,#titleClear,.part-row .pick,.part-row .paste,.part-row .remove,.song-title-row .song-title-paste,.song-title-row .song-title-clear{height:34px;width:34px;padding:2px !important}
     }
   </style>
 </head>
 <body>
   <div class="card">
-    <div class="section"><h1>성가대 유튜브 반복 플레이어</h1></div>
+    <div class="section">
+      <div class="help" style="margin-bottom:8px; font-size:14px">이 플레이어는 <b>성가 대원</b>이나 <b>찬양 대원</b>이 찬양곡을 <b>반복 재생</b>하며 연습하도록 만들어졌습니다. 링크를 채우고 공유 주소를 복사해 대원들에게 전달하세요.</div>
+      <h1>성가대 찬양 반복 연습 플레이어</h1>
+    </div>
 
     <div class="section">
       <div class="row wrap title-row" aria-label="찬양 제목 입력">
@@ -287,6 +302,84 @@
         <button id="copy" class="ghost" type="button">주소 복사</button>
       </div>
     </div>
+
+    <!-- 추가 찬양 5곡 -->
+    <div class="section">
+      <h2 style="margin:0 0 8px;font-size:18px">추가 찬양 5곡</h2>
+      <div class="help" style="margin-bottom:10px">찬양 곡 <b>제목</b>이나 해당 곡의 <b>유튜브 주소</b>를 <b>넣기</b>로 입력하고, <b>선택</b>을 누르면 <b>위 플레이어</b>에 연결됩니다.</div>
+      <div id="moreSongs" class="songs">
+        <!-- 곡 1 -->
+        <div class="song-title-row" data-skey="g1">
+          <span class="part-label">곡1 제목</span>
+          <input id="songTitle_g1" class="song-title" type="text" placeholder="곡 1 제목" />
+          <button class="ghost song-title-paste" type="button">넣기</button>
+          <button class="ghost song-title-clear" type="button">삭제</button>
+        </div>
+        <div class="part-row" data-key="g1">
+          <button class="secondary pick" type="button">선택</button>
+          <span class="part-label">곡 1</span>
+          <input class="link" type="url" placeholder="https://youtu.be/VIDEO_ID" />
+          <button class="ghost paste" type="button">넣기</button>
+          <button class="ghost remove" type="button">삭제</button>
+        </div>
+        <!-- 곡 2 -->
+        <div class="song-title-row" data-skey="g2">
+          <span class="part-label">곡2 제목</span>
+          <input id="songTitle_g2" class="song-title" type="text" placeholder="곡 2 제목" />
+          <button class="ghost song-title-paste" type="button">넣기</button>
+          <button class="ghost song-title-clear" type="button">삭제</button>
+        </div>
+        <div class="part-row" data-key="g2">
+          <button class="secondary pick" type="button">선택</button>
+          <span class="part-label">곡 2</span>
+          <input class="link" type="url" placeholder="https://youtu.be/VIDEO_ID" />
+          <button class="ghost paste" type="button">넣기</button>
+          <button class="ghost remove" type="button">삭제</button>
+        </div>
+        <!-- 곡 3 -->
+        <div class="song-title-row" data-skey="g3">
+          <span class="part-label">곡3 제목</span>
+          <input id="songTitle_g3" class="song-title" type="text" placeholder="곡 3 제목" />
+          <button class="ghost song-title-paste" type="button">넣기</button>
+          <button class="ghost song-title-clear" type="button">삭제</button>
+        </div>
+        <div class="part-row" data-key="g3">
+          <button class="secondary pick" type="button">선택</button>
+          <span class="part-label">곡 3</span>
+          <input class="link" type="url" placeholder="https://youtu.be/VIDEO_ID" />
+          <button class="ghost paste" type="button">넣기</button>
+          <button class="ghost remove" type="button">삭제</button>
+        </div>
+        <!-- 곡 4 -->
+        <div class="song-title-row" data-skey="g4">
+          <span class="part-label">곡4 제목</span>
+          <input id="songTitle_g4" class="song-title" type="text" placeholder="곡 4 제목" />
+          <button class="ghost song-title-paste" type="button">넣기</button>
+          <button class="ghost song-title-clear" type="button">삭제</button>
+        </div>
+        <div class="part-row" data-key="g4">
+          <button class="secondary pick" type="button">선택</button>
+          <span class="part-label">곡 4</span>
+          <input class="link" type="url" placeholder="https://youtu.be/VIDEO_ID" />
+          <button class="ghost paste" type="button">넣기</button>
+          <button class="ghost remove" type="button">삭제</button>
+        </div>
+        <!-- 곡 5 -->
+        <div class="song-title-row" data-skey="g5">
+          <span class="part-label">곡5 제목</span>
+          <input id="songTitle_g5" class="song-title" type="text" placeholder="곡 5 제목" />
+          <button class="ghost song-title-paste" type="button">넣기</button>
+          <button class="ghost song-title-clear" type="button">삭제</button>
+        </div>
+        <div class="part-row" data-key="g5">
+          <button class="secondary pick" type="button">선택</button>
+          <span class="part-label">곡 5</span>
+          <input class="link" type="url" placeholder="https://youtu.be/VIDEO_ID" />
+          <button class="ghost paste" type="button">넣기</button>
+          <button class="ghost remove" type="button">삭제</button>
+        </div>
+      </div>
+    </div>
   </div>
 
   <script src="https://www.youtube.com/iframe_api"></script>
@@ -294,7 +387,7 @@
     'use strict';
     var player=null,currentVideoId=null,seekTimer=null,userDragging=false,pendingVideoId=null;
     var aPoint=null,bPoint=null,abEnabled=false; var captionsOn=false,autoPlayOn=false;
-    var partKeys=['ch','sop','alt','ten','bas','sol']; var partEls={};
+    var partKeys=['ch','sop','alt','ten','bas','sol','g1','g2','g3','g4','g5']; var partEls={};
     var mobileHideTimer=null; var els={};
 
     function gid(id){return document.getElementById(id)}
@@ -373,11 +466,31 @@
 
     function loadVideo(videoId){ currentVideoId=videoId; if(!window.YT||!YT.Player){ pendingVideoId=videoId; updateShareLink(videoId); setCenterOverlay(true); setControlsOverlay(true); showError('유튜브 API 로딩 중입니다. 준비되면 자동으로 재생합니다.'); return; } createOrLoadPlayer(videoId,aPoint||0); updateShareLink(videoId); setCenterOverlay(true); setControlsOverlay(true); showError(''); }
 
+    function initSongTitleRows(){
+      var rows=document.querySelectorAll('.song-title-row');
+      rows.forEach(function(row){
+        var key=row.getAttribute('data-skey');
+        var input=row.querySelector('.song-title');
+        var paste=row.querySelector('.song-title-paste');
+        var clear=row.querySelector('.song-title-clear');
+        on(paste,'click',function(){
+          if(navigator.clipboard&&navigator.clipboard.readText){
+            navigator.clipboard.readText().then(function(txt){ if(input) input.value=txt; updateShareLink(currentVideoId||''); }).catch(function(){ var t=window.prompt('제목을 붙여 넣어 주세요:',''); if(typeof t==='string'){ input.value=t; updateShareLink(currentVideoId||''); }});
+          } else {
+            var t=window.prompt('제목을 붙여 넣어 주세요:',''); if(typeof t==='string'){ input.value=t; updateShareLink(currentVideoId||''); }
+          }
+        });
+        on(clear,'click',function(){ if(input){ input.value=''; updateShareLink(currentVideoId||''); }});
+        on(input,'change',function(){ updateShareLink(currentVideoId||''); });
+      });
+    }
+
     function initUI(){
       els={ titleInput:gid('titleInput'), titlePaste:gid('titlePaste'), titleClear:gid('titleClear'), err:gid('err'), overlay:gid('overlay'), overlayCtrl:gid('overlayCtrl'), overlayPlay:gid('overlayPlay'), tapCatcher:gid('tapCatcher'), seek:gid('seek'), back5:gid('back5'), fwd5:gid('fwd5'), playToggle:gid('playToggle'), timeLabel:gid('timeLabel'), toStart:gid('toStart'), muteToggle:gid('muteToggle'), vol:gid('vol'), volWrap:gid('volWrap'), fsToggle:gid('fsToggle'), qualityBtn:gid('qualityBtn'), qualityMenu:gid('qualityMenu'), ccToggle:gid('ccToggle'), autoToggle:gid('autoToggle'), share:gid('share'), copy:gid('copy'), openYT:gid('openYT'), cookieHelp:gid('cookieHelp'), playerWrap:gid('playerWrap'), setA:gid('setA'), setB:gid('setB'), toggleAB:gid('toggleAB'), clearAB:gid('clearAB'), tagA:gid('tagA'), tagB:gid('tagB') };
       collectPartRows();
+      initSongTitleRows();
 
-      for(var k in partEls){ (function(p){ on(p.pick,'click',function(){ var id=extractYouTubeId(p.input&&p.input.value); if(!id){ showError('유효한 유튜브 링크를 입력해 주세요.'); return; } loadVideo(id); }); on(p.paste,'click',function(){ if(navigator.clipboard&&navigator.clipboard.readText){ navigator.clipboard.readText().then(function(txt){ if(p.input) p.input.value=txt; updateShareLink(currentVideoId||''); }).catch(function(){ var txt=window.prompt('링크를 붙여 넣어 주세요:',''); if(txt){ p.input.value=txt; updateShareLink(currentVideoId||''); } }); } else { var t=window.prompt('링크를 붙여 넣어 주세요:',''); if(t){ p.input.value=t; updateShareLink(currentVideoId||''); } } }); on(p.remove,'click',function(){ if(p.input) p.input.value=''; updateShareLink(currentVideoId||''); }); on(p.input,'change',function(){ updateShareLink(currentVideoId||''); }); })(partEls[k]); }
+      for(var k in partEls){ (function(p){ on(p.pick,'click',function(){ var id=extractYouTubeId(p.input&&p.input.value); if(!id){ showError('유효한 유튜브 링크를 입력해 주세요.'); return; } var keyAttr=p.row.getAttribute('data-key')||''; if(/^g[1-5]$/.test(keyAttr)){ var st=gid('songTitle_'+keyAttr); if(st&&st.value){ els.titleInput.value=st.value; }} loadVideo(id); updateShareLink(id); }); on(p.paste,'click',function(){ if(navigator.clipboard&&navigator.clipboard.readText){ navigator.clipboard.readText().then(function(txt){ if(p.input) p.input.value=txt; updateShareLink(currentVideoId||''); }).catch(function(){ var txt=window.prompt('링크를 붙여 넣어 주세요:',''); if(txt){ p.input.value=txt; updateShareLink(currentVideoId||''); } }); } else { var t=window.prompt('링크를 붙여 넣어 주세요:',''); if(t){ p.input.value=t; updateShareLink(currentVideoId||''); } } }); on(p.remove,'click',function(){ if(p.input) p.input.value=''; updateShareLink(currentVideoId||''); }); on(p.input,'change',function(){ updateShareLink(currentVideoId||''); }); })(partEls[k]); }
 
       on(els.overlayPlay,'click',function(){ setCenterOverlay(false); player&&player.playVideo&&player.playVideo(); });
       on(els.playToggle,'click',function(){ try{ var YTS=(window.YT&&YT.PlayerState)||{}; var st=player&&player.getPlayerState?player.getPlayerState():null; if(st===YTS.PLAYING||st===YTS.BUFFERING){ player&&player.pauseVideo&&player.pauseVideo(); setCenterOverlay(true); setControlsOverlay(true); } else { setCenterOverlay(false); showControlsTemporarily(); player&&player.playVideo&&player.playVideo(); } }catch(e){} updatePlayToggleUI(); });
