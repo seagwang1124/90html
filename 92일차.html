@@ -143,6 +143,23 @@
       .title-label .wide{display:none !important}
       .title-label .narrow{display:inline-block !important; line-height:1.05; text-align:center}
     }
+      /* 모바일 세로(≤540px) 가독성 & 버튼 높이 튜닝: 글자 크기 유지/증가 + 버튼 높이 축소 */
+    @media(max-width:540px){
+      body{font-size:16px}
+      /* 제목 라벨(찬양 제목) 높이 과도 방지 */
+      .title-row .part-label{padding:4px 2px;font-size:14px}
+      /* 제목 줄 버튼(넣기/삭제): 글자는 유지, 높이만 감소 */
+      #titlePaste,#titleClear{height:36px;width:36px;padding:2px;font-size:14px;line-height:1}
+      /* 파트 라벨 & 버튼들(선택/넣기/삭제) */
+      .part-row .part-label{padding:4px 2px;font-size:14px}
+      .part-row .pick,.part-row .paste,.part-row .remove{height:36px;width:36px;padding:2px;font-size:14px;line-height:1}
+    }
+    /* 초협폭(≤420px): 폰트 크기는 유지하면서 버튼만 더 컴팩트 */
+    @media(max-width:420px){
+      .title-row button,.part-row button{font-size:14px !important}
+      .title-row .part-label,.part-row .part-label{font-size:14px !important}
+      #titlePaste,#titleClear,.part-row .pick,.part-row .paste,.part-row .remove{height:34px;width:34px;padding:2px !important}
+    }
   </style>
 </head>
 <body>
