@@ -94,7 +94,7 @@
 92. [통큰통독 - 92일차](https://seagwang1124.github.io/90html/92%EC%9D%BC%EC%B0%A8.html)
 93. [성가대 유튜브 찬양 반복 연습](https://seagwang1124.github.io/90html/%EC%84%B1%EA%B0%80%EB%8C%80%20%EC%9C%A0%ED%8A%9C%EB%B8%8C%20%EC%B0%AC%EC%96%91%20%EB%B0%98%EB%B3%B5%20%EC%97%B0%EC%8A%B5.HTML)
 94. [성가대 찬양단 유튜브 찬양 반복 연습](https://seagwang1124.github.io/90html/%EC%84%B1%EA%B0%80%EB%8C%80%20%EC%B0%AC%EC%96%91%EB%8B%A8%20%EC%9C%A0%ED%8A%9C%EB%B8%8C%20%EC%B0%AC%EC%96%91%20%EB%B0%98%EB%B3%B5%20%EC%97%B0%EC%8A%B5.HTML)
-95. [찬양팀 유튜브 찬양 반복 연습](https://seagwang1124.github.io/90html/찬양팀%20유튜브%20찬양%20반복%20연습.HTML)
+95. [찬양팀 유튜브 찬양 반복 연습](https://seagwang1124.github.io/90html/%EC%B0%AC%EC%96%91%ED%8C%80%20%EC%9C%A0%ED%8A%9C%EB%B8%8C%20%EC%B0%AC%EC%96%91%20%EB%B0%98%EB%B3%B5%20%EC%97%B0%EC%8A%B5.HTML)
 96. [성경일독 순서표-1조.pdf](https://seagwang1124.github.io/90html/%EC%84%B1%EA%B2%BD%EC%9D%BC%EB%8F%85%20%EC%88%9C%EC%84%9C%ED%91%9C-1%EC%A1%B0.pdf)
 97. [성경일독 순서표.xls](https://seagwang1124.github.io/90html/%EC%84%B1%EA%B2%BD%EC%9D%BC%EB%8F%85%20%EC%88%9C%EC%84%9C%ED%91%9C.xls)
 98. [성경일독 순서표.xlsx](https://seagwang1124.github.io/90html/%EC%84%B1%EA%B2%BD%EC%9D%BC%EB%8F%85%20%EC%88%9C%EC%84%9C%ED%91%9C.xlsx)
