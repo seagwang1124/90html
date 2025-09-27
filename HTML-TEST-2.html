@@ -186,6 +186,72 @@ body.modal-open{ overflow:hidden; }
     .toggle-buttons button:hover {
       background: #f0f0f0;
     }
+
+/* ============ 기도문 팝업 ============ */
+.prayer-toast {
+  position: fixed; right: 18px; bottom: 18px; z-index: 190;
+  width: 360px; max-width: calc(100vw - 24px);
+  background: #ffffff; border: 1px solid #e9e6d8;
+  border-radius: 14px; box-shadow: 0 10px 26px rgba(0,0,0,.18);
+  overflow: hidden; transform: translateY(20px); opacity: 0;
+  animation: prayerSlideUp .35s ease-out forwards;
+  font-family: inherit;
+}
+@keyframes prayerSlideUp { to { transform: translateY(0); opacity: 1; } }
+
+.prayer-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 12px; background: #fff6dd; border-bottom: 1px solid #f3e9c3;
+}
+.prayer-title {
+  display: flex; align-items: center; gap: 8px; font-weight: 700; color: #8a6d1e;
+}
+.prayer-badge {
+  background: #ffe9a8; color:#6b560f; font-size: 12px; padding: 2px 8px; border-radius: 999px;
+}
+
+.prayer-close {
+  border: 0; background: transparent; font-size: 20px; line-height: 1; color:#7c7c7c;
+  cursor: pointer; padding: 2px 6px; border-radius: 8px;
+}
+.prayer-close:hover { background: rgba(0,0,0,.05); }
+
+.prayer-body {
+  padding: 12px 14px 4px;
+  color:#333; line-height: 1.6;
+  max-height: 220px; overflow: auto;
+}
+.prayer-body h4 {
+  margin: 0 0 6px 0; font-size: 15px; color:#444;
+}
+.prayer-body p {
+  margin: 0; white-space: pre-wrap;
+}
+
+.prayer-footer {
+  display:flex; align-items:center; justify-content: space-between;
+  gap:8px; padding: 8px 12px 12px;
+}
+.prayer-actions { display:flex; gap:8px; }
+
+.prayer-btn {
+  border: 1px solid #e0dccc; background: #fff; color:#5a4d1b;
+  padding: 6px 10px; border-radius: 10px; cursor: pointer; font-size: 13px;
+}
+.prayer-btn:hover { background:#faf7ea; }
+
+.prayer-btn-primary {
+  background: #f9d86b; border-color:#e5c458; color:#3e320e; font-weight: 700;
+}
+.prayer-btn-primary:hover { filter: brightness(.98); }
+
+.prayer-checkbox { display:flex; align-items:center; gap:6px; color:#555; font-size: 13px; }
+
+@media (max-width: 480px) {
+  .prayer-toast { left: 12px; right: 12px; bottom: 12px; width: auto; }
+  .prayer-body { max-height: 40vh; }
+}
+    
   </style>
 </head>
 <body>
@@ -977,6 +1043,101 @@ body.modal-open{ overflow:hidden; }
   showProgressBtn.addEventListener('click', () => showOnly(progressContainer));
   showSpeedBtn.addEventListener('click', () => showOnly(speedControls));
   showVolumeBtn.addEventListener('click', () => showOnly(volumeControl));
+
+// ===== 기도문 팝업 제어 =====
+(function initPrayerToast(){
+  const toast = document.getElementById('prayerToast');
+  const closeBtn = document.getElementById('prayerCloseBtn');
+  const amenBtn = document.getElementById('prayerAmen');
+  const readBtn = document.getElementById('prayerReadAlone');
+  const muteToday = document.getElementById('prayerMuteToday');
+
+  // '오늘 하루 보지 않기'용 키 (날짜별로 저장)
+  const key = 'PRAYER_TOAST_MUTED_DATE';
+  const today = new Date(); today.setHours(0,0,0,0);
+  const todayKey = today.toISOString().slice(0,10); // YYYY-MM-DD
+
+  // 모달이 열려 있으면 뒤로 밀기
+  const isSiteModalOpen = () => document.body.classList.contains('modal-open');
+
+  function shouldShow(){
+    try {
+      const saved = localStorage.getItem(key);
+      return saved !== todayKey; // 저장된 날짜와 오늘이 다르면 보여줌
+    } catch { return true; }
+  }
+  function rememberMutedForToday(){
+    try { localStorage.setItem(key, todayKey); } catch {}
+  }
+
+  function openToast(){
+    if (!toast) return;
+    // 기존 모달과 겹치지 않도록
+    if (isSiteModalOpen()) return;
+    toast.style.display = 'block';
+    // 긴 텍스트 스크롤 접근성 포커스
+    document.getElementById('prayerBody')?.focus({ preventScroll:true });
+  }
+  function closeToast(options = { remember:false }){
+    if (!toast) return;
+    toast.style.display = 'none';
+    if (options.remember || muteToday?.checked) rememberMutedForToday();
+  }
+
+  // 처음 로드 시 자동 표시
+  if (shouldShow()) {
+    // 약간 지연 후 노출(부드러운 느낌)
+    setTimeout(openToast, 700);
+  }
+
+  // 버튼 동작
+  closeBtn?.addEventListener('click', () => closeToast({ remember:false }));
+  amenBtn?.addEventListener('click', () => closeToast({ remember:true }));   // 아멘 = 오늘은 안 보기
+  readBtn?.addEventListener('click', () => closeToast({ remember:false }));
+
+  // 페이지의 다른 "사이트 모달"이 열릴 때는 가려 주기
+  const observer = new MutationObserver(() => {
+    if (isSiteModalOpen()) toast.style.display = 'none';
+    else if (shouldShow()) toast.style.display = 'block';
+  });
+  observer.observe(document.body, { attributes:true, attributeFilter:['class'] });
+
+  // 사용자가 텍스트 선택(📖 버튼 노출) → 팝업 자연스럽게 사라지게 하려면, 이미 있는 handleSelectionChange 끝에서:
+  // if (toast) toast.style.display = 'none';
+})();
+    
   </script>
+
+  <!-- 기도문 팝업 -->
+<div id="prayerToast" class="prayer-toast" role="dialog" aria-modal="false" aria-label="성경 읽기 전 기도문" style="display:none;">
+  <div class="prayer-header">
+    <div class="prayer-title">
+      <span>🙏</span>
+      <span>기도하고 읽기</span>
+      <span class="prayer-badge">90일 성경통톡</span>
+    </div>
+    <button class="prayer-close" id="prayerCloseBtn" aria-label="기도문 닫기">×</button>
+  </div>
+
+  <div class="prayer-body" id="prayerBody" tabindex="0">
+    <h4>— 🧒 성경 읽기 전 1분 기도 —</h4>
+    <p>*** 하나님나라 관점으로 읽는 90일 통큰통독 ***
+-- 🧒 성경 읽기전 1분 기도 --
+내 삶의 주인이 되시는 하나님, 성경을 읽게 하시니 감사합니다. 이 성경이 하나님의 말씀임을 믿습니다. 특별히 나에게 주시는 하나님의 말씀임을 믿습니다. 주시는 말씀을 내 관점으로 읽게 하지 마시고 하나님의 관점으로 읽어 하나님의 마음을 알게 하시고, 그 마음을 받아 나의 중심성을 하나님의 뜻 앞에 내려놓게 하시고 순종하게 하시어 변화되게 하옵소서, 말씀을 삶으로 이루는 성경 읽기가 되게 역사하여 주시옵소서. 예수님의 이름으로 기도합니다. 아멘.</p>
+  </div>
+
+  <div class="prayer-footer">
+    <label class="prayer-checkbox">
+      <input type="checkbox" id="prayerMuteToday">
+      <span>오늘 하루 보지 않기</span>
+    </label>
+    <div class="prayer-actions">
+      <button class="prayer-btn" id="prayerReadAlone">혼자 읽겠습니다</button>
+      <button class="prayer-btn prayer-btn-primary" id="prayerAmen">아멘</button>
+    </div>
+  </div>
+</div>
+  
 </body>
 </html>
+
