@@ -338,16 +338,12 @@
     </div>
 
     <div class="prayer-footer">
-      <label class="prayer-checkbox">
-        <input type="checkbox" id="prayerMuteToday">
-        <span>오늘 하루 보지 않기</span>
-      </label>
-      <div class="prayer-actions">
-        <button class="prayer-btn" id="prayerReadAlone">기도 드렸습니다</button>
-        <button class="prayer-btn prayer-btn-primary" id="prayerAmen">확인</button>
-      </div>
-    </div>
+  <div></div> <!-- 좌측 자리 균형용(선택) -->
+  <div class="prayer-actions">
+    <button class="prayer-btn" id="prayerReadAlone">혼자 읽겠습니다</button>
+    <button class="prayer-btn prayer-btn-primary" id="prayerAmen">아멘</button>
   </div>
+</div>
 
   <script>
     // ------------------------------
@@ -877,49 +873,46 @@
     showVolumeBtn.addEventListener('click', () => showOnly(volumeControl));
 
     // ===== 기도문 팝업 제어 =====
-    function initPrayerToast(){
-      const toast = document.getElementById('prayerToast');
-      const closeBtn = document.getElementById('prayerCloseBtn');
-      const amenBtn = document.getElementById('prayerAmen');
-      const readBtn = document.getElementById('prayerReadAlone');
-      const muteToday = document.getElementById('prayerMuteToday');
+  function initPrayerToast(){
+  const toast = document.getElementById('prayerToast');
+  const closeBtn = document.getElementById('prayerCloseBtn');
+  const amenBtn = document.getElementById('prayerAmen');
+  const readBtn = document.getElementById('prayerReadAlone');
 
-      const key = 'PRAYER_TOAST_MUTED_DATE';
-      const today = new Date(); today.setHours(0,0,0,0);
-      const todayKey = today.toISOString().slice(0,10); // YYYY-MM-DD
+  const isSiteModalOpen = () => document.body.classList.contains('modal-open');
 
-      const isSiteModalOpen = () => document.body.classList.contains('modal-open');
+  function openToast(){
+    if (!toast) return;
+    if (isSiteModalOpen()) return;            // 사이트 모달이 열려 있으면 숨김
+    toast.style.display = 'block';
+    document.getElementById('prayerBody')?.focus({ preventScroll:true });
+  }
+  function closeToast(){
+    if (!toast) return;
+    toast.style.display = 'none';             // 저장/기억 없음 → 다음 방문 시 다시 표시
+  }
 
-      function shouldShow(){
-        try { return localStorage.getItem(key) !== todayKey; } catch { return true; }
-      }
-      function rememberMutedForToday(){ try { localStorage.setItem(key, todayKey); } catch {} }
+  // 페이지 로드 시 항상 표시 (약간 지연)
+  setTimeout(openToast, 700);
 
-      function openToast(){
-        if (!toast) return;
-        if (isSiteModalOpen()) return;
-        toast.style.display = 'block';
-        document.getElementById('prayerBody')?.focus({ preventScroll:true });
-      }
-      function closeToast(options = { remember:false }){
-        if (!toast) return;
-        toast.style.display = 'none';
-        if (options.remember || muteToday?.checked) rememberMutedForToday();
-      }
+  // 버튼 동작: 전부 단순 닫기
+  closeBtn?.addEventListener('click', () => closeToast());
+  amenBtn?.addEventListener('click', () => closeToast());
+  readBtn?.addEventListener('click', () => closeToast());
 
-      if (shouldShow()) setTimeout(openToast, 700);
-
-      closeBtn?.addEventListener('click', () => closeToast({ remember:false }));
-      amenBtn?.addEventListener('click', () => closeToast({ remember:true }));   // 아멘 = 오늘은 안 보기
-      readBtn?.addEventListener('click', () => closeToast({ remember:false }));
-
-      const observer = new MutationObserver(() => {
-        if (isSiteModalOpen()) toast.style.display = 'none';
-        else if (shouldShow() && toast.style.display !== 'block') toast.style.display = 'block';
-      });
-      observer.observe(document.body, { attributes:true, attributeFilter:['class'] });
+  // 사이트 모달 열림/닫힘에 따라 토스트 표시/숨김
+  const observer = new MutationObserver(() => {
+    if (isSiteModalOpen()) {
+      toast.style.display = 'none';
+    } else {
+      // 모달이 닫히면 다시 보여줌(사용자가 이미 닫았더라도 새로고침/재방문 시 다시 뜨게 하려면 유지)
+      if (toast.style.display !== 'block') toast.style.display = 'block';
     }
+  });
+  observer.observe(document.body, { attributes:true, attributeFilter:['class'] });
+}
   </script>
 </body>
 </html>
+
 
