@@ -146,11 +146,23 @@
       .search-cell{ width:55%; } .audio-cell{ width:45%; } .search-cell input[type="text"]{ width:60%; } #progress-bar{ width:160px; }
     }
     @media (max-width:600px){
-      .search-cell input[type="text"]{ width:68%; font-size:11pt; } .time-display{ font-size:13px; } #progress-bar{ width:140px; }
-      .explanation-sub-button{ font-size:16px; padding:6px 8px; }
-      .explanation-icon-button{ width:46px; height:46px; font-size:34px; }
-      .summary-btn{ padding:5px 8px; font-size:13px; }
-    }
+  /* 좌/우 칸 비율+오른쪽 패딩 축소 */
+  .search-cell{ width:58%; }
+  .audio-cell{ width:42%; padding-right:8px; }
+
+  /* 검색창을 뷰포트 기준으로 줄이기 */
+  .search-cell input[type="text"]{
+    width:45vw;           /* ← 핵심: 퍼센트 대신 뷰포트 기준 */
+    max-width:45vw;
+    font-size:11pt;
+  }
+
+  .time-display{ font-size:13px; }
+  #progress-bar{ width:140px; }
+  .explanation-sub-button{ font-size:16px; padding:6px 8px; }
+  .explanation-icon-button{ width:46px; height:46px; font-size:34px; }
+  .summary-btn{ padding:5px 8px; font-size:13px; }
+}
 
     .toggle-buttons {
       display:flex; justify-content:center; gap:8px; margin-bottom:6px;
@@ -1282,5 +1294,6 @@
   </script>
 </body>
 </html>
+
 
 
