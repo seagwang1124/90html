@@ -337,7 +337,15 @@
 
     <div class="prayer-body" id="prayerBody" tabindex="0">
    <style>
-  .cross-red { color: red; font-weight: 900; } /* 700~900 사이로 조절 */
+  .cross-red {
+    color: red;
+    font-weight: 900;
+    -webkit-text-stroke: 0.6px currentColor; /* 윤곽선으로 두께 보강 */
+    text-shadow:
+      0 0 0 currentColor,         /* 기본 채움 */
+      0.02em 0 currentColor, -0.02em 0 currentColor,
+      0 0.02em currentColor,  0 -0.02em currentColor; /* 가장자리 두껍게 */
+  }
 </style>
 
 <h4>
@@ -926,6 +934,7 @@
   </script>
 </body>
 </html>
+
 
 
 
