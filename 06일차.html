@@ -141,16 +141,40 @@
     /* 선택 관련 (iOS) */
     #bible-text{ -webkit-user-select:text; user-select:text; -webkit-touch-callout:none; }
 
-    /* 반응형 */
+   /* 반응형 */
     @media (max-width:800px){
       .search-cell{ width:55%; } .audio-cell{ width:45%; } .search-cell input[type="text"]{ width:60%; } #progress-bar{ width:160px; }
     }
     @media (max-width:600px){
-      .search-cell input[type="text"]{ width:68%; font-size:11pt; } .time-display{ font-size:13px; } #progress-bar{ width:140px; }
-      .explanation-sub-button{ font-size:16px; padding:6px 8px; }
-      .explanation-icon-button{ width:46px; height:46px; font-size:34px; }
-      .summary-btn{ padding:5px 8px; font-size:13px; }
-    }
+  /* 좌/우 칸 비율 + 오른쪽 패딩 확보 */
+  .search-cell{ width:30%; }
+  .audio-cell{ width:34%; padding-right:12px; } /* 8px → 14px */
+
+  /* 검색창을 뷰포트 기준으로 더 줄이기 */
+  .search-cell input[type="text"]{
+    width:32vw;          /* 45vw → 35vw */
+    max-width:32vw;
+    font-size:12pt;
+  }
+  /* 검색 버튼들도 살짝 컴팩트 */
+  .search-cell input[type="submit"],
+  .search-cell input[type="reset"]{
+    padding:4px 6px;
+    font-size:10pt;
+  }
+
+  /* 오디오 컨트롤이 덜 퍼지도록 */
+  .player-controls{ gap:6px; }           /* 10px → 6px */
+  .time-display{
+    font-size:14px;                       /* 16px → 14px */
+    min-width:56px;                       /* 44px → 56px 로 고정폭 확보 */
+  }
+
+  #progress-bar{ width:140px; }
+  .explanation-sub-button{ font-size:16px; padding:6px 8px; }
+  .explanation-icon-button{ width:46px; height:46px; font-size:34px; }
+  .summary-btn{ padding:5px 8px; font-size:13px; }
+}
 
     .toggle-buttons {
       display:flex; justify-content:center; gap:8px; margin-bottom:6px;
@@ -216,7 +240,7 @@
       <td class="search-cell">
         <form name="f1" action="">
           <input type="reset" name="b2" value="X">
-          <input type="text" placeholder="검색어를 입력하세요" name="t1" value="">
+          <input type="text" placeholder="검색어 입력" name="t1" value="">
           <input type="submit" name="b1" value="검색">
           <div id="search-count-container">
             <span id="search-count"></span>
@@ -306,6 +330,7 @@
   <a class="day-btn" href="https://seagwang1124.github.io/90html/05%EC%9D%BC%EC%B0%A8.html" aria-label="통독 05일차로 이동">≪</a>
   <span class="day-title">통독 6일차</span>
   <a class="day-btn" href="https://seagwang1124.github.io/90html/07%EC%9D%BC%EC%B0%A8.html" aria-label="통독 07일차로 이동">≫</a>
+  <a class="day-btn" href="https://seagwang1124.github.io/90html" aria-label="통독 목록으로 이동">통독 목록</a>
 </nav>
 <br>범위: 출애굽기 13장- 24장</br>
 <br>&nbsp;</br>
@@ -1322,5 +1347,6 @@
   </script>
 </body>
 </html>
+
 
 
