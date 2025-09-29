@@ -148,13 +148,13 @@
     @media (max-width:600px){
   /* 좌/우 칸 비율 + 오른쪽 패딩 확보 */
   .search-cell{ width:30%; }
-  .audio-cell{ width:42%; padding-right:20px; } /* 8px → 14px */
+  .audio-cell{ width:34%; padding-right:12px; } /* 8px → 14px */
 
   /* 검색창을 뷰포트 기준으로 더 줄이기 */
   .search-cell input[type="text"]{
-    width:40vw;          /* 45vw → 40vw */
-    max-width:40vw;
-    font-size:11pt;
+    width:32vw;          /* 45vw → 35vw */
+    max-width:32vw;
+    font-size:12pt;
   }
   /* 검색 버튼들도 살짝 컴팩트 */
   .search-cell input[type="submit"],
@@ -240,7 +240,7 @@
       <td class="search-cell">
         <form name="f1" action="">
           <input type="reset" name="b2" value="X">
-          <input type="text" placeholder="검색어를 입력하세요" name="t1" value="">
+          <input type="text" placeholder="검색어 입력" name="t1" value="">
           <input type="submit" name="b1" value="검색">
           <div id="search-count-container">
             <span id="search-count"></span>
@@ -1307,6 +1307,7 @@
   </script>
 </body>
 </html>
+
 
 
 
