@@ -1060,21 +1060,32 @@ highlightCenterLines();
 }
 
   // ====== MP3 폴백 로더 (DAY 기반) ======
-  const DAY = 78;
-  const AUDIO_FILE_NAME = `읽기 ${DAY}.mp3`;
-  const REMOTE_URL = `https://vod47.anyline.co.kr/vod_ezra/${encodeURIComponent(AUDIO_FILE_NAME)}`;
+  const DAY = 78; // 1~90: 앞에 0 없이 '숫자'로만 쓰세요
+  const DAY2 = String(DAY).padStart(2, '0'); // "01", "02", ..., "10"
+  
+  // 표준 파일명(웹사이트와 동일)
+  const AUDIO_FILE_NAME_PAD = `읽기 ${DAY2}.mp3`; // "읽기 01.mp3"
+  // (선택) 로컬에 한 자리로 저장했을 수도 있으니 대비
+  const AUDIO_FILE_NAME_RAW = `읽기 ${DAY}.mp3`;  // "읽기 1.mp3"
 
+  // 원격 URL(공백/한글 인코딩)
+  const REMOTE_URL = `https://vod47.anyline.co.kr/vod_ezra/${encodeURIComponent(AUDIO_FILE_NAME_PAD)}`;
+
+  // 세 군데 경로 + (선택) 로컬 한자리 이름까지 후보에 포함
   const SOURCE_CANDIDATES = [
-    { src: REMOTE_URL,               type: "audio/mpeg" }, // 원격
-    { src: AUDIO_FILE_NAME,          type: "audio/mpeg" }, // 같은 폴더
-    { src: "mp3/" + AUDIO_FILE_NAME, type: "audio/mpeg" }, // mp3 하위 폴더
+    { src: REMOTE_URL,                 type: "audio/mpeg" }, // 원격(두 자리만 존재)
+    { src: AUDIO_FILE_NAME_PAD,        type: "audio/mpeg" }, // 같은 폴더(두 자리)
+    { src: "mp3/" + AUDIO_FILE_NAME_PAD, type: "audio/mpeg" }, // mp3 폴더(두 자리)
+    // ↓ 옵션: 로컬에 한 자리 파일이 있을 수도 있을 때만 유용
+    { src: AUDIO_FILE_NAME_RAW,        type: "audio/mpeg" }, // 같은 폴더(한 자리)
+    { src: "mp3/" + AUDIO_FILE_NAME_RAW, type: "audio/mpeg" }, // mp3 폴더(한 자리)
   ];
 
   const audioEl = document.getElementById("audio-file");
 
-  function setSourcesInOrder(orderIdxs){
+  function setSourcesInOrder(indexes){
     while (audioEl.firstChild) audioEl.removeChild(audioEl.firstChild);
-    orderIdxs.forEach(i => {
+    indexes.forEach(i => {
       const s = SOURCE_CANDIDATES[i];
       const el = document.createElement("source");
       el.src = s.src;
@@ -1084,13 +1095,14 @@ highlightCenterLines();
     audioEl.load();
   }
 
-  // 온라인/오프라인에 따라 우선순위
-  let baseOrder = navigator.onLine ? [0,1,2] : [1,2,0];
+  // 온라인/오프라인 우선순위 (원격 → 로컬) / (로컬 → 원격)
+  // 한 자리 후보까지 포함하므로 인덱스 순서만 바꿔줍니다.
+  const ONLINE_ORDER  = [0,1,2,3,4];
+  const OFFLINE_ORDER = [1,2,3,4,0];
+  let baseOrder = navigator.onLine ? ONLINE_ORDER : OFFLINE_ORDER;
 
-  // 최초 주입
   setSourcesInOrder(baseOrder);
 
-  // 실패 시 다음 후보로
   let tryIndex = 0;
   function tryNextSource(){
     tryIndex++;
@@ -1098,31 +1110,19 @@ highlightCenterLines();
       setSourcesInOrder(baseOrder.slice(tryIndex));
     } else {
       console.warn("모든 MP3 소스를 불러오지 못했습니다.");
-      showAudioFailNotice();
+      showAudioFailNotice?.();
     }
   }
   audioEl.addEventListener("error", tryNextSource, true);
 
-  // 성공 시 현재 소스로 고정
-  function lockInWorkingSource() {
-    tryIndex = baseOrder.length; // 더 이상 폴백 시도 안 함
-  }
-  audioEl.addEventListener("canplay",     lockInWorkingSource, { once: true });
-  audioEl.addEventListener("loadeddata",  lockInWorkingSource, { once: true });
+  function lockInWorkingSource(){ tryIndex = baseOrder.length; }
+  audioEl.addEventListener("canplay",    lockInWorkingSource, { once:true });
+  audioEl.addEventListener("loadeddata", lockInWorkingSource, { once:true });
 
-  // 네트워크 상태 변화 시 재시도
-  window.addEventListener("online",  () => { tryIndex = 0; baseOrder = [0,1,2]; setSourcesInOrder(baseOrder); });
-  window.addEventListener("offline", () => { tryIndex = 0; baseOrder = [1,2,0]; setSourcesInOrder(baseOrder); });
-
-  // 실패 안내(간단 예시)
-  function showAudioFailNotice() {
-    if (typeof remainingTimeEl !== "undefined") {
-      remainingTimeEl.textContent = "오디오를 불러오지 못했습니다";
-    }
-    if (typeof playBtn !== "undefined")  playBtn.disabled  = true;
-    if (typeof pauseBtn !== "undefined") pauseBtn.disabled = true;
-  }
+  window.addEventListener("online",  () => { tryIndex = 0; baseOrder = ONLINE_ORDER;  setSourcesInOrder(baseOrder); });
+  window.addEventListener("offline", () => { tryIndex = 0; baseOrder = OFFLINE_ORDER; setSourcesInOrder(baseOrder); });
 
   </script>
 </body>
 </html> 
+
