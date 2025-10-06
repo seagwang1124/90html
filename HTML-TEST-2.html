@@ -251,10 +251,10 @@
 
       <td class="audio-cell">
         <div id="custom-audio-player" role="region" aria-label="오디오 플레이어">
-          <audio id="audio-file" preload="auto" playsinline>
-            <source src="https://vod47.anyline.co.kr/vod_ezra/%EC%9D%BD%EA%B8%B0%2078.mp3" type="audio/mpeg">
-            브라우저가 오디오 요소를 지원하지 않습니다.
-          </audio>
+    <!-- ✔ 오디오: 소스는 JS에서 주입해 우선순위를 동적으로 제어 -->
+    <audio id="audio-file" preload="metadata" playsinline>
+      브라우저가 오디오 요소를 지원하지 않습니다.
+    </audio>
 
           <div class="player-controls">
             <strong><span style="font-size:16px; background-color:#fcfcfc;" id="current-time" class="time-display">0:00</span></strong>
@@ -1058,12 +1058,71 @@ highlightCenterLines();
   });
   observer.observe(document.body, { attributes:true, attributeFilter:['class'] });
 }
+
+  // ====== MP3 폴백 로더 (DAY 기반) ======
+  const DAY = 78;
+  const AUDIO_FILE_NAME = `읽기 ${DAY}.mp3`;
+  const REMOTE_URL = `https://vod47.anyline.co.kr/vod_ezra/${encodeURIComponent(AUDIO_FILE_NAME)}`;
+
+  const SOURCE_CANDIDATES = [
+    { src: REMOTE_URL,               type: "audio/mpeg" }, // 원격
+    { src: AUDIO_FILE_NAME,          type: "audio/mpeg" }, // 같은 폴더
+    { src: "mp3/" + AUDIO_FILE_NAME, type: "audio/mpeg" }, // mp3 하위 폴더
+  ];
+
+  const audioEl = document.getElementById("audio-file");
+
+  function setSourcesInOrder(orderIdxs){
+    while (audioEl.firstChild) audioEl.removeChild(audioEl.firstChild);
+    orderIdxs.forEach(i => {
+      const s = SOURCE_CANDIDATES[i];
+      const el = document.createElement("source");
+      el.src = s.src;
+      el.type = s.type;
+      audioEl.appendChild(el);
+    });
+    audioEl.load();
+  }
+
+  // 온라인/오프라인에 따라 우선순위
+  let baseOrder = navigator.onLine ? [0,1,2] : [1,2,0];
+
+  // 최초 주입
+  setSourcesInOrder(baseOrder);
+
+  // 실패 시 다음 후보로
+  let tryIndex = 0;
+  function tryNextSource(){
+    tryIndex++;
+    if (tryIndex < baseOrder.length) {
+      setSourcesInOrder(baseOrder.slice(tryIndex));
+    } else {
+      console.warn("모든 MP3 소스를 불러오지 못했습니다.");
+      showAudioFailNotice();
+    }
+  }
+  audioEl.addEventListener("error", tryNextSource, true);
+
+  // 성공 시 현재 소스로 고정
+  function lockInWorkingSource() {
+    tryIndex = baseOrder.length; // 더 이상 폴백 시도 안 함
+  }
+  audioEl.addEventListener("canplay",     lockInWorkingSource, { once: true });
+  audioEl.addEventListener("loadeddata",  lockInWorkingSource, { once: true });
+
+  // 네트워크 상태 변화 시 재시도
+  window.addEventListener("online",  () => { tryIndex = 0; baseOrder = [0,1,2]; setSourcesInOrder(baseOrder); });
+  window.addEventListener("offline", () => { tryIndex = 0; baseOrder = [1,2,0]; setSourcesInOrder(baseOrder); });
+
+  // 실패 안내(간단 예시)
+  function showAudioFailNotice() {
+    if (typeof remainingTimeEl !== "undefined") {
+      remainingTimeEl.textContent = "오디오를 불러오지 못했습니다";
+    }
+    if (typeof playBtn !== "undefined")  playBtn.disabled  = true;
+    if (typeof pauseBtn !== "undefined") pauseBtn.disabled = true;
+  }
+
   </script>
 </body>
-</html>
-
-
-
-
-
-
+</html> 
