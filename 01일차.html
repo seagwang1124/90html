@@ -251,10 +251,10 @@
 
       <td class="audio-cell">
         <div id="custom-audio-player" role="region" aria-label="오디오 플레이어">
-<!-- ✔ 오디오: 소스는 JS에서 주입해 우선순위를 동적으로 제어 -->
-<audio id="audio-file" preload="metadata" playsinline>
-브라우저가 오디오 요소를 지원하지 않습니다.
-</audio>
+    <!-- ✔ 오디오: 소스는 JS에서 주입해 우선순위를 동적으로 제어 -->
+    <audio id="audio-file" preload="metadata" playsinline>
+      브라우저가 오디오 요소를 지원하지 않습니다.
+    </audio>
 
           <div class="player-controls">
             <strong><span style="font-size:16px; background-color:#fcfcfc;" id="current-time" class="time-display">0:00</span></strong>
@@ -1334,7 +1334,7 @@ highlightCenterLines();
   observer.observe(document.body, { attributes:true, attributeFilter:['class'] });
 }
 
-// ====== MP3 폴백 로더 (DAY 기반) ======
+  // ====== MP3 폴백 로더 (DAY 기반) ======
   const DAY = 01;
   const AUDIO_FILE_NAME = `읽기 ${DAY}.mp3`;
   const REMOTE_URL = `https://vod47.anyline.co.kr/vod_ezra/${encodeURIComponent(AUDIO_FILE_NAME)}`;
@@ -1401,4 +1401,5 @@ highlightCenterLines();
   </script>
 </body>
 </html>
+
 
