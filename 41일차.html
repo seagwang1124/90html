@@ -846,24 +846,52 @@
       }).join("");
       const lineElements = document.querySelectorAll("#bible-text .line");
 
-      // 스크롤 시 중앙 두 줄 강조
-      function highlightCenterLines() {
-        const viewportCenter = window.innerHeight / 2 + window.scrollY;
-        let closestIndex = -1, minDistance = Infinity;
-        lineElements.forEach((line, i) => {
-          const rect = line.getBoundingClientRect();
-          const lineCenter = rect.top + window.scrollY + rect.height / 2;
-          const distance = Math.abs(lineCenter - viewportCenter);
-          if (distance < minDistance) { minDistance = distance; closestIndex = i; }
-        });
-        lineElements.forEach(line => line.classList.remove("highlight"));
-        if (closestIndex >= 0) {
-          lineElements[closestIndex].classList.add("highlight");
-          if (closestIndex + 1 < lineElements.length) lineElements[closestIndex + 1].classList.add("highlight");
-        }
-      }
-      window.addEventListener("scroll", highlightCenterLines);
-      highlightCenterLines();
+            // 스크롤 시 중앙 강조 줄 수(2줄/3줄) 반응형으로 처리
+function highlightCenterLines() {
+  const viewportCenter = window.innerHeight / 2 + window.scrollY;
+  const linesToHighlight = window.innerWidth >= 768 ? 3 : 2;
+
+  let closestIndex = -1, minDistance = Infinity;
+  lineElements.forEach((line, i) => {
+    const rect = line.getBoundingClientRect();
+    const lineCenter = rect.top + window.scrollY + rect.height / 2;
+    const distance = Math.abs(lineCenter - viewportCenter);
+    if (distance < minDistance) { minDistance = distance; closestIndex = i; }
+  });
+
+  lineElements.forEach(line => line.classList.remove("highlight"));
+  if (closestIndex < 0) return;
+
+  const indices = linesToHighlight === 3
+    ? [closestIndex - 1, closestIndex, closestIndex + 1]
+    : [closestIndex, closestIndex + 1];
+
+  indices.forEach(idx => {
+    if (idx >= 0 && idx < lineElements.length) {
+      lineElements[idx].classList.add("highlight");
+    }
+  });
+}
+
+// rAF 스로틀
+let ticking = false;
+function onScrollOrResize() {
+  if (ticking) return;
+  ticking = true;
+  requestAnimationFrame(() => {
+    highlightCenterLines();
+    ticking = false;
+  });
+}
+
+// 이벤트 등록
+window.addEventListener("scroll", onScrollOrResize, { passive: true });
+window.addEventListener("resize", onScrollOrResize);
+// (옵션) 기기 회전 이벤트도 묶어서 처리하면 좋아요
+window.addEventListener("orientationchange", onScrollOrResize);
+
+// 최초 1회 적용
+highlightCenterLines();
 
       // PC에서 2줄씩 부드럽게 스크롤
       window.addEventListener("wheel", function(e) {
@@ -1340,4 +1368,5 @@
   </script>
 </body>
 </html>
+
 
