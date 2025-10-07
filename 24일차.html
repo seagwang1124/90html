@@ -250,11 +250,11 @@
       </td>
 
       <td class="audio-cell">
-        <div id="custom-audio-player" role="region" aria-label="오디오 플레이어">
-          <audio id="audio-file" preload="auto" playsinline>
-            <source src="https://vod47.anyline.co.kr/vod_ezra/%EC%9D%BD%EA%B8%B0%2024.mp3" type="audio/mpeg">
-            브라우저가 오디오 요소를 지원하지 않습니다.
-          </audio>
+       <div id="custom-audio-player" role="region" aria-label="오디오 플레이어">
+    <!-- ✔ 오디오: 소스는 JS에서 주입해 우선순위를 동적으로 제어 -->
+    <audio id="audio-file" preload="metadata" playsinline>
+      브라우저가 오디오 요소를 지원하지 않습니다.
+    </audio>
 
           <div class="player-controls">
             <strong><span style="font-size:16px; background-color:#fcfcfc;" id="current-time" class="time-display">0:00</span></strong>
@@ -1385,10 +1385,72 @@ highlightCenterLines();
   });
   observer.observe(document.body, { attributes:true, attributeFilter:['class'] });
 }
+
+// ====== MP3 폴백 로더 (DAY 기반) ======
+  const DAY = 24; // 1~90: 앞에 0 없이 '숫자'로만 쓰세요
+  const DAY2 = String(DAY).padStart(2, '0'); // "01", "02", ..., "10"
+  
+  // 표준 파일명(웹사이트와 동일)
+  const AUDIO_FILE_NAME_PAD = `읽기 ${DAY2}.mp3`; // "읽기 01.mp3"
+  // (선택) 로컬에 한 자리로 저장했을 수도 있으니 대비
+  const AUDIO_FILE_NAME_RAW = `읽기 ${DAY}.mp3`;  // "읽기 1.mp3"
+
+  // 원격 URL(공백/한글 인코딩)
+  const REMOTE_URL = `https://vod47.anyline.co.kr/vod_ezra/${encodeURIComponent(AUDIO_FILE_NAME_PAD)}`;
+
+  // 세 군데 경로 + (선택) 로컬 한자리 이름까지 후보에 포함
+  const SOURCE_CANDIDATES = [
+    { src: REMOTE_URL,                 type: "audio/mpeg" }, // 원격(두 자리만 존재)
+    { src: AUDIO_FILE_NAME_PAD,        type: "audio/mpeg" }, // 같은 폴더(두 자리)
+    { src: "mp3/" + AUDIO_FILE_NAME_PAD, type: "audio/mpeg" }, // mp3 폴더(두 자리)
+    // ↓ 옵션: 로컬에 한 자리 파일이 있을 수도 있을 때만 유용
+    { src: AUDIO_FILE_NAME_RAW,        type: "audio/mpeg" }, // 같은 폴더(한 자리)
+    { src: "mp3/" + AUDIO_FILE_NAME_RAW, type: "audio/mpeg" }, // mp3 폴더(한 자리)
+  ];
+
+  const audioEl = document.getElementById("audio-file");
+
+  function setSourcesInOrder(indexes){
+    while (audioEl.firstChild) audioEl.removeChild(audioEl.firstChild);
+    indexes.forEach(i => {
+      const s = SOURCE_CANDIDATES[i];
+      const el = document.createElement("source");
+      el.src = s.src;
+      el.type = s.type;
+      audioEl.appendChild(el);
+    });
+    audioEl.load();
+  }
+
+  // 온라인/오프라인 우선순위 (원격 → 로컬) / (로컬 → 원격)
+  // 한 자리 후보까지 포함하므로 인덱스 순서만 바꿔줍니다.
+  const ONLINE_ORDER  = [0,1,2,3,4];
+  const OFFLINE_ORDER = [1,2,3,4,0];
+  let baseOrder = navigator.onLine ? ONLINE_ORDER : OFFLINE_ORDER;
+
+  setSourcesInOrder(baseOrder);
+
+  let tryIndex = 0;
+  function tryNextSource(){
+    tryIndex++;
+    if (tryIndex < baseOrder.length) {
+      setSourcesInOrder(baseOrder.slice(tryIndex));
+    } else {
+      console.warn("모든 MP3 소스를 불러오지 못했습니다.");
+      showAudioFailNotice?.();
+    }
+  }
+  audioEl.addEventListener("error", tryNextSource, true);
+
+  function lockInWorkingSource(){ tryIndex = baseOrder.length; }
+  audioEl.addEventListener("canplay",    lockInWorkingSource, { once:true });
+  audioEl.addEventListener("loadeddata", lockInWorkingSource, { once:true });
+
+  window.addEventListener("online",  () => { tryIndex = 0; baseOrder = ONLINE_ORDER;  setSourcesInOrder(baseOrder); });
+  window.addEventListener("offline", () => { tryIndex = 0; baseOrder = OFFLINE_ORDER; setSourcesInOrder(baseOrder); });
+    
   </script>
 </body>
 </html>
-
-
 
 
