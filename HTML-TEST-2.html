@@ -326,13 +326,7 @@
     <h2 id="bible-text" style="line-height:1.2em;margin-left:15px;margin-right:15px;font-style:normal;font-weight:normal;color:black;font-size:20px;word-break:break-all;">
     <strong>
 <!-- 일차 내비게이션 -->
-<nav class="day-nav" aria-label="일차 이동">
-  <a class="day-btn nav-link" href="https://seagwang1124.github.io/90html/77%EC%9D%BC%EC%B0%A8.html" data-local="77일차.html">≪</a>
-  <span class="day-title"> 통독 78일차 </span>
-  <a class="day-btn nav-link" href="https://seagwang1124.github.io/90html/79%EC%9D%BC%EC%B0%A8.html" data-local="79일차.html">≫</a>
-  <!-- 로컬에 저장한 목록 파일명이 'index.html'이라고 가정 -->
-  <a class="day-btn nav-link" href="https://seagwang1124.github.io/90html" data-local="index.html">통독 목록</a>
-</nav>
+<nav id="day-nav" class="day-nav" aria-label="일차 이동"></nav>
   
 <br>범위: 약 1장- 5장/ 행 13장- 15장 35절/ 갈 1장- 6장</br>
 <br>&nbsp;</br>
@@ -1144,40 +1138,78 @@ highlightCenterLines();
       });
     }
 
-    function applyNavMode() {
-      const online = navigator.onLine;
-      document.querySelectorAll('.day-nav a').forEach(a => {
-        // 온라인이면 원격, 오프라인이면 로컬
-        a.href = online ? (a.dataset.remote || a.href) : (a.dataset.local || a.href);
-      });
-    }
+     // 도우미
+  const pad2 = n => String(n).padStart(2, '0');
+  const fileName = n => `${pad2(n)}일차.html`;
+  const remoteUrl = n => `https://seagwang1124.github.io/90html/${encodeURIComponent(fileName(n))}`;
 
-    // 초기 설정 + 최초 적용
-    initNavFallbacks();
-    applyNavMode();
+  // 이전/다음 계산 (경계 처리)
+  const hasPrev = DAY > 1;
+  const hasNext = DAY < 90;
+  const prevDay = DAY - 1;
+  const nextDay = DAY + 1;
 
-    // 네트워크 상태 바뀌면 즉시 다시 적용
-    window.addEventListener('online', applyNavMode);
-    window.addEventListener('offline', applyNavMode);
+  // 요소 만들기
+  const nav = document.getElementById('day-nav');
 
-    // 혹시 오프라인인데 원격 링크를 클릭하는 경우 방지(안전장치)
-    document.addEventListener('click', function (e) {
-      const a = e.target.closest('.day-nav a');
-      if (!a) return;
-      if (!navigator.onLine) {
-        // 오프라인이면 로컬로 강제
-        const local = a.dataset.local;
-        if (local) {
-          e.preventDefault();
-          location.href = local;
-        }
-      }
+  // 이전
+  if (hasPrev) {
+    const aPrev = document.createElement('a');
+    aPrev.className = 'day-btn nav-link';
+    aPrev.textContent = '≪';
+    aPrev.href = remoteUrl(prevDay);          // 온라인용
+    aPrev.dataset.local = fileName(prevDay);  // 오프라인용
+    nav.appendChild(aPrev);
+  }
+
+  // 가운데 제목
+  const span = document.createElement('span');
+  span.className = 'day-title';
+  span.textContent = ` 통독 ${pad2(DAY)}일차 `;
+  nav.appendChild(span);
+
+  // 다음
+  if (hasNext) {
+    const aNext = document.createElement('a');
+    aNext.className = 'day-btn nav-link';
+    aNext.textContent = '≫';
+    aNext.href = remoteUrl(nextDay);          // 온라인용
+    aNext.dataset.local = fileName(nextDay);  // 오프라인용
+    nav.appendChild(aNext);
+  }
+
+  // 목록
+  const aList = document.createElement('a');
+  aList.className = 'day-btn nav-link';
+  aList.textContent = '통독 목록';
+  aList.href = 'https://seagwang1124.github.io/90html'; // 온라인
+  aList.dataset.local = 'index.html';                   // 오프라인
+  nav.appendChild(aList);
+
+  // --- 온라인/오프라인 전환(이미 쓰시던 로직과 동일하게) ---
+  function applyNavMode() {
+    const online = navigator.onLine;
+    document.querySelectorAll('.nav-link').forEach(a => {
+      a.href = online ? (a.getAttribute('href')) : (a.dataset.local || a.getAttribute('href'));
     });
-  })();
+  }
+  applyNavMode();
+  window.addEventListener('online',  applyNavMode);
+  window.addEventListener('offline', applyNavMode);
 
-
+  // 오프라인 강제 로컬 이동(안전장치)
+  document.addEventListener('click', (e) => {
+    const link = e.target.closest('.nav-link');
+    if (!link) return;
+    if (!navigator.onLine && link.dataset.local) {
+      e.preventDefault();
+      location.href = link.dataset.local;
+    }
+  });
+        
   </script>
 </body>
 </html> 
+
 
 
