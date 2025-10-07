@@ -327,12 +327,13 @@
     <strong>
 <!-- 일차 내비게이션 -->
 <nav class="day-nav" aria-label="일차 이동">
-  <a class="day-btn" href="https://seagwang1124.github.io/90html/77%EC%9D%BC%EC%B0%A8.html" aria-label="통독 77일차로 이동">≪</a>
+  <a class="day-btn nav-link" href="https://seagwang1124.github.io/90html/77%EC%9D%BC%EC%B0%A8.html" data-local="77일차.html">≪</a>
   <span class="day-title"> 통독 78일차 </span>
-  <a class="day-btn" href="https://seagwang1124.github.io/90html/79%EC%9D%BC%EC%B0%A8.html" aria-label="통독 79일차로 이동">≫</a>
-  <a class="day-btn" href="https://seagwang1124.github.io/90html" aria-label="통독 목록으로 이동">통독 목록</a>
+  <a class="day-btn nav-link" href="https://seagwang1124.github.io/90html/79%EC%9D%BC%EC%B0%A8.html" data-local="79일차.html">≫</a>
+  <!-- 로컬에 저장한 목록 파일명이 'index.html'이라고 가정 -->
+  <a class="day-btn nav-link" href="https://seagwang1124.github.io/90html" data-local="index.html">통독 목록</a>
 </nav>
-      
+  
 <br>범위: 약 1장- 5장/ 행 13장- 15장 35절/ 갈 1장- 6장</br>
 <br>&nbsp;</br>
 
@@ -1122,7 +1123,61 @@ highlightCenterLines();
   window.addEventListener("online",  () => { tryIndex = 0; baseOrder = ONLINE_ORDER;  setSourcesInOrder(baseOrder); });
   window.addEventListener("offline", () => { tryIndex = 0; baseOrder = OFFLINE_ORDER; setSourcesInOrder(baseOrder); });
 
+      (function () {
+    function initNavFallbacks() {
+      document.querySelectorAll('.day-nav a').forEach(a => {
+        // 원격 href를 data-remote에 보관(최초 한 번)
+        if (!a.dataset.remote) a.dataset.remote = a.href;
+
+        // data-local이 없으면 자동 추론(마지막 경로 세그먼트를 파일명으로, 없으면 index.html)
+        if (!a.dataset.local) {
+          try {
+            const u = new URL(a.href);
+            const segs = u.pathname.split('/').filter(Boolean);
+            const last = segs[segs.length - 1];
+            a.dataset.local = last ? decodeURIComponent(last) : 'index.html';
+          } catch (e) {
+            // URL 파싱 실패 시 현재 href 그대로 사용
+            a.dataset.local = a.getAttribute('href') || 'index.html';
+          }
+        }
+      });
+    }
+
+    function applyNavMode() {
+      const online = navigator.onLine;
+      document.querySelectorAll('.day-nav a').forEach(a => {
+        // 온라인이면 원격, 오프라인이면 로컬
+        a.href = online ? (a.dataset.remote || a.href) : (a.dataset.local || a.href);
+      });
+    }
+
+    // 초기 설정 + 최초 적용
+    initNavFallbacks();
+    applyNavMode();
+
+    // 네트워크 상태 바뀌면 즉시 다시 적용
+    window.addEventListener('online', applyNavMode);
+    window.addEventListener('offline', applyNavMode);
+
+    // 혹시 오프라인인데 원격 링크를 클릭하는 경우 방지(안전장치)
+    document.addEventListener('click', function (e) {
+      const a = e.target.closest('.day-nav a');
+      if (!a) return;
+      if (!navigator.onLine) {
+        // 오프라인이면 로컬로 강제
+        const local = a.dataset.local;
+        if (local) {
+          e.preventDefault();
+          location.href = local;
+        }
+      }
+    });
+  })();
+
+
   </script>
 </body>
 </html> 
+
 
