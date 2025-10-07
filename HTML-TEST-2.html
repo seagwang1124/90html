@@ -1125,69 +1125,61 @@ highlightCenterLines();
 
      (function () {
   // DAY는 위 MP3 섹션에서 이미 선언(예: const DAY = 78)
-  const CUR_DAY = (typeof DAY === 'number' && DAY >= 1 && DAY <= 90) ? DAY : 1;
+  // 현재 일차 숫자 (예: 78). 이미 다른 곳에서 선언했다면 이 줄은 생략하세요.
+  const DAY = typeof DAY === 'number' ? DAY : 78;
 
-  // 도우미
-  const pad2 = n => String(n).padStart(2, '0');
-  const fileName = n => `${pad2(n)}일차.html`;
+  const pad2      = n => String(n).padStart(2, '0');
+  const fileName  = n => `${pad2(n)}일차.html`;
   const remoteUrl = n => `https://seagwang1124.github.io/90html/${encodeURIComponent(fileName(n))}`;
 
-  // 이전/다음 계산 (경계 처리)
-  const hasPrev = CUR_DAY > 1;
-  const hasNext = CUR_DAY < 90;
-  const prevDay = CUR_DAY - 1;
-  const nextDay = CUR_DAY + 1;
+  const hasPrev = DAY > 1;
+  const hasNext = DAY < 90;
 
-  // 네비게이션 생성
-  const nav = document.getElementById('day-nav');
-  if (!nav) return;
+  const $prev  = document.getElementById('nav-prev');
+  const $next  = document.getElementById('nav-next');
+  const $title = document.getElementById('nav-title');
+  const $list  = document.getElementById('nav-list');
+
+  // 제목
+  $title.textContent = ` 통독 ${pad2(DAY)}일차 `;
 
   // 이전
   if (hasPrev) {
-    const aPrev = document.createElement('a');
-    aPrev.className = 'day-btn nav-link';
-    aPrev.textContent = '≪';
-    aPrev.href = remoteUrl(prevDay);          // 온라인용
-    aPrev.dataset.local = fileName(prevDay);  // 오프라인용
-    nav.appendChild(aPrev);
+    const d = DAY - 1;
+    $prev.href = remoteUrl(d);             // 온라인 기본
+    $prev.dataset.local = fileName(d);     // 오프라인 대체
+    $prev.dataset.remote = $prev.href;     // 원격 백업
+  } else {
+    $prev.style.display = 'none';
   }
-
-  // 가운데 제목
-  const span = document.createElement('span');
-  span.className = 'day-title';
-  span.textContent = ` 통독 ${pad2(CUR_DAY)}일차 `;
-  nav.appendChild(span);
 
   // 다음
   if (hasNext) {
-    const aNext = document.createElement('a');
-    aNext.className = 'day-btn nav-link';
-    aNext.textContent = '≫';
-    aNext.href = remoteUrl(nextDay);          // 온라인용
-    aNext.dataset.local = fileName(nextDay);  // 오프라인용
-    nav.appendChild(aNext);
+    const d = DAY + 1;
+    $next.href = remoteUrl(d);
+    $next.dataset.local = fileName(d);
+    $next.dataset.remote = $next.href;
+  } else {
+    $next.style.display = 'none';
   }
 
   // 목록
-  const aList = document.createElement('a');
-  aList.className = 'day-btn nav-link';
-  aList.textContent = '통독 목록';
-  aList.href = 'https://seagwang1124.github.io/90html'; // 온라인
-  aList.dataset.local = 'index.html';                   // 오프라인
-  nav.appendChild(aList);
+  $list.href = 'https://seagwang1124.github.io/90html';
+  $list.dataset.local  = 'index.html';
+  $list.dataset.remote = $list.href;
 
-  // 온라인/오프라인 모드 적용
+  // 온라인/오프라인에 따라 href 전환
   function applyNavMode() {
     const online = navigator.onLine;
     document.querySelectorAll('.nav-link').forEach(a => {
-      a.href = online ? (a.getAttribute('href')) : (a.dataset.local || a.getAttribute('href'));
+      a.href = online ? (a.dataset.remote || a.href) : (a.dataset.local || a.href);
     });
   }
   applyNavMode();
   window.addEventListener('online',  applyNavMode);
   window.addEventListener('offline', applyNavMode);
 
-  // 오프라인 클릭 시 로컬로 강제 이동(안전장치)
+  // 오프라인에서는 로컬로 강제 이동 (안전장치)
   document.addEventListener('click', (e) => {
     const link = e.target.closest('.nav-link');
     if (!link) return;
@@ -1196,11 +1188,11 @@ highlightCenterLines();
       location.href = link.dataset.local;
     }
   });
-})();
         
   </script>
 </body>
 </html> 
+
 
 
 
