@@ -325,13 +325,14 @@
   <div>
     <h2 id="bible-text" style="line-height:1.2em;margin-left:15px;margin-right:15px;font-style:normal;font-weight:normal;color:black;font-size:20px;word-break:break-all;">
     <strong>
-      
+
+
 <!-- 일차 내비게이션 -->
 <nav id="day-nav" class="day-nav" aria-label="일차 이동">
-  <a id="nav-prev" class="day-btn nav-link">≪</a>
+  <a id="nav-prev" class="day-btn nav-link" href="#">≪</a>
   <span id="nav-title" class="day-title"></span>
-  <a id="nav-next" class="day-btn nav-link">≫</a>
-  <a id="nav-list" class="day-btn nav-link">통독 목록</a>
+  <a id="nav-next" class="day-btn nav-link" href="#">≫</a>
+  <a id="nav-list" class="day-btn nav-link" href="#">통독 목록</a>
 </nav>
       
 <br>범위: 약 1장- 5장/ 행 13장- 15장 35절/ 갈 1장- 6장</br>
@@ -1123,75 +1124,73 @@ highlightCenterLines();
   window.addEventListener("online",  () => { tryIndex = 0; baseOrder = ONLINE_ORDER;  setSourcesInOrder(baseOrder); });
   window.addEventListener("offline", () => { tryIndex = 0; baseOrder = OFFLINE_ORDER; setSourcesInOrder(baseOrder); });
 
-     (function () {
-  // DAY는 위 MP3 섹션에서 이미 선언(예: const DAY = 78)
-  // 현재 일차 숫자 (예: 78). 이미 다른 곳에서 선언했다면 이 줄은 생략하세요.
-  const DAY = typeof DAY === 'number' ? DAY : 78;
+// 이 페이지의 일차(숫자). 필요하면 파일마다 바꿔주거나,
+  // 다른 곳에서 window.CURRENT_DAY를 미리 정의해 두세요.
+  window.CURRENT_DAY = typeof window.CURRENT_DAY === 'number' ? window.CURRENT_DAY : 78;
 
-  const pad2      = n => String(n).padStart(2, '0');
-  const fileName  = n => `${pad2(n)}일차.html`;
-  const remoteUrl = n => `https://seagwang1124.github.io/90html/${encodeURIComponent(fileName(n))}`;
+  document.addEventListener('DOMContentLoaded', () => {
+    const DAY = Number(window.CURRENT_DAY);
+    const pad2      = n => String(n).padStart(2, '0');
+    const fileName  = n => `${pad2(n)}일차.html`;
+    const remoteUrl = n => `https://seagwang1124.github.io/90html/${encodeURIComponent(fileName(n))}`;
 
-  const hasPrev = DAY > 1;
-  const hasNext = DAY < 90;
+    const $prev  = document.getElementById('nav-prev');
+    const $next  = document.getElementById('nav-next');
+    const $title = document.getElementById('nav-title');
+    const $list  = document.getElementById('nav-list');
 
-  const $prev  = document.getElementById('nav-prev');
-  const $next  = document.getElementById('nav-next');
-  const $title = document.getElementById('nav-title');
-  const $list  = document.getElementById('nav-list');
+    // 제목 세팅
+    $title.textContent = ` 통독 ${pad2(DAY)}일차 `;
 
-  // 제목
-  $title.textContent = ` 통독 ${pad2(DAY)}일차 `;
-
-  // 이전
-  if (hasPrev) {
-    const d = DAY - 1;
-    $prev.href = remoteUrl(d);             // 온라인 기본
-    $prev.dataset.local = fileName(d);     // 오프라인 대체
-    $prev.dataset.remote = $prev.href;     // 원격 백업
-  } else {
-    $prev.style.display = 'none';
-  }
-
-  // 다음
-  if (hasNext) {
-    const d = DAY + 1;
-    $next.href = remoteUrl(d);
-    $next.dataset.local = fileName(d);
-    $next.dataset.remote = $next.href;
-  } else {
-    $next.style.display = 'none';
-  }
-
-  // 목록
-  $list.href = 'https://seagwang1124.github.io/90html';
-  $list.dataset.local  = 'index.html';
-  $list.dataset.remote = $list.href;
-
-  // 온라인/오프라인에 따라 href 전환
-  function applyNavMode() {
-    const online = navigator.onLine;
-    document.querySelectorAll('.nav-link').forEach(a => {
-      a.href = online ? (a.dataset.remote || a.href) : (a.dataset.local || a.href);
-    });
-  }
-  applyNavMode();
-  window.addEventListener('online',  applyNavMode);
-  window.addEventListener('offline', applyNavMode);
-
-  // 오프라인에서는 로컬로 강제 이동 (안전장치)
-  document.addEventListener('click', (e) => {
-    const link = e.target.closest('.nav-link');
-    if (!link) return;
-    if (!navigator.onLine && link.dataset.local) {
-      e.preventDefault();
-      location.href = link.dataset.local;
+    // 이전/다음 링크
+    if (DAY > 1) {
+      const d = DAY - 1;
+      $prev.dataset.remote = remoteUrl(d);   // 온라인
+      $prev.dataset.local  = fileName(d);    // 오프라인
+    } else {
+      $prev.style.display = 'none';
     }
+
+    if (DAY < 90) {
+      const d = DAY + 1;
+      $next.dataset.remote = remoteUrl(d);
+      $next.dataset.local  = fileName(d);
+    } else {
+      $next.style.display = 'none';
+    }
+
+    // 목록 링크
+    $list.dataset.remote = 'https://seagwang1124.github.io/90html';
+    $list.dataset.local  = 'index.html';
+
+    // 온라인/오프라인에 따라 href 적용
+    function applyNavMode() {
+      const online = navigator.onLine;
+      document.querySelectorAll('.nav-link').forEach(a => {
+        const remote = a.dataset.remote || a.getAttribute('href') || '#';
+        const local  = a.dataset.local  || a.getAttribute('href') || '#';
+        a.setAttribute('href', online ? remote : local);
+      });
+    }
+    applyNavMode();
+    window.addEventListener('online',  applyNavMode);
+    window.addEventListener('offline', applyNavMode);
+
+    // 오프라인일 때는 로컬 파일로 강제 이동(안전장치)
+    document.addEventListener('click', (e) => {
+      const link = e.target.closest('.nav-link');
+      if (!link) return;
+      if (!navigator.onLine && link.dataset.local) {
+        e.preventDefault();
+        location.href = link.dataset.local;
+      }
+    });
   });
         
   </script>
 </body>
 </html> 
+
 
 
 
