@@ -386,11 +386,11 @@
   .cross-red {
     color: red;
     font-weight: 900;
-    -webkit-text-stroke: 0.6px currentColor;
+    -webkit-text-stroke: 0.6px currentColor; /* 윤곽선으로 두께 보강 */
     text-shadow:
-      0 0 0 currentColor,
+      0 0 0 currentColor,         /* 기본 채움 */
       0.02em 0 currentColor, -0.02em 0 currentColor,
-      0 0.02em currentColor,  0 -0.02em currentColor;
+      0 0.02em currentColor,  0 -0.02em currentColor; /* 가장자리 두껍게 */
   }
 </style>
 
@@ -404,7 +404,7 @@
     </div>
 
     <div class="prayer-footer">
-  <div></div>
+  <div></div> <!-- 좌측 자리 균형용(선택) -->
   <div class="prayer-actions">
     <button class="prayer-btn" id="prayerReadAlone">기도 드렸습니다</button>
     <button class="prayer-btn prayer-btn-primary" id="prayerAmen">확인</button>
@@ -486,48 +486,52 @@
       }).join("");
       const lineElements = document.querySelectorAll("#bible-text .line");
 
-      // 스크롤 시 중앙 강조 줄 수(2줄/3줄)
-      function highlightCenterLines() {
-        const viewportCenter = window.innerHeight / 2 + window.scrollY;
-        const linesToHighlight = window.innerWidth >= 768 ? 3 : 2;
+      // 스크롤 시 중앙 강조 줄 수(2줄/3줄) 반응형으로 처리
+function highlightCenterLines() {
+  const viewportCenter = window.innerHeight / 2 + window.scrollY;
+  const linesToHighlight = window.innerWidth >= 768 ? 3 : 2;
 
-        let closestIndex = -1, minDistance = Infinity;
-        lineElements.forEach((line, i) => {
-          const rect = line.getBoundingClientRect();
-          const lineCenter = rect.top + window.scrollY + rect.height / 2;
-          const distance = Math.abs(lineCenter - viewportCenter);
-          if (distance < minDistance) { minDistance = distance; closestIndex = i; }
-        });
+  let closestIndex = -1, minDistance = Infinity;
+  lineElements.forEach((line, i) => {
+    const rect = line.getBoundingClientRect();
+    const lineCenter = rect.top + window.scrollY + rect.height / 2;
+    const distance = Math.abs(lineCenter - viewportCenter);
+    if (distance < minDistance) { minDistance = distance; closestIndex = i; }
+  });
 
-        lineElements.forEach(line => line.classList.remove("highlight"));
-        if (closestIndex < 0) return;
+  lineElements.forEach(line => line.classList.remove("highlight"));
+  if (closestIndex < 0) return;
 
-        const indices = linesToHighlight === 3
-          ? [closestIndex - 1, closestIndex, closestIndex + 1]
-          : [closestIndex, closestIndex + 1];
+  const indices = linesToHighlight === 3
+    ? [closestIndex - 1, closestIndex, closestIndex + 1]
+    : [closestIndex, closestIndex + 1];
 
-        indices.forEach(idx => {
-          if (idx >= 0 && idx < lineElements.length) {
-            lineElements[idx].classList.add("highlight");
-          }
-        });
-      }
+  indices.forEach(idx => {
+    if (idx >= 0 && idx < lineElements.length) {
+      lineElements[idx].classList.add("highlight");
+    }
+  });
+}
 
-      // rAF 스로틀
-      let ticking = false;
-      function onScrollOrResize() {
-        if (ticking) return;
-        ticking = true;
-        requestAnimationFrame(() => {
-          highlightCenterLines();
-          ticking = false;
-        });
-      }
+// rAF 스로틀
+let ticking = false;
+function onScrollOrResize() {
+  if (ticking) return;
+  ticking = true;
+  requestAnimationFrame(() => {
+    highlightCenterLines();
+    ticking = false;
+  });
+}
 
-      window.addEventListener("scroll", onScrollOrResize, { passive: true });
-      window.addEventListener("resize", onScrollOrResize);
-      window.addEventListener("orientationchange", onScrollOrResize);
-      highlightCenterLines();
+// 이벤트 등록
+window.addEventListener("scroll", onScrollOrResize, { passive: true });
+window.addEventListener("resize", onScrollOrResize);
+// (옵션) 기기 회전 이벤트도 묶어서 처리하면 좋아요
+window.addEventListener("orientationchange", onScrollOrResize);
+
+// 최초 1회 적용
+highlightCenterLines();
 
       // PC에서 2줄씩 부드럽게 스크롤
       window.addEventListener("wheel", function(e) {
@@ -662,6 +666,163 @@
       initPrayerToast();
     });
 
+    // 선택 관리
+    function handleSelectionChange(){
+      const sel = window.getSelection();
+      if (!sel) return clearSelectionState();
+      const text = (sel.toString() || "").trim();
+
+      const modalEl = document.getElementById('explanation-modal');
+      if (modalEl && modalEl.style.display === 'block') {
+        const sel2 = window.getSelection();
+        if (sel2 && (modalEl.contains(sel2.anchorNode) || modalEl.contains(sel2.focusNode))) return;
+      }
+
+      let isInBible = false;
+      try {
+        if (sel.anchorNode && sel.focusNode) {
+          isInBible = bibleTextEl.contains(sel.anchorNode) && bibleTextEl.contains(sel.focusNode);
+        }
+      } catch(e){ isInBible = false; }
+
+      if (text && isInBible) {
+        selectedVerse = text;
+        try { selectionRange = sel.getRangeAt(0).cloneRange(); } catch(e){ selectionRange = null; }
+        try {
+          const range = sel.getRangeAt(0);
+          const rects = Array.from(range.getClientRects());
+          const rect = rects.length
+            ? rects.reduce((u, r) => ({
+                top: Math.min(u.top, r.top),
+                left: Math.min(u.left, r.left),
+                right: Math.max(u.right, r.right),
+                bottom: Math.max(u.bottom, r.bottom),
+                width: 0, height: 0
+              }), { top:Infinity, left:Infinity, right:-Infinity, bottom:-Infinity })
+            : range.getBoundingClientRect();
+          rect.width  = rect.right - rect.left;
+          rect.height = rect.bottom - rect.top;
+          positionExplanationButton(rect);
+        } catch(e){ resetExplanationButton(); }
+      } else {
+        clearSelectionState();
+      }
+    }
+    function updateSelectedVerseFromRange(range) {
+      if (!range) return;
+      const txt = (range.toString() || "").trim();
+      if (txt) selectedVerse = txt;
+      try {
+        const rect = range.getBoundingClientRect();
+        positionExplanationButton(rect);
+      } catch(e){ resetExplanationButton(); }
+    }
+    function resetExplanationButton(){
+      const container = document.getElementById('explanation-button-container');
+      if (!container) return;
+      container.style.position = 'fixed';
+      container.style.left = '30%';
+      container.style.top = '100px';
+      container.style.transform = 'translateX(-50%)';
+      container.style.display = 'block';
+      explanationButtonWrapper.classList.remove('active');
+    }
+    function clearSelectionState(){ selectedVerse = ""; selectionRange = null; resetExplanationButton(); }
+
+    // 책 버튼 위치
+    function positionExplanationButton(rect){
+      const container = document.getElementById('explanation-button-container');
+      if (!container) return;
+
+      const vw = window.innerWidth;
+      const vh = window.innerHeight;
+      const margin = 8;
+      const pad = 10;
+      const viewportCenter = vw / 2;
+
+      const isWide = rect.width >= vw * 0.6 || (rect.left <= margin*2 && rect.right >= vw - margin*2);
+
+      let baseX, transformX;
+      if (isWide) { baseX = rect.left + rect.width / 2; transformX = 'translateX(-50%)'; }
+      else if (rect.left < viewportCenter * 0.4) { baseX = rect.right; transformX = 'translateX(0)'; }
+      else if (rect.right > viewportCenter * 1.6) { baseX = rect.left; transformX = 'translateX(-100%)'; }
+      else { baseX = rect.left + rect.width / 2; transformX = 'translateX(-50%)'; }
+
+      const cw = container.offsetWidth || 60;
+      const ch = container.offsetHeight || 60;
+
+      const leftEdge =
+        transformX === 'translateX(0)'     ? baseX :
+        transformX === 'translateX(-50%)'  ? baseX - cw/2 :
+                                             baseX - cw;
+
+      let clampedLeftEdge = Math.min(Math.max(leftEdge, margin), vw - margin - cw);
+
+      let finalLeft;
+      if (transformX === 'translateX(0)')        finalLeft = clampedLeftEdge;
+      else if (transformX === 'translateX(-50%)') finalLeft = clampedLeftEdge + cw/2;
+      else                                        finalLeft = clampedLeftEdge + cw;
+
+      let finalTop = rect.bottom + pad;
+      if (finalTop + ch + margin > vh) finalTop = Math.max(rect.top - pad - ch, margin);
+      finalTop = Math.min(Math.max(finalTop, margin), vh - margin - ch);
+
+      container.style.position = 'fixed';
+      container.style.left = `${finalLeft}px`;
+      container.style.top  = `${finalTop}px`;
+      container.style.transform = transformX;
+      container.style.display = 'block';
+    }
+
+    // 검색
+    function findString(searchText){
+      clearHighlight();
+      if (searchText == null || searchText.trim() === '') { searchCountEl.textContent = ''; nextLocationBtn.style.display = 'none'; return; }
+      const escaped = escapeRegExp(searchText.trim());
+      const regex = new RegExp(escaped, 'gi');
+      const newContent = originalText.replace(regex, (match) => `<span class="search-highlight">${match}</span>`);
+      bibleTextEl.innerHTML = newContent;
+      foundSentences = Array.from(bibleTextEl.getElementsByClassName('search-highlight'));
+      searchCountEl.textContent = `총 ${foundSentences.length}개 검색됨`;
+      if (foundSentences.length > 0) {
+        currentSearchIndex = 0;
+        foundSentences[currentSearchIndex].scrollIntoView({ behavior:'smooth', block:'center' });
+        nextLocationBtn.style.display = 'inline-block';
+        updateScrollMarkers();
+      } else {
+        showModal("검색 결과 없음", `"${searchText}"에 대한 검색 결과가 없습니다.`);
+        nextLocationBtn.style.display = 'none';
+      }
+    }
+    function nextLocation(){
+      if (!foundSentences.length) return;
+      currentSearchIndex = (currentSearchIndex + 1) % foundSentences.length;
+      foundSentences[currentSearchIndex].scrollIntoView({ behavior:'smooth', block:'center' });
+      updateScrollMarkers();
+    }
+    function clearHighlight(){
+      bibleTextEl.innerHTML = originalText;
+      searchCountEl.textContent = '';
+      nextLocationBtn.style.display = 'none';
+      while (scrollMarkerContainer.firstChild) scrollMarkerContainer.removeChild(scrollMarkerContainer.firstChild);
+      foundSentences = [];
+      currentSearchIndex = -1;
+    }
+    function updateScrollMarkers(){
+      while (scrollMarkerContainer.firstChild) scrollMarkerContainer.removeChild(scrollMarkerContainer.firstChild);
+      const docH = document.documentElement.scrollHeight;
+      const vh = window.innerHeight;
+      foundSentences.forEach((el) => {
+        const marker = document.createElement('div');
+        marker.className = 'scroll-marker';
+        const topPos = el.getBoundingClientRect().top + window.scrollY;
+        const markerPos = Math.min(Math.max((topPos / docH) * vh, 2), vh - 10);
+        marker.style.top = markerPos + 'px';
+        marker.addEventListener('click', () => { el.scrollIntoView({ behavior:'smooth', block:'center' }); });
+        scrollMarkerContainer.appendChild(marker);
+      });
+    }
+
     // 모달
     function showModal(title, text, imageUrl=null){
       modalTitle.textContent = title || '';
@@ -694,164 +855,288 @@
       return tmp.textContent.replace(/\s+/g,' ').trim();
     }
 
-    // ===== 기도문 팝업 제어 =====
-    function initPrayerToast(){
-      const toast = document.getElementById('prayerToast');
-      const closeBtn = document.getElementById('prayerCloseBtn');
-      const amenBtn = document.getElementById('prayerAmen');
-      const readBtn = document.getElementById('prayerReadAlone');
+    // Generative API 호출
+    async function callGenerativeAPI(modalTitleText, prompt){
+      const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
+      const payload = { contents: [ { parts: [ { text: prompt } ] } ] };
 
-      const isSiteModalOpen = () => document.body.classList.contains('modal-open');
-
-      function openToast(){
-        if (!toast) return;
-        if (isSiteModalOpen()) return;
-        toast.style.display = 'block';
-        document.getElementById('prayerBody')?.focus({ preventScroll:true });
-      }
-      function closeToast(){
-        if (!toast) return;
-        toast.style.display = 'none';
-      }
-
-      setTimeout(openToast, 700);
-      closeBtn?.addEventListener('click', () => closeToast());
-      amenBtn?.addEventListener('click', () => closeToast());
-      readBtn?.addEventListener('click', () => closeToast());
-
-      const observer = new MutationObserver(() => {
-        if (isSiteModalOpen()) {
-          toast.style.display = 'none';
-        } else {
-          if (toast.style.display !== 'block') toast.style.display = 'block';
+      let retryCount = 0; const maxRetries = 3;
+      let response = null;
+      while (retryCount < maxRetries) {
+        try {
+          response = await fetch(apiUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+          if (response.ok) break;
+          if (response.status === 429) {
+            retryCount++;
+            const delay = Math.pow(2, retryCount)*1000 + Math.random()*1000;
+            await new Promise(r=>setTimeout(r, delay));
+          } else throw new Error(`API Error: ${response.status} ${response.statusText}`);
+        } catch (err) {
+          console.error('API call failed:', err);
+          showModal("오류 발생", "API 호출 중 오류가 발생했습니다. 다시 시도해 주세요.");
+          return;
         }
-      });
-      observer.observe(document.body, { attributes:true, attributeFilter:['class'] });
-    }
+      }
+      if (!response || !response.ok) { showModal("오류", "설명을 불러오는 데 실패했습니다. 잠시 후 다시 시도해 주세요."); return; }
 
-    // ====== MP3 폴백 로더 (DAY 기반) ======
-    const DAY = 1; // 1~90: 숫자만
-    const DAY2 = String(DAY).padStart(2, '0'); // "01" ~ "90"
-
-    const AUDIO_FILE_NAME_PAD = `읽기 ${DAY2}.mp3`;
-    const AUDIO_FILE_NAME_RAW = `읽기 ${DAY}.mp3`;
-
-    const REMOTE_URL = `https://vod47.anyline.co.kr/vod_ezra/${encodeURIComponent(AUDIO_FILE_NAME_PAD)}`;
-
-    const SOURCE_CANDIDATES = [
-      { src: REMOTE_URL,                    type: "audio/mpeg" },
-      { src: AUDIO_FILE_NAME_PAD,           type: "audio/mpeg" },
-      { src: "mp3/" + AUDIO_FILE_NAME_PAD,  type: "audio/mpeg" },
-      { src: AUDIO_FILE_NAME_RAW,           type: "audio/mpeg" },
-      { src: "mp3/" + AUDIO_FILE_NAME_RAW,  type: "audio/mpeg" },
-    ];
-
-    const audioEl = document.getElementById("audio-file");
-
-    function setSourcesInOrder(indexes){
-      while (audioEl.firstChild) audioEl.removeChild(audioEl.firstChild);
-      indexes.forEach(i => {
-        const s = SOURCE_CANDIDATES[i];
-        const el = document.createElement("source");
-        el.src = s.src;
-        el.type = s.type;
-        audioEl.appendChild(el);
-      });
-      audioEl.load();
-    }
-
-    const ONLINE_ORDER  = [0,1,2,3,4];
-    const OFFLINE_ORDER = [1,2,3,4,0];
-    let baseOrder = navigator.onLine ? ONLINE_ORDER : OFFLINE_ORDER;
-
-    setSourcesInOrder(baseOrder);
-
-    let tryIndex = 0;
-    function tryNextSource(){
-      tryIndex++;
-      if (tryIndex < baseOrder.length) {
-        setSourcesInOrder(baseOrder.slice(tryIndex));
-      } else {
-        console.warn("모든 MP3 소스를 불러오지 못했습니다.");
+      try {
+        const data = await response.json();
+        const content = data?.candidates?.[0]?.content?.parts?.[0]?.text || "응답을 가져오지 못했습니다.";
+        showModal(modalTitleText, content);
+      } catch (err) {
+        console.error('Error processing response:', err);
+        showModal("오류", "응답을 처리하는 중 오류가 발생했습니다.");
       }
     }
-    audioEl.addEventListener("error", tryNextSource, true);
 
-    function lockInWorkingSource(){ tryIndex = baseOrder.length; }
-    audioEl.addEventListener("canplay",    lockInWorkingSource, { once:true });
-    audioEl.addEventListener("loadeddata", lockInWorkingSource, { once:true });
-
-    window.addEventListener("online",  () => { tryIndex = 0; baseOrder = ONLINE_ORDER;  setSourcesInOrder(baseOrder); });
-    window.addEventListener("offline", () => { tryIndex = 0; baseOrder = OFFLINE_ORDER; setSourcesInOrder(baseOrder); });
-
-    // === 일차 내비게이션(온라인/오프라인 자동 전환) ===
-    // 이 페이지의 일차(숫자). 필요하면 파일마다 바꿔주세요.
-    window.CURRENT_DAY = typeof window.CURRENT_DAY === 'number' ? window.CURRENT_DAY : 1;
-
-    document.addEventListener('DOMContentLoaded', () => {
-      const DAY = Number(window.CURRENT_DAY);
-      const pad2      = n => String(n).padStart(2, '0');
-      const fileName  = n => `${pad2(n)}일차.html`;
-      const remoteUrl = n => `https://seagwang1124.github.io/90html/${encodeURIComponent(fileName(n))}`;
-
-      const $prev   = document.getElementById('nav-prev');
-      const $next   = document.getElementById('nav-next');
-      const $title  = document.getElementById('nav-title');
-      const $list   = document.getElementById('nav-list');
-      const $manual = document.getElementById('nav-manual');
-
-      // 제목
-      $title.textContent = ` 통독 ${pad2(DAY)}일차 `;
-
-      // 이전/다음
-      if (DAY > 1) {
-        const d = DAY - 1;
-        $prev.dataset.remote = remoteUrl(d);
-        $prev.dataset.local  = fileName(d);
+    async function fetchExplanation(promptText, type){
+      let prompt;
+      if (type === 'simple') {
+        prompt = `[역할] 성경 주석가.
+[작업] 선택한 용어/구절을 350–500자 한국어로 간결 설명.
+[유형 규칙]
+- 지명: 위치·시대·관련 사건
+- 인물: 이름의 뜻·역할·연관 지명
+- 제사/성물: 용도·상징적 의미
+- 동·식물·광물: 상징성
+필요 시 대비/유사 2–12가지만 간단히. (이름↔지명 직접 연결이 있으면 함께 언급)
+[금지] 장황함·추측·인용.
+[입력] "${promptText}"`;
       } else {
-        $prev.style.display = 'none';
+        prompt = `[역할] 성경 주석가.
+[작업] 선택 구절을 2,500–3,500자 한국어 해설로 심화 분석.
+[구성] 개요 → 배경(역사·지리·문화) → 본문 주제·핵심 논지 → 핵심 단어/도상 해석
+→ 인물·사건·장소의 기능 → 성경 전체 맥락과의 연결(언약/교리, 유사·대조 2–12가지)
+→ (선택) 3–6행 표로 요점 정리.
+[규칙] 본문 근거 중심, 난해한 부분은 간명히, 과도한 인용/주석어/반복 금지, 분량 준수.
+[긴 입력 시] 절/단락 단위로 요약 후 통합(최종 분량 준수).
+[입력] "${promptText}"`;
       }
+      showLoadingModal(false);
+      await callGenerativeAPI('구절 설명', prompt);
+    }
 
-      if (DAY < 90) {
-        const d = DAY + 1;
-        $next.dataset.remote = remoteUrl(d);
-        $next.dataset.local  = fileName(d);
+    async function fetchSummary(fullText, type){
+      let prompt;
+      if (type === 'simple') {
+        prompt = `[역할] 성경 주석가.
+[작업] 입력된 성경 본문 전체를 450–650자 한국어 한 단락으로 간결 요약.
+[중점] 핵심 주제·메시지, 주요 사건 흐름, 하나님 행위/인간 반응. 배경은 한두 문장만. 삶 적용 2–3문장 추가.
+[금지] 장황함·추측·인용·소제목·서론/결론 문구. 분량 엄수.
+[긴 입력 시] 장 단위로 요약→최종 450–650자로 통합.
+[입력] "${fullText}"`;
       } else {
-        $next.style.display = 'none';
+        prompt = `[역할] 성경 주석가.
+[작업] 입력 본문을 3,500–5,000자 한국어 해설로 정리.
+[구성] 1) 개요  2) 배경(역사·지리·문화)  3) 핵심 주제/신학적 의미
+4) 인물·사건·장소의 역할  5) 성경 전체 맥락과 연결(필요 시 유사/대조 2–12가지)
+6) (선택) 3–12행 표로 핵심 정리.  7) 결론  8) 삶 적용 4–5문장.
+[규칙] 사실 기반, 과장/추측/설교체 금지, 불필요한 반복 금지, 분량 준수.
+[긴 입력 시] 장 단위로 개요→통합(최종 분량 준수).
+[입력] "${fullText}"`;
       }
+      showLoadingModal(false);
+      await callGenerativeAPI('본문 요약', prompt);
+    }
 
-      // 목록
-      $list.dataset.remote = 'https://seagwang1124.github.io/90html';
-      $list.dataset.local  = 'index.html';
+    function updateSpeed(){ audio.playbackRate = currentSpeed; speedDisplay.textContent = currentSpeed.toFixed(1) + 'x'; }
+    function updateFontSizeDisplay(){ const cur = parseFloat(getComputedStyle(bibleTextEl).fontSize); fontSizeEl.textContent = Math.round(cur); }
 
-      // ✅ 사용 설명서(온라인/오프라인)
+    // 토글 버튼 로직
+    const progressContainer = document.querySelector('.progress-container');
+    const speedControls = document.querySelector('.speed-controls');
+    const volumeControl = document.querySelector('.volume-control');
+    const showProgressBtn = document.getElementById('show-progress');
+    const showSpeedBtn = document.getElementById('show-speed');
+    const showVolumeBtn = document.getElementById('show-volume');
+    let hideTimeout;
+    function showOnly(target) {
+      progressContainer.style.display = "none";
+      speedControls.style.display = "none";
+      volumeControl.style.display = "none";
+      target.style.display = "flex";
+      if (hideTimeout) clearTimeout(hideTimeout);
+      hideTimeout = setTimeout(() => { target.style.display = "none"; }, 10000);
+    }
+    showProgressBtn.addEventListener('click', () => showOnly(progressContainer));
+    showSpeedBtn.addEventListener('click', () => showOnly(speedControls));
+    showVolumeBtn.addEventListener('click', () => showOnly(volumeControl));
+
+    // ===== 기도문 팝업 제어 =====
+  function initPrayerToast(){
+  const toast = document.getElementById('prayerToast');
+  const closeBtn = document.getElementById('prayerCloseBtn');
+  const amenBtn = document.getElementById('prayerAmen');
+  const readBtn = document.getElementById('prayerReadAlone');
+
+  const isSiteModalOpen = () => document.body.classList.contains('modal-open');
+
+  function openToast(){
+    if (!toast) return;
+    if (isSiteModalOpen()) return;            // 사이트 모달이 열려 있으면 숨김
+    toast.style.display = 'block';
+    document.getElementById('prayerBody')?.focus({ preventScroll:true });
+  }
+  function closeToast(){
+    if (!toast) return;
+    toast.style.display = 'none';             // 저장/기억 없음 → 다음 방문 시 다시 표시
+  }
+
+  // 페이지 로드 시 항상 표시 (약간 지연)
+  setTimeout(openToast, 700);
+
+  // 버튼 동작: 전부 단순 닫기
+  closeBtn?.addEventListener('click', () => closeToast());
+  amenBtn?.addEventListener('click', () => closeToast());
+  readBtn?.addEventListener('click', () => closeToast());
+
+  // 사이트 모달 열림/닫힘에 따라 토스트 표시/숨김
+  const observer = new MutationObserver(() => {
+    if (isSiteModalOpen()) {
+      toast.style.display = 'none';
+    } else {
+      // 모달이 닫히면 다시 보여줌(사용자가 이미 닫았더라도 새로고침/재방문 시 다시 뜨게 하려면 유지)
+      if (toast.style.display !== 'block') toast.style.display = 'block';
+    }
+  });
+  observer.observe(document.body, { attributes:true, attributeFilter:['class'] });
+}
+
+ // ====== MP3 폴백 로더 (DAY 기반) ======
+  const DAY = 1; // 1~90: 앞에 0 없이 '숫자'로만 쓰세요
+  const DAY2 = String(DAY).padStart(2, '0'); // "01", "02", ..., "10"
+  
+  // 표준 파일명(웹사이트와 동일)
+  const AUDIO_FILE_NAME_PAD = `읽기 ${DAY2}.mp3`; // "읽기 01.mp3"
+  // (선택) 로컬에 한 자리로 저장했을 수도 있으니 대비
+  const AUDIO_FILE_NAME_RAW = `읽기 ${DAY}.mp3`;  // "읽기 1.mp3"
+
+  // 원격 URL(공백/한글 인코딩)
+  const REMOTE_URL = `https://vod47.anyline.co.kr/vod_ezra/${encodeURIComponent(AUDIO_FILE_NAME_PAD)}`;
+
+  // 세 군데 경로 + (선택) 로컬 한자리 이름까지 후보에 포함
+  const SOURCE_CANDIDATES = [
+    { src: REMOTE_URL,                 type: "audio/mpeg" }, // 원격(두 자리만 존재)
+    { src: AUDIO_FILE_NAME_PAD,        type: "audio/mpeg" }, // 같은 폴더(두 자리)
+    { src: "mp3/" + AUDIO_FILE_NAME_PAD, type: "audio/mpeg" }, // mp3 폴더(두 자리)
+    // ↓ 옵션: 로컬에 한 자리 파일이 있을 수도 있을 때만 유용
+    { src: AUDIO_FILE_NAME_RAW,        type: "audio/mpeg" }, // 같은 폴더(한 자리)
+    { src: "mp3/" + AUDIO_FILE_NAME_RAW, type: "audio/mpeg" }, // mp3 폴더(한 자리)
+  ];
+
+  const audioEl = document.getElementById("audio-file");
+
+  function setSourcesInOrder(indexes){
+    while (audioEl.firstChild) audioEl.removeChild(audioEl.firstChild);
+    indexes.forEach(i => {
+      const s = SOURCE_CANDIDATES[i];
+      const el = document.createElement("source");
+      el.src = s.src;
+      el.type = s.type;
+      audioEl.appendChild(el);
+    });
+    audioEl.load();
+  }
+
+  // 온라인/오프라인 우선순위 (원격 → 로컬) / (로컬 → 원격)
+  // 한 자리 후보까지 포함하므로 인덱스 순서만 바꿔줍니다.
+  const ONLINE_ORDER  = [0,1,2,3,4];
+  const OFFLINE_ORDER = [1,2,3,4,0];
+  let baseOrder = navigator.onLine ? ONLINE_ORDER : OFFLINE_ORDER;
+
+  setSourcesInOrder(baseOrder);
+
+  let tryIndex = 0;
+  function tryNextSource(){
+    tryIndex++;
+    if (tryIndex < baseOrder.length) {
+      setSourcesInOrder(baseOrder.slice(tryIndex));
+    } else {
+      console.warn("모든 MP3 소스를 불러오지 못했습니다.");
+      showAudioFailNotice?.();
+    }
+  }
+  audioEl.addEventListener("error", tryNextSource, true);
+
+  function lockInWorkingSource(){ tryIndex = baseOrder.length; }
+  audioEl.addEventListener("canplay",    lockInWorkingSource, { once:true });
+  audioEl.addEventListener("loadeddata", lockInWorkingSource, { once:true });
+
+  window.addEventListener("online",  () => { tryIndex = 0; baseOrder = ONLINE_ORDER;  setSourcesInOrder(baseOrder); });
+  window.addEventListener("offline", () => { tryIndex = 0; baseOrder = OFFLINE_ORDER; setSourcesInOrder(baseOrder); });
+
+// 이 페이지의 일차(숫자). 필요하면 파일마다 바꿔주거나,
+  // 다른 곳에서 window.CURRENT_DAY를 미리 정의해 두세요.
+  window.CURRENT_DAY = typeof window.CURRENT_DAY === 'number' ? window.CURRENT_DAY : 01;
+
+  document.addEventListener('DOMContentLoaded', () => {
+    const DAY = Number(window.CURRENT_DAY);
+    const pad2      = n => String(n).padStart(2, '0');
+    const fileName  = n => `${pad2(n)}일차.html`;
+    const remoteUrl = n => `https://seagwang1124.github.io/90html/${encodeURIComponent(fileName(n))}`;
+
+    const $prev  = document.getElementById('nav-prev');
+    const $next  = document.getElementById('nav-next');
+    const $title = document.getElementById('nav-title');
+    const $list  = document.getElementById('nav-list');
+
+    // 제목 세팅
+    $title.textContent = ` 통독 ${pad2(DAY)}일차 `;
+
+    // 이전/다음 링크
+    if (DAY > 1) {
+      const d = DAY - 1;
+      $prev.dataset.remote = remoteUrl(d);   // 온라인
+      $prev.dataset.local  = fileName(d);    // 오프라인
+    } else {
+      $prev.style.display = 'none';
+    }
+
+    if (DAY < 90) {
+      const d = DAY + 1;
+      $next.dataset.remote = remoteUrl(d);
+      $next.dataset.local  = fileName(d);
+    } else {
+      $next.style.display = 'none';
+    }
+
+    // 목록 링크
+    $list.dataset.remote = 'https://seagwang1124.github.io/90html';
+    $list.dataset.local  = 'index.html';
+
+    // ✅ 사용 설명서(온라인/오프라인)
       $manual.dataset.remote = 'https://seagwang1124.github.io/90html/%EC%82%AC%EC%9A%A9%20%EC%84%A4%EB%AA%85%EC%84%9C.html';
       $manual.dataset.local  = '사용 설명서.html';
 
-      // 온라인/오프라인에 따라 href 적용
-      function applyNavMode() {
-        const online = navigator.onLine;
-        document.querySelectorAll('.nav-link').forEach(a => {
-          const remote = a.dataset.remote || a.getAttribute('href') || '#';
-          const local  = a.dataset.local  || a.getAttribute('href') || '#';
-          a.setAttribute('href', online ? remote : local);
-        });
-      }
-      applyNavMode();
-      window.addEventListener('online',  applyNavMode);
-      window.addEventListener('offline', applyNavMode);
-
-      // 오프라인 시 로컬로 강제 이동(안전장치)
-      document.addEventListener('click', (e) => {
-        const link = e.target.closest('.nav-link');
-        if (!link) return;
-        if (!navigator.onLine && link.dataset.local) {
-          e.preventDefault();
-          location.href = link.dataset.local;
-        }
+    // 온라인/오프라인에 따라 href 적용
+    function applyNavMode() {
+      const online = navigator.onLine;
+      document.querySelectorAll('.nav-link').forEach(a => {
+        const remote = a.dataset.remote || a.getAttribute('href') || '#';
+        const local  = a.dataset.local  || a.getAttribute('href') || '#';
+        a.setAttribute('href', online ? remote : local);
       });
+    }
+    applyNavMode();
+    window.addEventListener('online',  applyNavMode);
+    window.addEventListener('offline', applyNavMode);
+
+    // 오프라인일 때는 로컬 파일로 강제 이동(안전장치)
+    document.addEventListener('click', (e) => {
+      const link = e.target.closest('.nav-link');
+      if (!link) return;
+      if (!navigator.onLine && link.dataset.local) {
+        e.preventDefault();
+        location.href = link.dataset.local;
+      }
     });
+  });
   </script>
 </body>
 </html>
+
 
