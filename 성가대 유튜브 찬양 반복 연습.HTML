@@ -386,7 +386,6 @@
   function updateShareLink(currentId){
     if(suppressShareOnce){ suppressShareOnce=false; return; }
     var url; try{ url=new URL(window.location.href);}catch(e){return;}
-    // 항상 origin+path 기준으로 새 search 구성
     url.search='';
     var map=collectPartIds();
     if(currentId) url.searchParams.set('v',currentId);
@@ -658,7 +657,24 @@
 
     collectPartRows();
 
-    /* 제목: input/변경 시 즉시 공유주소 반영 */
+    /* 제목 넣기/삭제 */
+    on(els.titlePaste,'click',function(){
+      if(navigator.clipboard && navigator.clipboard.readText){
+        navigator.clipboard.readText().then(function(txt){
+          if(typeof txt==='string'){ els.titleInput.value=txt; updateShareLink(currentVideoId||''); }
+        }).catch(function(){
+          var t=window.prompt('제목을 붙여 넣어 주세요:','');
+          if(typeof t==='string'){ els.titleInput.value=t; updateShareLink(currentVideoId||''); }
+        });
+      }else{
+        var t=window.prompt('제목을 붙여 넣어 주세요:','');
+        if(typeof t==='string'){ els.titleInput.value=t; updateShareLink(currentVideoId||''); }
+      }
+    });
+    on(els.titleClear,'click',function(){
+      els.titleInput.value=''; updateShareLink(currentVideoId||'');
+    });
+    /* 제목: 입력 중에도 바로 공유주소 반영 */
     on(els.titleInput,'input',function(){ updateShareLink(currentVideoId||''); });
     on(els.titleInput,'change',function(){ updateShareLink(currentVideoId||''); });
 
@@ -804,7 +820,7 @@
       }
     }
 
-    // 2) 복원 후 한 번만 공유주소 동기화 (덮어쓰기 방지 플래그로 보호)
+    // 2) 복원 후 한 번만 공유주소 동기화 (덮어쓰기 방지)
     suppressShareOnce=true;
     updateShareLink(vParam||'');
 
@@ -816,4 +832,5 @@
   </script>
 </body>
 </html>
+
 
