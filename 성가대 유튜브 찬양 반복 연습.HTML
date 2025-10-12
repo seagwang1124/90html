@@ -49,10 +49,8 @@
     .ratio-16x9{width:100%;aspect-ratio:16/9}
     #player{width:100%;height:100%}
 
-    /* 탭(터치) 캐처 */
     .tap-catcher{position:absolute;inset:0;z-index:4;background:transparent;touch-action:manipulation}
 
-    /* 중앙 큰 재생 버튼 */
     .center-play{position:absolute;inset:0;display:grid;place-items:center;pointer-events:none;z-index:5;opacity:1;transition:opacity 180ms ease}
     .center-play.is-hidden{opacity:0;pointer-events:none}
     .center-play .btn{pointer-events:auto;width:88px;height:88px;border-radius:9999px;background:rgba(255,255,255,.92);border:none;display:grid;place-items:center;box-shadow:0 10px 25px rgba(0,0,0,.45);cursor:pointer;transition:transform .1s}
@@ -303,7 +301,7 @@
       </div>
     </div>
 
-    <!-- 외부 컨트롤 (전체화면 아닐 때도 사용) -->
+    <!-- 외부 컨트롤 -->
     <div class="controls" aria-label="재생 컨트롤">
       <div class="ab-row" aria-label="A–B 구간 반복" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
         <button class="secondary" id="setA" type="button" title="현재 위치를 A로 설정 (단축키 A)">A지점 설정</button>
@@ -334,7 +332,10 @@
   var preferredQuality=null;
   var partKeys=['ch','sop','alt','ten','bas','sol']; var partEls={};
   var mobileHideTimer=null; var els={};
-  var suppressShareOnce=false; // 복원 직후 1회, 덮어쓰기 방지
+
+  // 복원/초기화 중에는 공유 주소 자동 갱신을 잠시 막는다
+  var suppressShareUpdate=true;
+  var initialVideoId=null;
 
   function gid(id){return document.getElementById(id)}
   function on(el,evt,fn,opts){ if(el&&el.addEventListener) el.addEventListener(evt,fn,opts||false) }
@@ -384,7 +385,7 @@
   }
 
   function updateShareLink(currentId){
-    if(suppressShareOnce){ suppressShareOnce=false; return; }
+    if(suppressShareUpdate) return; // 초기 복원 중에는 갱신 금지
     var url; try{ url=new URL(window.location.href);}catch(e){return;}
     url.search='';
     var map=collectPartIds();
@@ -640,6 +641,36 @@
     }catch(e){}
   }
 
+  /* ===== 초기 UI/복원 ===== */
+  function restoreFromURL(){
+    var params=new URLSearchParams(location.search);
+
+    // 제목
+    var tParam=params.get('t');
+    if(tParam && els.titleInput){ els.titleInput.value=tParam; }
+
+    // A–B
+    var aParam=Number(params.get('a')); var bParam=Number(params.get('b'));
+    if(!isNaN(aParam)&&!isNaN(bParam)&&bParam>aParam){ aPoint=aParam; bPoint=bParam; abEnabled=true; }
+
+    // 파트 링크
+    for(var i=0;i<partKeys.length;i++){
+      var k=partKeys[i]; var id=params.get(k);
+      if(id&&/^[A-Za-z0-9_-]{11}$/.test(id)){
+        var pe=document.querySelector('.part-row[data-key="'+k+'"] .link');
+        if(pe){ pe.value='https://www.youtube.com/watch?v='+id; }
+      }
+    }
+
+    // 초기 재생 대상
+    var vParam=params.get('v');
+    if(vParam && /^[A-Za-z0-9_-]{11}$/.test(vParam)) initialVideoId=vParam;
+
+    // 복원 직후 한 번 공유주소 갱신(덮어쓰기 없이 현 상태 반영)
+    suppressShareUpdate=false;
+    updateShareLink(initialVideoId||'');
+  }
+
   function initUI(){
     els={
       titleInput:gid('titleInput'), titlePaste:gid('titlePaste'), titleClear:gid('titleClear'),
@@ -657,6 +688,10 @@
 
     collectPartRows();
 
+    /* 먼저 URL에서 복원 */
+    restoreFromURL();
+    updateABUI();
+
     /* 제목 넣기/삭제 */
     on(els.titlePaste,'click',function(){
       if(navigator.clipboard && navigator.clipboard.readText){
@@ -671,12 +706,8 @@
         if(typeof t==='string'){ els.titleInput.value=t; updateShareLink(currentVideoId||''); }
       }
     });
-    on(els.titleClear,'click',function(){
-      els.titleInput.value=''; updateShareLink(currentVideoId||'');
-    });
-    /* 제목: 입력 중에도 바로 공유주소 반영 */
+    on(els.titleClear,'click',function(){ els.titleInput.value=''; updateShareLink(currentVideoId||''); });
     on(els.titleInput,'input',function(){ updateShareLink(currentVideoId||''); });
-    on(els.titleInput,'change',function(){ updateShareLink(currentVideoId||''); });
 
     /* 파트 라벨 & 입력 */
     for(var k in partEls){ (function(p){
@@ -780,7 +811,7 @@
       } else { try{ els.share.select(); document.execCommand('copy'); }catch(e){} }
     });
 
-    /* 플레이어 영역: 움직임/진입 시 잠시 표시 */
+    /* 플레이어 영역: 움직임/키/포커스 시 잠시 표시 (전체화면 아님 포함) */
     on(els.playerWrap,'mouseenter',function(){ showControlsTemporarily(); });
     on(els.playerWrap,'mousemove',function(){ showControlsTemporarily(); });
     on(els.playerWrap,'mouseleave',function(){
@@ -790,47 +821,25 @@
         if(st===YTS.PLAYING||st===YTS.BUFFERING) setControlsOverlay(false);
       }catch(e){}
     });
-
-    // 화면 바깥의 동작으로도 표시
     document.addEventListener('mousemove', showControlsTemporarily);
     document.addEventListener('keydown', showControlsTemporarily);
     document.addEventListener('focusin', showControlsTemporarily, true);
-
-    // 초기 AB 토글 텍스트 동기화
-    updateABUI();
   }
 
-  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',initUI); else initUI();
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',function(){ initUI(); }); else initUI();
 
+  // YT API 준비되면 초기 재생만 담당 (복원은 이미 끝난 상태)
   window.onYouTubeIframeAPIReady=function(){
-    // 1) URL에서 복원
-    var params=new URLSearchParams(location.search);
-    var vParam=params.get('v');
-    var tParam=params.get('t');
-    if(tParam && els.titleInput) els.titleInput.value=tParam;
-
-    var aParam=Number(params.get('a')); var bParam=Number(params.get('b'));
-    if(!isNaN(aParam)&&!isNaN(bParam)&&bParam>aParam){ aPoint=aParam; bPoint=bParam; abEnabled=true; }
-
-    for(var i=0;i<partKeys.length;i++){
-      var k=partKeys[i]; var id=params.get(k);
-      if(id&&/^[A-Za-z0-9_-]{11}$/.test(id)){
-        var pe=document.querySelector('.part-row[data-key="'+k+'"] .link');
-        if(pe){ pe.value='https://www.youtube.com/watch?v='+id; }
-      }
+    if(initialVideoId){ loadVideo(initialVideoId); }
+    else {
+      // 초기 영상이 없으면 오버레이 감춤
+      setCenterOverlay(false); setControlsOverlay(false);
     }
-
-    // 2) 복원 후 한 번만 공유주소 동기화 (덮어쓰기 방지)
-    suppressShareOnce=true;
-    updateShareLink(vParam||'');
-
-    // 3) 초기 재생
-    var initialId=extractYouTubeId(vParam||'')||pendingVideoId;
-    if(initialId){ pendingVideoId=null; loadVideo(initialId); }
-    else { setCenterOverlay(false); setControlsOverlay(false); }
   };
   </script>
 </body>
 </html>
+
+
 
 
