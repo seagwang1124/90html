@@ -303,18 +303,15 @@
       </div>
     </div>
 
-    <!-- 외부 도킹 타임바는 제거됨 (플레이어 내부로 이동) -->
-
+    <!-- 외부 컨트롤 (전체화면 아닐 때도 사용) -->
     <div class="controls" aria-label="재생 컨트롤">
-      <div class="ab-row" aria-label="A–B 구간 반복">
+      <div class="ab-row" aria-label="A–B 구간 반복" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
         <button class="secondary" id="setA" type="button" title="현재 위치를 A로 설정 (단축키 A)">A지점 설정</button>
         <button class="secondary" id="setB" type="button" title="현재 위치를 B로 설정 (단축키 B)">B지점 설정</button>
         <button class="secondary" id="toggleAB" type="button" title="A–B 반복 켜기/끄기 (단축키 L)">A–B 반복: OFF</button>
         <button class="ghost" id="clearAB" type="button" title="A–B 지우기 (단축키 C)">A–B 지우기</button>
-        <div class="tags">
-          <span id="tagA" class="tag a off" style="display:inline-flex;align-items:center;gap:6px;padding:4px 8px;border-radius:999px;background:var(--chip-bg);border:1px solid var(--chip-brd);font-size:12px"><span class="dot" style="width:8px;height:8px;border-radius:999px;background:#2563eb"></span><b>A</b> <span class="val">—</span></span>
-          <span id="tagB" class="tag b off" style="display:inline-flex;align-items:center;gap:6px;padding:4px 8px;border-radius:999px;background:var(--chip-bg);border:1px solid var(--chip-brd);font-size:12px"><span class="dot" style="width:8px;height:8px;border-radius:999px;background:#22c55e"></span><b>B</b> <span class="val">—</span></span>
-        </div>
+        <span id="tagA" class="tag a off" style="display:inline-flex;align-items:center;gap:6px;padding:4px 8px;border-radius:999px;background:var(--chip-bg);border:1px solid var(--chip-brd);font-size:12px"><span class="dot" style="width:8px;height:8px;border-radius:999px;background:#2563eb"></span><b>A</b> <span class="val">—</span></span>
+        <span id="tagB" class="tag b off" style="display:inline-flex;align-items:center;gap:6px;padding:4px 8px;border-radius:999px;background:var(--chip-bg);border:1px solid var(--chip-brd);font-size:12px"><span class="dot" style="width:8px;height:8px;border-radius:999px;background:#22c55e"></span><b>B</b> <span class="val">—</span></span>
       </div>
     </div>
 
@@ -334,6 +331,7 @@
   'use strict';
   var player=null,currentVideoId=null,seekTimer=null,userDragging=false,pendingVideoId=null;
   var aPoint=null,bPoint=null,abEnabled=false; var captionsOn=false;
+  var preferredQuality=null; // 선택한 화질 저장
   var partKeys=['ch','sop','alt','ten','bas','sol']; var partEls={};
   var mobileHideTimer=null; var els={};
 
@@ -391,7 +389,6 @@
     try{
       var YTS=(window.YT&&YT.PlayerState)||{};
       var st=player&&player.getPlayerState?player.getPlayerState():null;
-      // 재생 중일 때만 자동 숨김
       if(st===YTS.PLAYING||st===YTS.BUFFERING){
         mobileHideTimer=setTimeout(function(){ setControlsOverlay(false); }, 2200);
       }
@@ -545,6 +542,20 @@
     player=null; createOrLoadPlayer(currentVideoId,t);
   }
 
+  function applyPreferredQuality(){
+    if(!player) return;
+    try{
+      if(preferredQuality && preferredQuality!=='default'){
+        // 재생 중에 여러 번 시도 (일부 상황에서 첫 시도 무시되는 문제 대응)
+        player.setPlaybackQuality(preferredQuality);
+        setTimeout(function(){ try{ player.setPlaybackQuality(preferredQuality); }catch(e){} }, 200);
+        setTimeout(function(){ try{ player.setPlaybackQuality(preferredQuality); }catch(e){} }, 600);
+      }else{
+        player.setPlaybackQuality('default');
+      }
+    }catch(e){}
+  }
+
   function onPlayerReady(){
     setupSeekTimer();
     setVolume(els.vol&&typeof els.vol.value!=='undefined'?els.vol.value:100);
@@ -557,6 +568,8 @@
     }catch(e){}
     setCenterOverlay(true); setControlsOverlay(true);
     updatePlayToggleUI(); updateMuteUI(); updateFsUI();
+    // 준비 직후 화질 선호 적용 (가능한 경우)
+    applyPreferredQuality();
   }
 
   function onPlayerStateChange(e){
@@ -569,11 +582,13 @@
     }
     if(e&&(e.data===YTS.PLAYING||e.data===YTS.BUFFERING)){
       setCenterOverlay(false);
-      showControlsTemporarily(); // 재생 시작 시 잠시 표시 후 자동 숨김
+      showControlsTemporarily();
       hideCookieHelp();
+      // 재생 시작 시 화질 선호 한 번 더 적용
+      applyPreferredQuality();
     } else if(e&&(e.data===YTS.PAUSED||e.data===YTS.CUED||e.data===YTS.UNSTARTED)){
       setCenterOverlay(true);
-      setControlsOverlay(true); // 일시정지/준비 상태에선 항상 표시
+      setControlsOverlay(true);
       hideCookieHelp();
     }
     updatePlayToggleUI();
@@ -608,6 +623,30 @@
     var id=extractYouTubeId(p.input.value||'');
     if(!id){ showError('유효한 유튜브 링크를 입력해 주세요.'); return; }
     loadVideo(id);
+  }
+
+  function mapQualityLabel(q){ var m={ small:'240p', medium:'360p', large:'480p', hd720:'720p', hd1080:'1080p', hd1440:'1440p', hd2160:'2160p', highres:'고해상도' }; return m[q]||q; }
+  function openQualityMenu(){
+    try{
+      var levels=(player&&player.getAvailableQualityLevels)?player.getAvailableQualityLevels():[];
+      els.qualityMenu.innerHTML='';
+      var opts=['default'].concat(levels);
+      for(var i=0;i<opts.length;i++){
+        (function(q){
+          var btn=document.createElement('button');
+          btn.textContent=(q==='default')? '자동': mapQualityLabel(q);
+          btn.addEventListener('click',function(){
+            // 화질 선택
+            preferredQuality = (q==='default') ? null : q;
+            applyPreferredQuality();
+            els.qualityMenu.classList.remove('open');
+            showControlsTemporarily();
+          });
+          els.qualityMenu.appendChild(btn);
+        })(opts[i]);
+      }
+      els.qualityMenu.classList.add('open');
+    }catch(e){}
   }
 
   function initUI(){
@@ -659,10 +698,16 @@
     });
 
     /* 하단 퀵 AB 버튼 */
-    on(els.qSetA,'click',setAHere);
-    on(els.qSetB,'click',setBHere);
-    on(els.qToggleAB,'click',toggleABLoop);
-    on(els.qClearAB,'click',clearAB);
+    on(els.qSetA,'click',function(){ setAHere(); showControlsTemporarily(); });
+    on(els.qSetB,'click',function(){ setBHere(); showControlsTemporarily(); });
+    on(els.qToggleAB,'click',function(){ toggleABLoop(); showControlsTemporarily(); });
+    on(els.qClearAB,'click',function(){ clearAB(); showControlsTemporarily(); });
+
+    /* 외부(바깥) AB 버튼도 확실하게 연결 + 타임라인 표시 */
+    on(els.setA,'click',function(){ setAHere(); showControlsTemporarily(); });
+    on(els.setB,'click',function(){ setBHere(); showControlsTemporarily(); });
+    on(els.toggleAB,'click',function(){ toggleABLoop(); showControlsTemporarily(); });
+    on(els.clearAB,'click',function(){ clearAB(); showControlsTemporarily(); });
 
     /* 중앙 오버레이 큰 재생 */
     on(els.overlayPlay,'click',function(){ setCenterOverlay(false); player&&player.playVideo&&player.playVideo(); });
@@ -745,6 +790,11 @@
       }catch(e){}
     });
 
+    // ★ 화면 바깥에서도 움직임/키 입력/포커스가 있으면 타임라인 표시
+    document.addEventListener('mousemove', showControlsTemporarily);
+    document.addEventListener('keydown', showControlsTemporarily);
+    document.addEventListener('focusin', showControlsTemporarily, true);
+
     function handleSurfaceTap(){
       try{
         var YTS=(window.YT&&YT.PlayerState)||{};
@@ -796,27 +846,6 @@
     if(initialId){ pendingVideoId=null; loadVideo(initialId); }
     else { setCenterOverlay(false); setControlsOverlay(false); updateShareLink(''); }
   };
-
-  function mapQualityLabel(q){ var m={ small:'240p', medium:'360p', large:'480p', hd720:'720p', hd1080:'1080p', hd1440:'1440p', hd2160:'2160p', highres:'고해상도' }; return m[q]||q; }
-  function openQualityMenu(){
-    try{
-      var levels=(player&&player.getAvailableQualityLevels)?player.getAvailableQualityLevels():[];
-      els.qualityMenu.innerHTML='';
-      var opts=['default'].concat(levels);
-      for(var i=0;i<opts.length;i++){
-        (function(q){
-          var btn=document.createElement('button');
-          btn.textContent=(q==='default')? '자동': mapQualityLabel(q);
-          btn.addEventListener('click',function(){
-            try{ player&&player.setPlaybackQuality&&player.setPlaybackQuality(q);}catch(e){}
-            els.qualityMenu.classList.remove('open');
-          });
-          els.qualityMenu.appendChild(btn);
-        })(opts[i]);
-      }
-      els.qualityMenu.classList.add('open');
-    }catch(e){}
-  }
   </script>
 </body>
 </html>
