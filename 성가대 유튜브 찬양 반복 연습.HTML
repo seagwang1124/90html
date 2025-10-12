@@ -331,9 +331,10 @@
   'use strict';
   var player=null,currentVideoId=null,seekTimer=null,userDragging=false,pendingVideoId=null;
   var aPoint=null,bPoint=null,abEnabled=false; var captionsOn=false;
-  var preferredQuality=null; // 선택한 화질 저장
+  var preferredQuality=null;
   var partKeys=['ch','sop','alt','ten','bas','sol']; var partEls={};
   var mobileHideTimer=null; var els={};
+  var suppressShareOnce=false; // 복원 직후 1회, 덮어쓰기 방지
 
   function gid(id){return document.getElementById(id)}
   function on(el,evt,fn,opts){ if(el&&el.addEventListener) el.addEventListener(evt,fn,opts||false) }
@@ -371,47 +372,6 @@
     return null;
   }
 
-  function setCenterOverlay(show){
-    var el=els.overlay; if(!el) return;
-    if(show){ el.hidden=false; requestAnimationFrame(function(){ el.classList.remove('is-hidden'); }); }
-    else { el.classList.add('is-hidden'); }
-    el.setAttribute('aria-hidden',String(!show));
-  }
-  function setControlsOverlay(show){
-    var el=els.overlayCtrl; if(!el) return;
-    if(show){ el.hidden=false; requestAnimationFrame(function(){ el.classList.remove('is-hidden'); }); }
-    else { el.classList.add('is-hidden'); }
-    el.setAttribute('aria-hidden',String(!show));
-  }
-
-  function scheduleAutoHide(){
-    clearTimeout(mobileHideTimer);
-    try{
-      var YTS=(window.YT&&YT.PlayerState)||{};
-      var st=player&&player.getPlayerState?player.getPlayerState():null;
-      if(st===YTS.PLAYING||st===YTS.BUFFERING){
-        mobileHideTimer=setTimeout(function(){ setControlsOverlay(false); }, 2200);
-      }
-    }catch(e){}
-  }
-
-  function showControlsTemporarily(){
-    setControlsOverlay(true);
-    scheduleAutoHide();
-  }
-
-  function updatePlayToggleUI(){
-    try{
-      var YTS=(window.YT&&YT.PlayerState)||{};
-      var st=player&&player.getPlayerState?player.getPlayerState():null;
-      var playing=(st===YTS.PLAYING||st===YTS.BUFFERING);
-      if(els.playToggle) els.playToggle.textContent=playing?'⏸ 일시정지':'▶ 재생';
-    }catch(e){ if(els.playToggle) els.playToggle.textContent='▶ 재생'; }
-  }
-  function updateMuteUI(){ try{ if(els.muteToggle) els.muteToggle.textContent=(player&&player.isMuted&&player.isMuted())?'🔇':'🔊'; }catch(e){} }
-  function updateFsUI(){ if(els.fsToggle) els.fsToggle.textContent = document.fullscreenElement? '⛶ 종료':'⛶ 전체화면'; }
-  function showError(msg){ var e=els.err; if(e) e.textContent=msg||''; if(msg){ setTimeout(function(){ if(els&&els.err) els.err.textContent=''; }, 5000); } }
-
   function collectPartIds(){
     var map={};
     for(var i=0;i<partKeys.length;i++){
@@ -422,8 +382,11 @@
     }
     return map;
   }
+
   function updateShareLink(currentId){
-    var url; try{ url=new URL(location.href);}catch(e){return;}
+    if(suppressShareOnce){ suppressShareOnce=false; return; }
+    var url; try{ url=new URL(window.location.href);}catch(e){return;}
+    // 항상 origin+path 기준으로 새 search 구성
     url.search='';
     var map=collectPartIds();
     if(currentId) url.searchParams.set('v',currentId);
@@ -436,10 +399,46 @@
     }
     if(els.share) els.share.value=url.toString();
     try{ history.replaceState({},'',url.toString()); }catch(e){}
-    if(currentId&&els.openYT){
+    if((currentId||'') && els.openYT){
       els.openYT.onclick=function(){ window.open('https://www.youtube.com/watch?v='+currentId,'_blank','noopener'); };
     }
   }
+
+  function setCenterOverlay(show){
+    var el=els.overlay; if(!el) return;
+    if(show){ el.hidden=false; requestAnimationFrame(function(){ el.classList.remove('is-hidden'); }); }
+    else { el.classList.add('is-hidden'); }
+    el.setAttribute('aria-hidden',String(!show));
+  }
+  function setControlsOverlay(show){
+    var el=els.overlayCtrl; if(!el) return;
+    if(show){ el.hidden=false; requestAnimationFrame(function(){ el.classList.remove('is-hidden'); }); }
+    else { el.classList.add('is-hidden'); }
+    el.setAttribute('aria-hidden',String(!show));
+  }
+  function scheduleAutoHide(){
+    clearTimeout(mobileHideTimer);
+    try{
+      var YTS=(window.YT&&YT.PlayerState)||{};
+      var st=player&&player.getPlayerState?player.getPlayerState():null;
+      if(st===YTS.PLAYING||st===YTS.BUFFERING){
+        mobileHideTimer=setTimeout(function(){ setControlsOverlay(false); }, 2200);
+      }
+    }catch(e){}
+  }
+  function showControlsTemporarily(){ setControlsOverlay(true); scheduleAutoHide(); }
+
+  function updatePlayToggleUI(){
+    try{
+      var YTS=(window.YT&&YT.PlayerState)||{};
+      var st=player&&player.getPlayerState?player.getPlayerState():null;
+      var playing=(st===YTS.PLAYING||st===YTS.BUFFERING);
+      if(els.playToggle) els.playToggle.textContent=playing?'⏸ 일시정지':'▶ 재생';
+    }catch(e){ if(els.playToggle) els.playToggle.textContent='▶ 재생'; }
+  }
+  function updateMuteUI(){ try{ if(els.muteToggle) els.muteToggle.textContent=(player&&player.isMuted&&player.isMuted())?'🔇':'🔊'; }catch(e){} }
+  function updateFsUI(){ if(els.fsToggle) els.fsToggle.textContent = document.fullscreenElement? '⛶ 종료':'⛶ 전체화면'; }
+  function showError(msg){ var e=els.err; if(e) e.textContent=msg||''; if(msg){ setTimeout(function(){ if(els&&els.err) els.err.textContent=''; }, 5000); } }
 
   function setVolume(v){ try{ v=Math.max(0,Math.min(100,Number(v))); if(player&&player.setVolume) player.setVolume(v);}catch(e){} }
   function updateSeekABBG(){
@@ -546,7 +545,6 @@
     if(!player) return;
     try{
       if(preferredQuality && preferredQuality!=='default'){
-        // 재생 중에 여러 번 시도 (일부 상황에서 첫 시도 무시되는 문제 대응)
         player.setPlaybackQuality(preferredQuality);
         setTimeout(function(){ try{ player.setPlaybackQuality(preferredQuality); }catch(e){} }, 200);
         setTimeout(function(){ try{ player.setPlaybackQuality(preferredQuality); }catch(e){} }, 600);
@@ -568,23 +566,18 @@
     }catch(e){}
     setCenterOverlay(true); setControlsOverlay(true);
     updatePlayToggleUI(); updateMuteUI(); updateFsUI();
-    // 준비 직후 화질 선호 적용 (가능한 경우)
     applyPreferredQuality();
   }
 
   function onPlayerStateChange(e){
     var YTS=(window.YT&&YT.PlayerState)||{};
     if(e&&e.data===YTS.ENDED){
-      try{
-        player.seekTo&&player.seekTo(aPoint!=null?aPoint:0,true);
-        player.playVideo&&player.playVideo();
-      }catch(err){}
+      try{ player.seekTo&&player.seekTo(aPoint!=null?aPoint:0,true); player.playVideo&&player.playVideo(); }catch(err){}
     }
     if(e&&(e.data===YTS.PLAYING||e.data===YTS.BUFFERING)){
       setCenterOverlay(false);
       showControlsTemporarily();
       hideCookieHelp();
-      // 재생 시작 시 화질 선호 한 번 더 적용
       applyPreferredQuality();
     } else if(e&&(e.data===YTS.PAUSED||e.data===YTS.CUED||e.data===YTS.UNSTARTED)){
       setCenterOverlay(true);
@@ -636,7 +629,6 @@
           var btn=document.createElement('button');
           btn.textContent=(q==='default')? '자동': mapQualityLabel(q);
           btn.addEventListener('click',function(){
-            // 화질 선택
             preferredQuality = (q==='default') ? null : q;
             applyPreferredQuality();
             els.qualityMenu.classList.remove('open');
@@ -666,7 +658,11 @@
 
     collectPartRows();
 
-    /* 파트 라벨 */
+    /* 제목: input/변경 시 즉시 공유주소 반영 */
+    on(els.titleInput,'input',function(){ updateShareLink(currentVideoId||''); });
+    on(els.titleInput,'change',function(){ updateShareLink(currentVideoId||''); });
+
+    /* 파트 라벨 & 입력 */
     for(var k in partEls){ (function(p){
       if(p.label){
         on(p.label,'click',function(){ tryPlayFromRow(p); });
@@ -685,6 +681,7 @@
         }
       });
       on(p.remove,'click',function(){ if(p.input) p.input.value=''; updateShareLink(currentVideoId||''); });
+      on(p.input,'input',function(){ updateShareLink(currentVideoId||''); });
       on(p.input,'change',function(){ updateShareLink(currentVideoId||''); });
     })(partEls[k]); }
 
@@ -703,7 +700,7 @@
     on(els.qToggleAB,'click',function(){ toggleABLoop(); showControlsTemporarily(); });
     on(els.qClearAB,'click',function(){ clearAB(); showControlsTemporarily(); });
 
-    /* 외부(바깥) AB 버튼도 확실하게 연결 + 타임라인 표시 */
+    /* 외부 AB 버튼 */
     on(els.setA,'click',function(){ setAHere(); showControlsTemporarily(); });
     on(els.setB,'click',function(){ setBHere(); showControlsTemporarily(); });
     on(els.toggleAB,'click',function(){ toggleABLoop(); showControlsTemporarily(); });
@@ -767,19 +764,7 @@
       } else { try{ els.share.select(); document.execCommand('copy'); }catch(e){} }
     });
 
-    /* 제목 붙여넣기/삭제 */
-    on(els.titlePaste,'click',function(){
-      if(navigator.clipboard&&navigator.clipboard.readText){
-        navigator.clipboard.readText().then(function(txt){ els.titleInput&&(els.titleInput.value=txt); updateShareLink(currentVideoId||''); })
-        .catch(function(){ var t=window.prompt('제목을 붙여 넣어 주세요:',''); if(typeof t==='string'){ els.titleInput.value=t; updateShareLink(currentVideoId||''); } });
-      } else {
-        var t=window.prompt('제목을 붙여 넣어 주세요:',''); if(typeof t==='string'){ els.titleInput.value=t; updateShareLink(currentVideoId||''); }
-      }
-    });
-    on(els.titleClear,'click',function(){ els.titleInput&&(els.titleInput.value=''); updateShareLink(currentVideoId||''); });
-    on(els.titleInput,'change',function(){ updateShareLink(currentVideoId||''); });
-
-    /* 플레이어 영역: 움직임/진입 시 잠시 표시, 떠나면 숨김 */
+    /* 플레이어 영역: 움직임/진입 시 잠시 표시 */
     on(els.playerWrap,'mouseenter',function(){ showControlsTemporarily(); });
     on(els.playerWrap,'mousemove',function(){ showControlsTemporarily(); });
     on(els.playerWrap,'mouseleave',function(){
@@ -790,32 +775,10 @@
       }catch(e){}
     });
 
-    // ★ 화면 바깥에서도 움직임/키 입력/포커스가 있으면 타임라인 표시
+    // 화면 바깥의 동작으로도 표시
     document.addEventListener('mousemove', showControlsTemporarily);
     document.addEventListener('keydown', showControlsTemporarily);
     document.addEventListener('focusin', showControlsTemporarily, true);
-
-    function handleSurfaceTap(){
-      try{
-        var YTS=(window.YT&&YT.PlayerState)||{};
-        var st=player&&player.getPlayerState?player.getPlayerState():null;
-        if(st===YTS.PLAYING||st===YTS.BUFFERING){
-          player&&player.pauseVideo&&player.pauseVideo();
-          setCenterOverlay(true); setControlsOverlay(true);
-        } else {
-          setCenterOverlay(false);
-          player&&player.playVideo&&player.playVideo();
-          showControlsTemporarily();
-        }
-      }catch(e){ setControlsOverlay(true); }
-    }
-    on(els.playerWrap,'click',function(e){
-      if(els.overlayCtrl && els.overlayCtrl.contains(e.target)) return; // 오버레이 버튼 클릭은 통과
-      if(els.overlay && els.overlay.contains(e.target)) return;
-      handleSurfaceTap();
-    });
-    on(els.tapCatcher,'touchstart',function(ev){ try{ ev.preventDefault(); ev.stopPropagation(); }catch(_){} handleSurfaceTap(); }, {passive:false});
-    on(els.tapCatcher,'click',function(ev){ try{ ev.preventDefault(); ev.stopPropagation(); }catch(_){} handleSurfaceTap(); });
 
     // 초기 AB 토글 텍스트 동기화
     updateABUI();
@@ -824,16 +787,15 @@
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',initUI); else initUI();
 
   window.onYouTubeIframeAPIReady=function(){
+    // 1) URL에서 복원
     var params=new URLSearchParams(location.search);
     var vParam=params.get('v');
     var tParam=params.get('t');
-    els.titleInput&&tParam&&(els.titleInput.value=tParam);
+    if(tParam && els.titleInput) els.titleInput.value=tParam;
 
-    // A–B 복원
     var aParam=Number(params.get('a')); var bParam=Number(params.get('b'));
-    if(!isNaN(aParam)&&!isNaN(bParam)&&bParam>aParam){ aPoint=aParam; bPoint=bParam; abEnabled=true; updateABUI(); }
+    if(!isNaN(aParam)&&!isNaN(bParam)&&bParam>aParam){ aPoint=aParam; bPoint=bParam; abEnabled=true; }
 
-    // 파트 링크 복원
     for(var i=0;i<partKeys.length;i++){
       var k=partKeys[i]; var id=params.get(k);
       if(id&&/^[A-Za-z0-9_-]{11}$/.test(id)){
@@ -842,12 +804,16 @@
       }
     }
 
+    // 2) 복원 후 한 번만 공유주소 동기화 (덮어쓰기 방지 플래그로 보호)
+    suppressShareOnce=true;
+    updateShareLink(vParam||'');
+
+    // 3) 초기 재생
     var initialId=extractYouTubeId(vParam||'')||pendingVideoId;
     if(initialId){ pendingVideoId=null; loadVideo(initialId); }
-    else { setCenterOverlay(false); setControlsOverlay(false); updateShareLink(''); }
+    else { setCenterOverlay(false); setControlsOverlay(false); }
   };
   </script>
 </body>
 </html>
-
 
