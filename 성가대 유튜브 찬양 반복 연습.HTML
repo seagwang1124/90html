@@ -32,7 +32,6 @@
 
     /* 리스트 행 */
     .parts{display:grid;gap:8px}
-    /* 선택 버튼 제거 후: [라벨 | 링크 | 넣기 | 삭제] */
     .part-row{
       display:grid;
       grid-template-columns:84px 1fr auto auto;
@@ -60,11 +59,11 @@
     .center-play .btn:hover{transform:scale(1.03)}
     .triangle{width:0;height:0;border-left:26px solid #0b1220;border-top:16px solid transparent;border-bottom:16px solid transparent;margin-left:6px}
 
-    /* === 동영상 안 오버레이: 좌/우(세로), 상단/하단(가로) === */
+    /* === 동영상 안 오버레이 === */
     .overlay-ctrl{
       position:absolute; inset:0; z-index:6; color:#fff;
       opacity:1; transition:opacity 180ms ease;
-      pointer-events:none; /* 자식만 클릭 */
+      pointer-events:none;
     }
     .overlay-ctrl.is-hidden{opacity:0; pointer-events:none}
     .overlay-ctrl .bar{
@@ -72,7 +71,7 @@
       background:linear-gradient(to top,rgba(0,0,0,.75),rgba(0,0,0,.35) 60%,transparent);
     }
 
-    /* 좌우 컬럼: 화면 중앙에 세로 정렬 (상/하 버튼과 겹치지 않게) */
+    /* 좌우 세로 컬럼: 가운데 정렬 */
     .overlay-ctrl .left,
     .overlay-ctrl .right{
       position:absolute; top:50%;
@@ -98,7 +97,17 @@
       pointer-events:auto;
     }
     .overlay-ctrl .topbar{ top:10px }
-    .overlay-ctrl .bottombar{ bottom:10px }
+    .overlay-ctrl .bottombar{ bottom:46px } /* 타임라인 공간 확보 */
+
+    /* 타임라인(플레이어 안 최하단) */
+    .overlay-ctrl .seekbar{
+      position:absolute; left:0; right:0; bottom:8px;
+      display:flex; align-items:center; gap:8px; padding:0 10px;
+      pointer-events:auto;
+    }
+    .seek{flex:1;height:6px;border-radius:999px;background:#374151;appearance:none}
+    .seek::-webkit-slider-thumb{appearance:none;width:12px;height:12px;border-radius:50%;background:#fff;border:2px solid #1f2937}
+    .dock-time{font-variant-numeric:tabular-nums;font-size:12px;min-width:84px;text-align:right;color:#e5e7eb}
 
     /* 작은 타원형 퀵 버튼 (칩) */
     .pill{
@@ -112,7 +121,7 @@
     .pill.min{padding:6px 10px; font-size:12px}
     .pill:disabled{opacity:.6; cursor:not-allowed}
 
-    /* 화질 메뉴 (우측 칼럼 버튼 위에 뜨게) */
+    /* 화질 메뉴 */
     .menu{
       position:absolute; bottom:calc(100% + 8px); right:0;
       background:rgba(17,24,39,.96); border:1px solid #374151;border-radius:10px;padding:6px;display:none;min-width:160px;
@@ -123,34 +132,22 @@
     .menu button{width:100%;text-align:left;background:transparent;color:#e5e7eb;border:none;padding:8px 10px;border-radius:8px}
     .menu button:hover{background:#1f2937}
 
-    /* 공유 */
+    /* 공유/기타 */
     .share{display:flex;gap:8px;align-items:center}
     .help{color:var(--muted);font-size:13px}
     .err{color:var(--danger);font-size:13px;margin-top:6px}
     .warn{color:var(--warn);font-size:13px;margin-top:6px}
 
-    /* 도킹 시크바 */
-    .seek-dock{background:var(--panel-2);border-top:1px solid #374151;border-bottom:1px solid #374151;padding:6px 10px;display:flex;align-items:center;gap:8px}
-    .seek-dock .seek{flex:1;height:6px;border-radius:999px;background:#374151;appearance:none}
-    .seek-dock .seek::-webkit-slider-thumb{appearance:none;width:12px;height:12px;border-radius:50%;background:#fff;border:2px solid #1f2937}
-    .dock-time{font-variant-numeric:tabular-nums;font-size:12px;min-width:84px;text-align:right;color:#e5e7eb}
-
-    /* 반응형 기본(≤720px) */
+    /* 반응형 */
     @media(max-width:720px){
       .center-play .btn{width:76px;height:76px}
       .triangle{border-left-width:22px;border-top-width:14px;border-bottom-width:14px}
-      .volslider input{width:110px}
       .overlay-ctrl .topbar, .overlay-ctrl .bottombar{gap:6px; padding:6px 8px}
       .pill{padding:6px 9px; font-size:12px}
     }
-
-    /* 모바일 세로(≤540px): 파트 행 겹침 방지 + 컴팩트 */
     @media(max-width:540px){
       .parts{gap:6px}
-      .part-row{
-        grid-template-columns:56px minmax(0,1fr) 36px 36px;
-        gap:6px; align-items:center
-      }
+      .part-row{grid-template-columns:56px minmax(0,1fr) 36px 36px;gap:6px;align-items:center}
       .part-row > *{min-width:0}
       .part-row .part-label{width:56px; padding:4px 2px; font-size:14px; line-height:1.1}
       .part-row .paste,.part-row .remove{
@@ -160,14 +157,10 @@
       }
       input[type=url]{padding:8px 10px;font-size:14px}
       .overlay-ctrl button{padding:6px 8px;font-size:12px}
-      .seek-dock{padding:6px 8px}
       .dock-time{min-width:64px;font-size:11px}
       .center-play .btn{width:72px;height:72px}
-      /* 상/하단 칩이 너무 길면 자동 줄바꿈하며 중앙 정렬 유지 */
       .overlay-ctrl .topbar, .overlay-ctrl .bottombar{flex-wrap:wrap}
     }
-
-    /* 초협폭(≤420px) */
     @media(max-width:420px){
       body{padding:12px}
       button{padding:6px 8px;border-radius:8px;font-size:11px}
@@ -263,7 +256,7 @@
       <div class="overlay-ctrl is-hidden" id="overlayCtrl" aria-hidden="true">
         <div class="bar"></div>
 
-        <!-- 상단: 파트 퀵버튼 6개 (가운데 정렬) -->
+        <!-- 상단: 파트 퀵버튼 6개 -->
         <div class="topbar" id="topQuick">
           <button class="pill min qpart" data-key="ch" title="합창">Ch</button>
           <button class="pill min qpart" data-key="sop" title="소프라노">So</button>
@@ -273,7 +266,7 @@
           <button class="pill min qpart" data-key="sol" title="솔로">Sl</button>
         </div>
 
-        <!-- 좌측(세로, 가운데 정렬) -->
+        <!-- 좌측(세로) -->
         <div class="left">
           <button class="secondary" id="toStart" type="button" title="영상 시작 위치로 가기">⏮︎ 시작</button>
           <button class="secondary" id="playToggle" type="button" title="재생/일시정지">▶ 재생</button>
@@ -286,7 +279,7 @@
           <div class="time-label" id="timeLabel">0:00 / 0:00</div>
         </div>
 
-        <!-- 우측(세로, 가운데 정렬) -->
+        <!-- 우측(세로) -->
         <div class="right">
           <button class="secondary" id="ccToggle" type="button" title="자막">CC</button>
           <div style="position:relative">
@@ -296,19 +289,21 @@
           <button class="secondary" id="fsToggle" type="button" title="전체화면/종료" data-compact="1">⛶ 전체화면</button>
         </div>
 
-        <!-- 하단: AB 퀵버튼 3개 (가운데 정렬) -->
+        <!-- 하단: AB 퀵버튼 + 타임라인 -->
         <div class="bottombar" id="bottomQuick">
           <button class="pill" id="qSetA" title="현재 위치를 A로 설정">A지점</button>
           <button class="pill" id="qSetB" title="현재 위치를 B로 설정">B지점</button>
           <button class="pill" id="qToggleAB" title="A–B 반복 켜기/끄기">A–B 반복: OFF</button>
+          <button class="pill" id="qClearAB" title="A–B 지우기">A–B 지우기</button>
+        </div>
+        <div class="seekbar">
+          <input id="seek" class="seek" type="range" min="0" max="1000" value="0" aria-label="재생 위치" />
+          <div class="dock-time" id="dockTime">0:00 / 0:00</div>
         </div>
       </div>
     </div>
 
-    <div class="seek-dock" id="seekDock" aria-label="재생 위치">
-      <input id="seek" class="seek" type="range" min="0" max="1000" value="0" aria-label="재생 위치" />
-      <div class="dock-time" id="dockTime">0:00 / 0:00</div>
-    </div>
+    <!-- 외부 도킹 타임바는 제거됨 (플레이어 내부로 이동) -->
 
     <div class="controls" aria-label="재생 컨트롤">
       <div class="ab-row" aria-label="A–B 구간 반복">
@@ -390,16 +385,22 @@
     else { el.classList.add('is-hidden'); }
     el.setAttribute('aria-hidden',String(!show));
   }
-  function showControlsTemporarily(){
-    setControlsOverlay(true);
+
+  function scheduleAutoHide(){
     clearTimeout(mobileHideTimer);
     try{
       var YTS=(window.YT&&YT.PlayerState)||{};
       var st=player&&player.getPlayerState?player.getPlayerState():null;
+      // 재생 중일 때만 자동 숨김
       if(st===YTS.PLAYING||st===YTS.BUFFERING){
-        mobileHideTimer=setTimeout(function(){ setControlsOverlay(false); }, 2500);
+        mobileHideTimer=setTimeout(function(){ setControlsOverlay(false); }, 2200);
       }
     }catch(e){}
+  }
+
+  function showControlsTemporarily(){
+    setControlsOverlay(true);
+    scheduleAutoHide();
   }
 
   function updatePlayToggleUI(){
@@ -566,8 +567,15 @@
         player.playVideo&&player.playVideo();
       }catch(err){}
     }
-    if(e&&(e.data===YTS.PLAYING||e.data===YTS.BUFFERING)){ setCenterOverlay(false); showControlsTemporarily(); hideCookieHelp(); }
-    else if(e&&(e.data===YTS.PAUSED||e.data===YTS.CUED||e.data===YTS.UNSTARTED)){ setCenterOverlay(true); setControlsOverlay(true); hideCookieHelp(); }
+    if(e&&(e.data===YTS.PLAYING||e.data===YTS.BUFFERING)){
+      setCenterOverlay(false);
+      showControlsTemporarily(); // 재생 시작 시 잠시 표시 후 자동 숨김
+      hideCookieHelp();
+    } else if(e&&(e.data===YTS.PAUSED||e.data===YTS.CUED||e.data===YTS.UNSTARTED)){
+      setCenterOverlay(true);
+      setControlsOverlay(true); // 일시정지/준비 상태에선 항상 표시
+      hideCookieHelp();
+    }
     updatePlayToggleUI();
   }
 
@@ -614,12 +622,12 @@
       cookieHelp:gid('cookieHelp'), playerWrap:gid('playerWrap'),
       setA:gid('setA'), setB:gid('setB'), toggleAB:gid('toggleAB'), clearAB:gid('clearAB'),
       tagA:gid('tagA'), tagB:gid('tagB'),
-      qSetA:gid('qSetA'), qSetB:gid('qSetB'), qToggleAB:gid('qToggleAB')
+      qSetA:gid('qSetA'), qSetB:gid('qSetB'), qToggleAB:gid('qToggleAB'), qClearAB:gid('qClearAB')
     };
 
     collectPartRows();
 
-    /* 파트 라벨: 클릭/키보드 재생, 붙여넣기/삭제/변경 */
+    /* 파트 라벨 */
     for(var k in partEls){ (function(p){
       if(p.label){
         on(p.label,'click',function(){ tryPlayFromRow(p); });
@@ -641,7 +649,7 @@
       on(p.input,'change',function(){ updateShareLink(currentVideoId||''); });
     })(partEls[k]); }
 
-    /* 상단 퀵 파트 버튼: 동영상 안에서 바로 재생 */
+    /* 상단 퀵 파트 버튼 */
     document.querySelectorAll('.qpart').forEach(function(btn){
       on(btn,'click',function(){
         var key=btn.getAttribute('data-key');
@@ -654,6 +662,7 @@
     on(els.qSetA,'click',setAHere);
     on(els.qSetB,'click',setBHere);
     on(els.qToggleAB,'click',toggleABLoop);
+    on(els.qClearAB,'click',clearAB);
 
     /* 중앙 오버레이 큰 재생 */
     on(els.overlayPlay,'click',function(){ setCenterOverlay(false); player&&player.playVideo&&player.playVideo(); });
@@ -725,9 +734,9 @@
     on(els.titleClear,'click',function(){ els.titleInput&&(els.titleInput.value=''); updateShareLink(currentVideoId||''); });
     on(els.titleInput,'change',function(){ updateShareLink(currentVideoId||''); });
 
-    /* 플레이어 영역 탭/호버 */
-    on(els.playerWrap,'mouseenter',function(){ setControlsOverlay(true); });
-    on(els.playerWrap,'mousemove',function(){ setControlsOverlay(true); });
+    /* 플레이어 영역: 움직임/진입 시 잠시 표시, 떠나면 숨김 */
+    on(els.playerWrap,'mouseenter',function(){ showControlsTemporarily(); });
+    on(els.playerWrap,'mousemove',function(){ showControlsTemporarily(); });
     on(els.playerWrap,'mouseleave',function(){
       try{
         var YTS=(window.YT&&YT.PlayerState)||{};
@@ -746,11 +755,12 @@
         } else {
           setCenterOverlay(false);
           player&&player.playVideo&&player.playVideo();
+          showControlsTemporarily();
         }
       }catch(e){ setControlsOverlay(true); }
     }
     on(els.playerWrap,'click',function(e){
-      if(els.overlayCtrl && els.overlayCtrl.contains(e.target)) return; // 오버레이 내부 버튼 클릭은 통과
+      if(els.overlayCtrl && els.overlayCtrl.contains(e.target)) return; // 오버레이 버튼 클릭은 통과
       if(els.overlay && els.overlay.contains(e.target)) return;
       handleSurfaceTap();
     });
@@ -810,3 +820,5 @@
   </script>
 </body>
 </html>
+
+
