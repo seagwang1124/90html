@@ -144,7 +144,11 @@ kbd{
           <a href="#nav">🧭 일차 이동</a>
           <a href="#explain">📖 구절 설명</a>
           <a href="#tips">💡 자주 묻는 질문/팁</a>
-          <a href="https://seagwang1124.github.io/90html/01%EC%9D%BC%EC%B0%A8.html" aria-label="통독 1일차로 이동">📋 통독 1일차로 이동</a>
+          <a id="quick-start-day1" class="quick-day1-link"
+             href="https://seagwang1124.github.io/90html/01%EC%9D%BC%EC%B0%A8.html"
+             data-remote="https://seagwang1124.github.io/90html/01%EC%9D%BC%EC%B0%A8.html"
+             data-local="01일차.html"
+             aria-label="통독 1일차로 이동">📋 통독 1일차로 이동</a>
         </div>
       </div>
       <!-- 미니 샘플 UI 이미지 -->
@@ -477,8 +481,39 @@ kbd{
   </main>
 
   <a href="#intro" class="top-link" aria-label="맨 위로 이동">↑ 맨 위로</a>
+	
+	<script>
+    (function () {
+      const link = document.getElementById('quick-start-day1');
+      if (!link) return;
+
+      const remoteUrl = link.dataset.remote || link.href;
+      const localUrl  = link.dataset.local  || '01일차.html';
+
+      function applyLinkByNetwork() {
+        // 온라인이면 원래(원격) 주소, 오프라인이면 로컬 파일로
+        link.href = navigator.onLine ? remoteUrl : localUrl;
+      }
+
+      // 초기 설정
+      applyLinkByNetwork();
+
+      // 온라인/오프라인 전환 시 자동 반영
+      window.addEventListener('online',  applyLinkByNetwork);
+      window.addEventListener('offline', applyLinkByNetwork);
+
+      // 안전장치: 오프라인일 때는 무조건 로컬로 보내기
+      document.addEventListener('click', function (e) {
+        const target = e.target.closest('#quick-start-day1');
+        if (!target) return;
+        if (!navigator.onLine) {
+          e.preventDefault();
+          location.href = localUrl;
+        }
+      });
+    })();
+  </script>
 </body>
 </html>
-
 
 
