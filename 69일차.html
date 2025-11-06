@@ -324,13 +324,13 @@
   <!-- 본문 -->
   <div>
     <h2 id="bible-text" style="line-height:1.2em;margin-left:15px;margin-right:15px;font-style:normal;font-weight:normal;color:black;font-size:20px;word-break:break-all;">
-    <strong>
+ <strong>
 <!-- 일차 내비게이션 -->
-<nav class="day-nav" aria-label="일차 이동">
-  <a class="day-btn" href="https://seagwang1124.github.io/90html/68%EC%9D%BC%EC%B0%A8.html" aria-label="통독 68일차로 이동">≪</a>
-  <span class="day-title"> 통독 69일차 </span>
-  <a class="day-btn" href="https://seagwang1124.github.io/90html/70%EC%9D%BC%EC%B0%A8.html" aria-label="통독 70일차로 이동">≫</a>
-  <a class="day-btn" href="https://seagwang1124.github.io/90html" aria-label="통독 목록으로 이동">통독 목록</a>
+<nav id="day-nav" class="day-nav" aria-label="일차 이동">
+  <a id="nav-prev" class="day-btn nav-link" href="#">≪</a>
+  <span id="nav-title" class="day-title"></span>
+  <a id="nav-next" class="day-btn nav-link" href="#">≫</a>
+  <a id="nav-list" class="day-btn nav-link" href="#">통독 목록</a>
 </nav>
       
 <br>범위: 눅1:1-4절/ 요1:1-5절,9-13절/ 마1:1-17절/ 눅3:23-38절/ 눅1:5-2:1-7절/ 마1:18-25절/요1:14절/ 눅2:8-39절/ 마2:1-23절/ 눅2:40-52절/ 요1:6-8절,15-34절 / 마3장/ 막1:1-11절/눅3:1-18절, 21-22절/ 마4:1-11절/ 막1:12-13절/ 눅4:1-13절/요1:35-51절, 2:1-12절/요3장/ 마14:3-5절/ 막6:17-20절/ 눅3:19-20절/ 마4:12절/ 막1:14-15절(상)/ 요4:1-44절/마4:13-17절/ 막1:15절(하)/ 눅4:14-30절/ 요4:45-54절/ 마4:18-22절/ 막1:16-20절/ 눅5:1-11절</br>
@@ -1661,6 +1661,69 @@ highlightCenterLines();
   window.addEventListener("online",  () => { tryIndex = 0; baseOrder = ONLINE_ORDER;  setSourcesInOrder(baseOrder); });
   window.addEventListener("offline", () => { tryIndex = 0; baseOrder = OFFLINE_ORDER; setSourcesInOrder(baseOrder); });
     
+// 이 페이지의 일차(숫자). 필요하면 파일마다 바꿔주거나,
+  // 다른 곳에서 window.CURRENT_DAY를 미리 정의해 두세요.
+  window.CURRENT_DAY = typeof window.CURRENT_DAY === 'number' ? window.CURRENT_DAY : 69;
+
+  document.addEventListener('DOMContentLoaded', () => {
+    const DAY = Number(window.CURRENT_DAY);
+    const pad2      = n => String(n).padStart(2, '0');
+    const fileName  = n => `${pad2(n)}일차.html`;
+    const remoteUrl = n => `https://seagwang1124.github.io/90html/${encodeURIComponent(fileName(n))}`;
+
+    const $prev  = document.getElementById('nav-prev');
+    const $next  = document.getElementById('nav-next');
+    const $title = document.getElementById('nav-title');
+    const $list  = document.getElementById('nav-list');
+
+    // 제목 세팅
+    $title.textContent = ` 통독 ${pad2(DAY)}일차 `;
+
+    // 이전/다음 링크
+    if (DAY > 1) {
+      const d = DAY - 1;
+      $prev.dataset.remote = remoteUrl(d);   // 온라인
+      $prev.dataset.local  = fileName(d);    // 오프라인
+    } else {
+      $prev.style.display = 'none';
+    }
+
+    if (DAY < 90) {
+      const d = DAY + 1;
+      $next.dataset.remote = remoteUrl(d);
+      $next.dataset.local  = fileName(d);
+    } else {
+      $next.style.display = 'none';
+    }
+
+    // 목록 링크
+    $list.dataset.remote = 'https://seagwang1124.github.io/90html';
+    $list.dataset.local  = 'index.html';
+
+    // 온라인/오프라인에 따라 href 적용
+    function applyNavMode() {
+      const online = navigator.onLine;
+      document.querySelectorAll('.nav-link').forEach(a => {
+        const remote = a.dataset.remote || a.getAttribute('href') || '#';
+        const local  = a.dataset.local  || a.getAttribute('href') || '#';
+        a.setAttribute('href', online ? remote : local);
+      });
+    }
+    applyNavMode();
+    window.addEventListener('online',  applyNavMode);
+    window.addEventListener('offline', applyNavMode);
+
+    // 오프라인일 때는 로컬 파일로 강제 이동(안전장치)
+    document.addEventListener('click', (e) => {
+      const link = e.target.closest('.nav-link');
+      if (!link) return;
+      if (!navigator.onLine && link.dataset.local) {
+        e.preventDefault();
+        location.href = link.dataset.local;
+      }
+    });
+  });
+        
   </script>
 </body>
 </html>
